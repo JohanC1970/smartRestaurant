@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Desbloqueo de Cuenta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #FF9800;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px dashed #ccc;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cuenta Bloqueada</h1>
+        </div>
+        <div class="content">
+            <p>Hola <span th:text="${name}">Usuario</span>,</p>
+            <p>Tu cuenta ha sido bloqueada temporalmente por seguridad. Para desbloquearla, usa el siguiente código:</p>
+            <div class="otp-code" th:text="${otp}">123456</div>
+            <p>Este código expirará en 1 hora.</p>
+            <p>Si no reconoces esta actividad, por favor contacta a soporte.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 Smart Restaurant by CamiloG. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+
+</html>
