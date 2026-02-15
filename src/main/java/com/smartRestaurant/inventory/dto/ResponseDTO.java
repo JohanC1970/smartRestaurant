@@ -1,4 +1,4 @@
 package com.smartRestaurant.inventory.dto;
 
-public record ResponseDTO() {
+public record ResponseDTO<T>( T message, Boolean error) {
 }
