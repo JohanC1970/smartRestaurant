@@ -1,7 +1,7 @@
 package com.smartRestaurant.auth.service.impl;
 
 import com.smartRestaurant.auth.model.entity.User;
-import com.smartRestaurant.auth.service.JwtService;
+import com.smartRestaurant.security.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

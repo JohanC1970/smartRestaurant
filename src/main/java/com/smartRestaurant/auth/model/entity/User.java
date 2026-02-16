@@ -72,6 +72,20 @@ public class User {
 
     private LocalDateTime lockedAt;
 
+    /**
+     * Hash de la contraseña anterior para prevenir reutilización inmediata (RF-08)
+     */
+    @Column(length = 255)
+    private String previousPasswordHash;
+
+    /**
+     * Indica si el usuario debe cambiar su contraseña en el próximo login (RF-02)
+     * Se usa para contraseñas temporales asignadas por administradores
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean requiresPasswordChange = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
