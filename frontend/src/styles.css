@@ -1,0 +1,41 @@
+/* Global styles */
+:root {
+    --color1: #1f192f;
+    --color2: #2d6073;
+    --color3: #65b8a6;
+    --color4: #b5e8c3;
+    --color5: #f0f7da;
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Outfit', 'Inter', Roboto, "Helvetica Neue", sans-serif;
+    background-color: var(--color5);
+    color: var(--color1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color1);
+}

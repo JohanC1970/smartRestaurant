@@ -1,0 +1,27 @@
+<mat-toolbar color="primary" class="navbar">
+  <div class="navbar-container">
+    <div class="logo-section">
+      <mat-icon class="logo-icon">restaurant</mat-icon>
+      <span class="logo-text">SmartRestaurant</span>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="user-section">
+      <div class="user-info">
+        <span class="user-email">{{ userEmail }}</span>
+        <span class="user-role-badge" [ngClass]="userRole?.toLowerCase()">{{ roleLabel }}</span>
+      </div>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="Menu de usuario">
+        <mat-icon ripple>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Cerrar Sesión</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</mat-toolbar>
