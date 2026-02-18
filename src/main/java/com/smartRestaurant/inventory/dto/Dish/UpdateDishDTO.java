@@ -1,4 +1,4 @@
 package com.smartRestaurant.inventory.dto.Dish;
 
-public record UpdateCategoryDTO() {
+public record UpdateDishDTO() {
 }
