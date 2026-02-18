@@ -58,12 +58,24 @@ public class EmailServiceImpl implements EmailService {
 
     @Async
     @Override
-    public void sendNewEmployeeEmail(String to, String name, String tempPassword) {
+    public void sendEmployeeCredentials(String to, String name, String tempPassword, String otp) {
         Context context = new Context();
         context.setVariable("name", name);
-        context.setVariable("password", tempPassword);
+        context.setVariable("tempPassword", tempPassword);
+        context.setVariable("otp", otp);
 
-        sendHtmlEmail(to, "Bienvenido a Smart Restaurant - Tus Credenciales", "email/new-employee", context);
+        sendHtmlEmail(to, "Bienvenido a Smart Restaurant - Credenciales de Acceso", "email/employee-credentials",
+                context);
+    }
+
+    @Async
+    @Override
+    public void sendPasswordChangeEmail(String to, String name, String otp) {
+        Context context = new Context();
+        context.setVariable("name", name);
+        context.setVariable("otp", otp);
+
+        sendHtmlEmail(to, "Cambio de Contraseña - Smart Restaurant", "email/password-change", context);
     }
 
     private void sendHtmlEmail(String to, String subject, String templateName, Context context) {

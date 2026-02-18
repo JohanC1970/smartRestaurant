@@ -33,11 +33,22 @@ public interface EmailService {
     void sendAccountUnlockEmail(String to, String name, String otp);
 
     /**
-     * Envía un correo con las credenciales temporales a un nuevo empleado
+     * Envía un correo con las credenciales temporales para empleados registrados
+     * por admin (RF-02)
      * 
      * @param to           Dirección de correo destino
-     * @param name         Nombre del usuario
-     * @param tempPassword Contraseña temporal
+     * @param name         Nombre del empleado
+     * @param tempPassword Contraseña temporal generada
+     * @param otp          Código OTP para verificación
      */
-    void sendNewEmployeeEmail(String to, String name, String tempPassword);
+    void sendEmployeeCredentials(String to, String name, String tempPassword, String otp);
+
+    /**
+     * Envía un correo con el código OTP para cambio de contraseña (RF-07)
+     * 
+     * @param to   Dirección de correo destino
+     * @param name Nombre del usuario
+     * @param otp  Código OTP generado
+     */
+    void sendPasswordChangeEmail(String to, String name, String otp);
 }

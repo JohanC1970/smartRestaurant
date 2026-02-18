@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.smartRestaurant.auth.model.enums.UserRole;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,8 +13,14 @@ public class AuthResponse {
 
     private String accessToken;
     private String refreshToken;
-    private String email;
-    private UserRole role;
     private String message;
     private boolean is2faRequired;
+
+    /**
+     * RF-02: Indica si el usuario debe cambiar su contraseña
+     * Se usa para empleados registrados por administradores con contraseñas
+     * temporales
+     */
+    @Builder.Default
+    private boolean requiresPasswordChange = false;
 }

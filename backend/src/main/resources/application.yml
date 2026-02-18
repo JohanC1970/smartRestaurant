@@ -12,9 +12,9 @@ spring:
   
   # Database Configuration
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5433/smart_restaurant}
-    username: ${DB_USERNAME:jeyson}
-    password: ${DB_PASSWORD:}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/smart_restaurant}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
@@ -46,3 +46,7 @@ server:
   #error:
     #include-message: always
     #include-binding-errors: always
+
+# CORS Configuration
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
