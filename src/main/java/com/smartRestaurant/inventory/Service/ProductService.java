@@ -9,7 +9,7 @@ import java.util.List;
 public interface ProductService {
 
     void create(CreateProductDTO createProductDTO);
-    void update(UpdateProductDTO updateProductDTO);
+    void update(String id, UpdateProductDTO updateProductDTO);
     void delete(String id);
     List<GetProductDTO> getAll();
 }

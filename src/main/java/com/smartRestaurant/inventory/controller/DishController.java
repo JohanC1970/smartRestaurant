@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.dto.Dish.CreateDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +32,9 @@ public class DishController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Created", false));
     }
 
-    @PutMapping("update")
-    public ResponseEntity<ResponseDTO<String>> update(UpdateDishDTO updateDishDTO){
-        dishService.update(updateDishDTO);
+    @PutMapping("update/{id}")
+    public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @RequestBody @Valid UpdateDishDTO updateDishDTO){
+        dishService.update(id, updateDishDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
     }
 

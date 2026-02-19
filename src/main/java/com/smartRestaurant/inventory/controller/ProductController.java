@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
 import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +21,15 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<String>> create(CreateProductDTO createProductDTO){
+    public ResponseEntity<ResponseDTO<String>> create(@RequestBody @Valid CreateProductDTO createProductDTO){
         productService.create(createProductDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Product Created", false));
 
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<ResponseDTO<String>> update(UpdateProductDTO updateProductDTO){
-        productService.update(updateProductDTO);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @RequestBody @Valid UpdateProductDTO updateProductDTO){
+        productService.update(id, updateProductDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Product Updated", false));
     }
 

@@ -24,10 +24,11 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    // falta paginación
     @Override
     public List<GetCategoriesDTO> getAll() {
 
-        return categoryRepository.getAll();
+        return categoryRepository.getAll().stream().map(categoryMapper::toDTO).toList();
     }
 
     @Override
@@ -59,6 +60,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(String id) {
 
+        Optional<Category> category = categoryRepository.findById(id);
+        if(category.isEmpty()){
+            throw new RuntimeException("Category not found");
+        }
 
+        // Falta validar que si tiene platos dentro como se hará para inhabilitar la categoría
+        category.get().setState(State.INACTIVE);
+
+        categoryRepository.save(category.get());
     }
 }

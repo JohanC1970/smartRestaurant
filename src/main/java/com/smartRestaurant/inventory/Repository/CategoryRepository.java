@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, String> {
 
-    List<GetCategoriesDTO> getAll();
+    List<Category> getAll();
     Boolean existsByName(String name);
 
     Optional<Category> findByName(String name);

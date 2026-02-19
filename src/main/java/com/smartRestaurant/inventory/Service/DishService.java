@@ -10,6 +10,6 @@ public interface DishService {
 
     List<GetDishDTO> getAll();
     void create(CreateDishDTO dish);
-    void update(UpdateDishDTO dish);
+    void update(String id, UpdateDishDTO dish);
     void delete(String id);
 }
