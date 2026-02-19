@@ -6,6 +6,7 @@ import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
 import com.smartRestaurant.inventory.dto.Category.UpdateCategoryDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +29,14 @@ public class CategoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<String>> create(CreateCategoryDTO createCategoryDTO) {
+    public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateCategoryDTO createCategoryDTO) {
         categoryService.create(createCategoryDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Dish Created", false));
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<ResponseDTO<String>> update(UpdateCategoryDTO updateCategoryDTO) {
-        categoryService.update(updateCategoryDTO);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateCategoryDTO updateCategoryDTO) {
+        categoryService.update(id, updateCategoryDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
     }
 

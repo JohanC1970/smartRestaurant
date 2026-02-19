@@ -11,6 +11,6 @@ public interface CategoryService {
 
     List<GetCategoriesDTO> getAll();
     void create(CreateCategoryDTO createCategoryDTO);
-    void update(UpdateCategoryDTO updateCategoryDTO);
+    void update(String id, UpdateCategoryDTO updateCategoryDTO);
     void delete(String id);
 }
