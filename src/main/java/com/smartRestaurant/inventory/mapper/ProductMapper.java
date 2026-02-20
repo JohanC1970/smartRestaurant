@@ -14,6 +14,7 @@ public interface ProductMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
 
+
     Product toEntity(CreateProductDTO createProductDTO);
     GetProductDTO toDTO(Product product);
 
