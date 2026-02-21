@@ -1,17 +1,22 @@
 package com.smartRestaurant.inventory.Service.impl;
 
+import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.inventory.Repository.ProductRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
+import com.smartRestaurant.inventory.Service.InventoryMovementService;
 import com.smartRestaurant.inventory.Service.ProductService;
 import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
 import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
 import com.smartRestaurant.inventory.mapper.ProductMapper;
+import com.smartRestaurant.inventory.model.InventoryMovement;
 import com.smartRestaurant.inventory.model.Product;
 import com.smartRestaurant.inventory.model.State;
+import com.smartRestaurant.inventory.model.Type;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +26,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final InventoryMovementService inventoryMovementService;
 
     @Override
     public void create(CreateProductDTO createProductDTO) {
@@ -30,7 +36,10 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Product already exists");
         }
 
-        productRepository.save(productMapper.toEntity(createProductDTO));
+        Product product = productMapper.toEntity(createProductDTO);
+        productRepository.save(product);
+        // registramos el movimiento
+        inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
 
     }
 
@@ -42,8 +51,22 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Product not found");
         }
 
+        double Oldweight = productOptional.get().getWeight();
+        double newWeight = updateProductDTO.weight();
+        double difference = newWeight - Oldweight;
+
         productMapper.update(updateProductDTO, productOptional.get());
         productRepository.save(productOptional.get());
+
+
+        if(difference < 0){
+
+            inventoryMovementService.registerMovementExit(productOptional.get(), difference);
+        }else {
+
+            inventoryMovementService.registerMovementEntry(productOptional.get(), difference);
+        }
+
     }
 
     @Override
@@ -66,5 +89,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<GetProductDTO> getAll() {
         return productRepository.getAll().stream().map(productMapper::toDTO).toList();
+    }
+
+    @Override
+    public boolean posibleStock(List<Product> products) {
+        if(products.isEmpty()) {
+            return false;
+        }
+        for(Product product : products) {
+            if(product.getStock() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean calculateProduct(Product product, double weight) {
+        return false;
     }
 }

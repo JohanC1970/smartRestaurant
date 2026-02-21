@@ -44,4 +44,6 @@ public class ProductController {
         List<GetProductDTO> list = productService.getAll();
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
+
+
 }

@@ -17,5 +17,6 @@ public class Dish extends BaseEntity {
     private List<String> photos;
     private State state;
     private Category category;
+    private List<Addition> additions;
 
 }

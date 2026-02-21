@@ -43,4 +43,6 @@ public class DishController {
         dishService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
     }
+
+
 }

@@ -1,7 +1,15 @@
 package com.smartRestaurant.inventory.dto.Product;
 
-public record CreateProductDTO(String name,
-                               String description,
-                               String quantity,
-                               double weight) {
+import com.smartRestaurant.inventory.model.State;
+
+import java.util.List;
+
+public record CreateProductDTO( String name,
+         String description,
+         double price_unit,
+         double weight,
+        List<String>photos,
+                                int minimumStock,
+        // stock en revisión
+         double stock) {
 }
