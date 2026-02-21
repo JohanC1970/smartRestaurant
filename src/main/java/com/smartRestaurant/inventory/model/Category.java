@@ -7,10 +7,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-
+@Entity
 public class Category extends BaseEntity {
 
-
+    @Id
     private String id;
     private String name;
     private String description;
