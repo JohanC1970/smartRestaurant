@@ -7,7 +7,10 @@ import com.smartRestaurant.inventory.Service.InventoryMovementService;
 import com.smartRestaurant.inventory.Service.ProductService;
 import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
 import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
+import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
+import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
+import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.mapper.ProductMapper;
 import com.smartRestaurant.inventory.model.InventoryMovement;
 import com.smartRestaurant.inventory.model.Product;
@@ -51,23 +54,12 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Product not found");
         }
 
-        double Oldweight = productOptional.get().getWeight();
-        double newWeight = updateProductDTO.weight();
-        double difference = newWeight - Oldweight;
-
         productMapper.update(updateProductDTO, productOptional.get());
         productRepository.save(productOptional.get());
 
-
-        if(difference < 0){
-
-            inventoryMovementService.registerMovementExit(productOptional.get(), difference);
-        }else {
-
-            inventoryMovementService.registerMovementEntry(productOptional.get(), difference);
-        }
-
     }
+
+    // hay que verificar primero si el producto está en algun carrito
 
     @Override
     public void delete(String id) {
@@ -91,13 +83,57 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.getAll().stream().map(productMapper::toDTO).toList();
     }
 
+
+    @Override
+    public void addStock(String id, StockMovementDTO stockMovementDTO) {
+
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isEmpty()) {
+            throw new ResourceNotFoundException("producto no encontrado");
+        }
+        double newWeight = product.get().getWeight() + stockMovementDTO.weight();
+        product.get().setWeight(newWeight);
+        productRepository.save(product.get());
+
+        if(product.get().getWeight() < product.get().getMinimumStock()){
+            // generar la alerta así se le esté añadiendo (luego veo como)
+        }
+
+        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
+    }
+
+    @Override
+    public void discountStock(String id, StockMovementDTO stockMovementDTO) {
+
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isEmpty()) {
+            throw new ResourceNotFoundException("producto no encontrado");
+        }
+        double newWeight = product.get().getWeight() - stockMovementDTO.weight();
+
+        if(newWeight < 0) {
+            throw new ValueConflictException("No hay suficiente para descontar");
+        }
+
+
+        product.get().setWeight(newWeight);
+        productRepository.save(product.get());
+
+        if(product.get().getWeight() < product.get().getMinimumStock()){
+            // generar la alerta (luego veo como)
+        }
+
+        inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
+
+    }
+
     @Override
     public boolean posibleStock(List<Product> products) {
         if(products.isEmpty()) {
             return false;
         }
         for(Product product : products) {
-            if(product.getStock() > 0) {
+            if(product.getWeight() > 0) {
                 return true;
             }
         }
@@ -108,4 +144,5 @@ public class ProductServiceImpl implements ProductService {
     public boolean calculateProduct(Product product, double weight) {
         return false;
     }
+
 }

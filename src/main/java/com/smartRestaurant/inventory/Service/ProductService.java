@@ -2,6 +2,7 @@ package com.smartRestaurant.inventory.Service;
 
 import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
 import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
+import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
 import com.smartRestaurant.inventory.model.Product;
 
@@ -15,4 +16,6 @@ public interface ProductService {
     List<GetProductDTO> getAll();
     boolean posibleStock(List<Product> products);
     boolean calculateProduct(Product product, double weight);
+    void addStock(String id, StockMovementDTO stockMovementDTO);
+    void discountStock(String id, StockMovementDTO stockMovementDTO);
 }

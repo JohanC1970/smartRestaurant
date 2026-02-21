@@ -9,7 +9,5 @@ public record CreateProductDTO( String name,
          double price_unit,
          double weight,
         List<String>photos,
-                                int minimumStock,
-        // stock en revisión
-         double stock) {
+                                double minimumStock) {
 }

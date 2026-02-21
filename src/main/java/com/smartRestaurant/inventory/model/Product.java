@@ -16,8 +16,8 @@ public class Product {
     private double weight;
     List<String> photos;
     private State state;
-    private int minimumStock;
+    private double minimumStock;
 
     // stock en revisión
-    private double stock;
+    //private double stock;
 }
