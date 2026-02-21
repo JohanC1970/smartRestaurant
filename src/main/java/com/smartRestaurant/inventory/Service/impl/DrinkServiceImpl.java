@@ -39,7 +39,7 @@ public class DrinkServiceImpl implements DrinkService {
     @Override
     public void update(String id, UpdateDrinkDTO updateDrinkDTO) {
         Optional<Drink> drink = drinkRepository.findById(id);
-        if (drink.isEmpty()) {
+        if (drink.isEmpty() || drink.get().getState().equals(State.INACTIVE)) {
             throw new RuntimeException("Drink does not exist");
         }
         drinkMapper.update(updateDrinkDTO, drink.get());
@@ -49,7 +49,7 @@ public class DrinkServiceImpl implements DrinkService {
     @Override
     public void delete(String id) {
         Optional<Drink> drink = drinkRepository.findById(id);
-        if (drink.isEmpty()) {
+        if (drink.isEmpty() || drink.get().getState().equals(State.INACTIVE)) {
             throw new RuntimeException("Drink does not exist");
         }
         drink.get().setState(State.INACTIVE);
