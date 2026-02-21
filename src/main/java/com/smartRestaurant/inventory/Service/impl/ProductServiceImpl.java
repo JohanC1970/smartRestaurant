@@ -9,6 +9,7 @@ import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
 import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
 import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
+import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.mapper.ProductMapper;
@@ -17,6 +18,9 @@ import com.smartRestaurant.inventory.model.Product;
 import com.smartRestaurant.inventory.model.State;
 import com.smartRestaurant.inventory.model.Type;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -79,8 +83,20 @@ public class ProductServiceImpl implements ProductService {
 
     // Me falta la paginación
     @Override
-    public List<GetProductDTO> getAll() {
-        return productRepository.getAll().stream().map(productMapper::toDTO).toList();
+    public List<GetProductDTO> getAll(int page) {
+        if(page < 0){
+            throw new BadRequestException("pagina invalida (negativa), debe ser >= 0");
+        }
+        Pageable pageable = PageRequest.of(page,10);
+
+        Page<Product> products = productRepository.findAll(pageable);
+        if(products.getTotalElements() == 0){
+            throw new ResourceNotFoundException("No existen productos encontrados");
+        }
+
+        return products.stream()
+                .map(productMapper::toDTO)
+                .toList();
     }
 
 

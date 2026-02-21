@@ -21,10 +21,10 @@ public class DrinkController {
 
     private final DrinkService drinkService;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<ResponseDTO<List<GetDrinkDTO>>> getAll(){
+    @GetMapping("/{page}/getAll")
+    public ResponseEntity<ResponseDTO<List<GetDrinkDTO>>> getAll(@PathVariable int page){
 
-        List<GetDrinkDTO> list = drinkService.getAll();
+        List<GetDrinkDTO> list = drinkService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 

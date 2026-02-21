@@ -24,10 +24,10 @@ public class AdditionController {
 
     private final AdditionService additionService;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<ResponseDTO<List<GetAdditionDTO>>> getAll(){
+    @GetMapping("/{page}/getAll")
+    public ResponseEntity<ResponseDTO<List<GetAdditionDTO>>> getAll(@PathVariable int page){
 
-        List<GetAdditionDTO> list = additionService.getAll();
+        List<GetAdditionDTO> list = additionService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 

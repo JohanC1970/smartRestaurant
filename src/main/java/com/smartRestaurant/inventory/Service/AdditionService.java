@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface AdditionService {
 
-    List<GetAdditionDTO> getAll();
+    List<GetAdditionDTO> getAll(int page);
     void create(CreateAdditionDTO createAdditionDTO);
     void update(String id, UpdateAdditionDTO updateAdditionDTO);
     void delete(String id);

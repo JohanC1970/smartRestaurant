@@ -13,7 +13,7 @@ public interface ProductService {
     void create(CreateProductDTO createProductDTO);
     void update(String id, UpdateProductDTO updateProductDTO);
     void delete(String id);
-    List<GetProductDTO> getAll();
+    List<GetProductDTO> getAll(int page);
     boolean posibleStock(List<Product> products);
     boolean calculateProduct(Product product, double weight);
     void addStock(String id, StockMovementDTO stockMovementDTO);

@@ -40,9 +40,9 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Product Deleted", false));
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<ResponseDTO<List<GetProductDTO>>> getAll(){
-        List<GetProductDTO> list = productService.getAll();
+    @GetMapping("/{page}/all")
+    public ResponseEntity<ResponseDTO<List<GetProductDTO>>> getAll(@PathVariable int page){
+        List<GetProductDTO> list = productService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 

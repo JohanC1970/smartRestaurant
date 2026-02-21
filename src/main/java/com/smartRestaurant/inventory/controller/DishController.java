@@ -20,9 +20,9 @@ public class DishController {
 
     private final DishService dishService;
 
-    @GetMapping("/all")
-    public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(){
-        List<GetDishDTO> list = dishService.getAll();
+    @GetMapping("/{page}/all")
+    public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(@PathVariable int page){
+        List<GetDishDTO> list = dishService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 

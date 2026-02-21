@@ -6,10 +6,14 @@ import com.smartRestaurant.inventory.Service.DishService;
 import com.smartRestaurant.inventory.dto.Dish.CreateDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
+import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DishMapper;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,8 +29,18 @@ public class DishServiceImpl implements DishService {
 
     // falta paginación
     @Override
-    public List<GetDishDTO> getAll() {
-        return dishRepository.getAll().stream().map(dishMapper::toDTO).toList();
+    public List<GetDishDTO> getAll(int page) {
+
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Dish> dishes = dishRepository.findAll(pageable);
+
+        if(dishes.getTotalElements() == 0){
+            throw new ResourceNotFoundException("No hay platos registrados");
+        }
+
+        return dishes.stream()
+                .map(dishMapper::toDTO)
+                .toList();
     }
 
     @Override
