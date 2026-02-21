@@ -7,15 +7,17 @@ import java.util.List;
 
 @Getter
 @Setter
-
-public class Dish extends BaseEntity {
+public class Drink extends BaseEntity{
 
     private String id;
     private String name;
     private String description;
-    private String price;
-    private List<String> photos;
+    private String mililiters;
     private State state;
+    private boolean alcohol;
     private Category category;
+    private List<String> photos;
+
+
 
 }
