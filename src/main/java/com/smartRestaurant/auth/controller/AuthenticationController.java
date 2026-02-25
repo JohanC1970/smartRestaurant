@@ -46,6 +46,12 @@ public class AuthenticationController {
         return ResponseEntity.ok("Email verificado exitosamente. Ya puede iniciar sesión.");
     }
 
+    @PostMapping("/resend-verification")
+    public ResponseEntity<String> resendVerification(@RequestBody VerifyRequest request) {
+        authenticationService.resendVerification(request.getEmail());
+        return ResponseEntity.ok("Nuevo código de verificación enviado a su correo.");
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody VerifyRequest request) {
         authenticationService.forgotPassword(request.getEmail());

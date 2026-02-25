@@ -43,6 +43,13 @@ public class OtpServiceImpl implements OtpService {
 
         otpTokenRepository.save(token);
 
+        // LOG PARA DESARROLLO (Ya que no hay SMTP configurado todavía)
+        System.out.println("\n--- DEVELOPMENT OTP ---");
+        System.out.println("USER: " + user.getEmail());
+        System.out.println("TYPE: " + type);
+        System.out.println("CODE: " + otpCode);
+        System.out.println("-----------------------\n");
+
         return otpCode;
     }
 

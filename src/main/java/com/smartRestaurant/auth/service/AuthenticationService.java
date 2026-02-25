@@ -12,6 +12,8 @@ public interface AuthenticationService {
 
     void registerEmployee(RegisterAdminRequest request);
 
+    void resendVerification(String email);
+
     AuthResponse login(LoginRequest request);
 
     AuthResponse verify2fa(VerifyRequest request);

@@ -21,6 +21,8 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Password
+    @Password(message = "La contraseña debe tener al menos 6 caracteres, una mayúscula, una minúscula y un carácter especial (@#$...)")
     private String password;
+
+    private com.smartRestaurant.auth.model.enums.UserRole role;
 }

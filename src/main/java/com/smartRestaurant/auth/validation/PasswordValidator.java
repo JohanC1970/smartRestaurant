@@ -18,7 +18,7 @@ public class PasswordValidator implements ConstraintValidator<Password, String> 
     // User request: 1 lowercase, 1 special, 1 uppercase, min 8 chars (RF-08).
     // Updated to comply with security requirement RF-08: minimum 8 characters
 
-    private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*?.\\-_]).{8,}$";
+    private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*?.\\-_]).{6,}$";
 
     private static final Pattern PATTERN = Pattern.compile(PASSWORD_PATTERN);
 

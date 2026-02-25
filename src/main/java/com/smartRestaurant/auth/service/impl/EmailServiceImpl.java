@@ -93,10 +93,9 @@ public class EmailServiceImpl implements EmailService {
             mailSender.send(mimeMessage);
             log.info("Email enviado a {} con asunto '{}'", to, subject);
 
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Error al enviar email a {}: {}", to, e.getMessage());
-            // No lanzamos la excepción para no interrumpir el flujo principal, pero se
-            // loguea el error
+            // No lanzamos la excepción para no interrumpir el flujo principal
         }
     }
 }

@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.mockito.ArgumentCaptor;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +32,8 @@ import com.smartRestaurant.auth.model.enums.UserRole;
 import com.smartRestaurant.auth.model.enums.UserStatus;
 import com.smartRestaurant.auth.repository.UserRepository;
 import com.smartRestaurant.auth.service.impl.AuthenticationServiceImpl;
+import com.smartRestaurant.auth.service.impl.JwtServiceImpl;
+import com.smartRestaurant.common.exception.AccountLockedException;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -38,8 +42,8 @@ class AuthenticationServiceTest {
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private JwtService jwtService;
+    @Mock(name = "jwtService")
+    private JwtServiceImpl jwtService;
     @Mock
     private OtpService otpService;
     @Mock
@@ -93,11 +97,12 @@ class AuthenticationServiceTest {
 
     @Test
     void login_ShouldLockAccount_After3FailedAttempts() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("encodedPass");
-        user.setFailedLoginAttempts(2);
-        user.setStatus(UserStatus.ACTIVE);
+        User user = User.builder()
+                .email("test@example.com")
+                .password("encodedPass")
+                .failedLoginAttempts(2)
+                .status(UserStatus.ACTIVE)
+                .build();
 
         LoginRequest request = LoginRequest.builder()
                 .email("test@example.com")
@@ -107,10 +112,12 @@ class AuthenticationServiceTest {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("WrongPass", "encodedPass")).thenReturn(false);
 
-        assertThrows(RuntimeException.class, () -> authService.login(request));
+        assertThrows(AccountLockedException.class, () -> authService.login(request));
 
-        verify(otpService).generateOtp(user, OtpTokenType.DESBLOQUEO_CUENTA); // Should generate unlock OTP
-        assertEquals(UserStatus.BANNED, user.getStatus());
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertEquals(UserStatus.BANNED, userCaptor.getValue().getStatus());
+        verify(otpService).generateOtp(userCaptor.getValue(), OtpTokenType.DESBLOQUEO_CUENTA);
     }
 
     @Test
@@ -128,8 +135,10 @@ class AuthenticationServiceTest {
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(otpService.validateOtp(user, "123456", OtpTokenType.LOGIN_2FA)).thenReturn(true);
-        when(jwtService.generateAccessToken(user)).thenReturn("accessBtn"); // Fixed args
-        when(jwtService.generateRefreshToken(user)).thenReturn("refreshTkn"); // Fixed args
+        String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
+        String refreshToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwicmVmcmVzaCI6dHJ1ZX0.5z3z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z5z";
+        when(jwtService.generateAccessToken(user)).thenReturn(accessToken);
+        when(jwtService.generateRefreshToken(user)).thenReturn(refreshToken);
 
         AuthResponse response = authService.verify2fa(request);
 
