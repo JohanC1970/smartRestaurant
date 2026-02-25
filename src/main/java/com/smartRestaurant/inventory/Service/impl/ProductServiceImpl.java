@@ -81,7 +81,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    // Me falta la paginación
     @Override
     public List<GetProductDTO> getAll(int page) {
         if(page < 0){
@@ -99,7 +98,6 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
-
     @Override
     public void addStock(String id, StockMovementDTO stockMovementDTO) {
 
@@ -112,7 +110,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product.get());
 
         if(product.get().getWeight() < product.get().getMinimumStock()){
-            // generar la alerta así se le esté añadiendo (luego veo como)
+            // debo generar la alerta así se le esté añadiendo (Notificaciones pendientes)
         }
 
         inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
