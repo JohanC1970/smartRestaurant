@@ -42,4 +42,7 @@ public class Product {
     @Positive
     private double minimumStock;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Suplier suplier;
+
 }
