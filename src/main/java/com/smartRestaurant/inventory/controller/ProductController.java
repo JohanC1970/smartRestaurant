@@ -6,6 +6,7 @@ import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
 import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -56,6 +57,12 @@ public class ProductController {
     public ResponseEntity<ResponseDTO<String>> discountStock(@PathVariable String id, @Valid @RequestBody StockMovementDTO stockMovementDTO){
         productService.discountStock(id, stockMovementDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock discounted", false));
+    }
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ResponseDTO<GetProductDTO>> getById(@PathVariable String id){
+        GetProductDTO productDTO = productService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(productDTO, false));
     }
 
 }

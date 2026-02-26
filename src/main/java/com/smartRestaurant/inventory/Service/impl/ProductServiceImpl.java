@@ -142,6 +142,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public GetProductDTO getById(String id) {
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isEmpty()) {
+            throw new ResourceNotFoundException("producto no encontrado");
+        }
+        return productMapper.toDTO(product.get());
+    }
+
+    @Override
     public boolean posibleStock(List<Product> products) {
         if(products.isEmpty()) {
             return false;

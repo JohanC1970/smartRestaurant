@@ -18,4 +18,5 @@ public interface ProductService {
     boolean calculateProduct(Product product, double weight);
     void addStock(String id, StockMovementDTO stockMovementDTO);
     void discountStock(String id, StockMovementDTO stockMovementDTO);
+    GetProductDTO getById(String id);
 }
