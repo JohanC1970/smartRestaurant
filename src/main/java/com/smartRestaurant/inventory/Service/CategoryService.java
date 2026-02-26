@@ -13,4 +13,7 @@ public interface CategoryService {
     void create(CreateCategoryDTO createCategoryDTO);
     void update(String id, UpdateCategoryDTO updateCategoryDTO);
     void delete(String id);
+    GetCategoriesDTO  getCategoryById(String id);
+
+
 }

@@ -12,4 +12,5 @@ public interface DishService {
     void create(CreateDishDTO dish);
     void update(String id, UpdateDishDTO dish);
     void delete(String id);
+    GetDishDTO getById(String id);
 }

@@ -81,4 +81,14 @@ public class DishServiceImpl implements DishService {
         dishOptional.get().setState(State.INACTIVE);
         dishRepository.save(dishOptional.get());
     }
+
+    @Override
+    public GetDishDTO getById(String id) {
+        Optional<Dish> dish = dishRepository.findById(id);
+        if(dish.isEmpty() || dish.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("Dish not found");
+        }
+
+        return dishMapper.toDTO(dish.get());
+    }
 }

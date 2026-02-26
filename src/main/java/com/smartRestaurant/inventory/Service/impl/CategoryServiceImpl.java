@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.dto.Category.CreateCategoryDTO;
 import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
 import com.smartRestaurant.inventory.dto.Category.UpdateCategoryDTO;
+import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.CategoryMapper;
 import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.State;
@@ -69,5 +70,16 @@ public class CategoryServiceImpl implements CategoryService {
         category.get().setState(State.INACTIVE);
 
         categoryRepository.save(category.get());
+    }
+
+    @Override
+    public GetCategoriesDTO getCategoryById(String id) {
+
+        Optional<Category> category = categoryRepository.findById(id);
+        if(category.isEmpty() ||  category.get().getState().equals(State.INACTIVE)){
+            throw new ResourceNotFoundException("Category not found");
+        }
+
+        return categoryMapper.toDTO(category.get());
     }
 }

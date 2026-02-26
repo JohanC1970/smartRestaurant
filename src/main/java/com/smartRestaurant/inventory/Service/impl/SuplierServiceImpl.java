@@ -70,7 +70,7 @@ public class SuplierServiceImpl implements SuplierService {
     public GetSuplierDTO getById(String id) {
         Optional<Suplier> suplier = suplierRepository.findById(id);
 
-        if(suplier.isEmpty()){
+        if(suplier.isEmpty() || suplier.get().getState().equals(State.INACTIVE)){
             throw new ResourceNotFoundException("Suplier not found");
         }
 

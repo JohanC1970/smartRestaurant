@@ -2,6 +2,7 @@ package com.smartRestaurant.inventory.controller;
 
 import com.smartRestaurant.inventory.Service.DrinkService;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
@@ -44,5 +45,11 @@ public class DrinkController {
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         drinkService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Drink Deleted", false));
+    }
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ResponseDTO<GetDrinkDTO>> getById(@PathVariable String id){
+        GetDrinkDTO drink = drinkService.getDrinkById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(drink, false));
     }
 }

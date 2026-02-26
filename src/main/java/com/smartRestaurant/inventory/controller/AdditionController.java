@@ -9,6 +9,7 @@ import com.smartRestaurant.inventory.dto.Category.CreateCategoryDTO;
 import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
 import com.smartRestaurant.inventory.dto.Category.UpdateCategoryDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,5 +48,11 @@ public class AdditionController {
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         additionService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Addition Deleted", false));
+    }
+
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ResponseDTO<GetAdditionDTO>> getById(@PathVariable String id){
+        GetAdditionDTO additionDTO = additionService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(additionDTO, false));
     }
 }

@@ -72,4 +72,16 @@ public class AdditionServiceImpl implements AdditionService {
         additionRepository.save(addition.get());
 
     }
+
+    @Override
+    public GetAdditionDTO getAdditionById(String id) {
+
+        Optional<Addition> addition = additionRepository.findById(id);
+        if (addition.isEmpty() || addition.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("Addition does not exist");
+        }
+
+        return additionMapper.toDto(addition.get());
+    }
+
 }

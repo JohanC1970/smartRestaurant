@@ -70,4 +70,14 @@ public class DrinkServiceImpl implements DrinkService {
         drinkRepository.save(drink.get());
 
     }
+
+    @Override
+    public GetDrinkDTO getDrinkById(String id) {
+        Optional<Drink> drink = drinkRepository.findById(id);
+        if (drink.isEmpty() || drink.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("Drink does not exist");
+        }
+        return drinkMapper.toDTO(drink.get());
+    }
+
 }

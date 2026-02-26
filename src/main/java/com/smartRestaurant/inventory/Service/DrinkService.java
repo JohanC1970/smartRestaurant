@@ -12,4 +12,5 @@ public interface DrinkService {
     void create(CreateDrinkDTO createDrinkDTO);
     void update(String id, UpdateDrinkDTO updateDrinkDTO);
     void delete(String id);
+    GetDrinkDTO getDrinkById(String id);
 }

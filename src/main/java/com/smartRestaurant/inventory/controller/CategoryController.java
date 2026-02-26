@@ -6,6 +6,7 @@ import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
 import com.smartRestaurant.inventory.dto.Category.UpdateCategoryDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
+import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -46,5 +47,10 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
     }
 
+    @GetMapping("/{id}/detail")
+    public ResponseEntity<ResponseDTO<GetCategoriesDTO>> getById(@PathVariable String id){
+        GetCategoriesDTO categorieDTO = categoryService.getById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(categorieDTO, false));
+    }
 
 }
