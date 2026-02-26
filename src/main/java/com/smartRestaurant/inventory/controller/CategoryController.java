@@ -49,7 +49,7 @@ public class CategoryController {
 
     @GetMapping("/{id}/detail")
     public ResponseEntity<ResponseDTO<GetCategoriesDTO>> getById(@PathVariable String id){
-        GetCategoriesDTO categorieDTO = categoryService.getById(id);
+        GetCategoriesDTO categorieDTO = categoryService.getCategoryById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(categorieDTO, false));
     }
 
