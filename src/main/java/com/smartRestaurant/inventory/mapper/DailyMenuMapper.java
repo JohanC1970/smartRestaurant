@@ -9,7 +9,7 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DailyMenuMapper {
 
-    @Mapping(target = "id", expression = "java(java.util.uuid.randomUUID().toString())")
+    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(source = "dish", target = "dish")
 
     DailyMenu toEntity(Dish dish);

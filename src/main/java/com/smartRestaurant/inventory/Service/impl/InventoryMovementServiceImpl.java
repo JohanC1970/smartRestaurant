@@ -24,7 +24,7 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
                 .productId(product.getId())
                 //.user()
                 .type(Type.ENTRY)
-                .time(LocalDateTime.now())
+                .timeAt(LocalDateTime.now())
                 .weight(product.getWeight())
                 .reason("Entrada de producto por un total de: "+ weight + " gramos.")
                 .build();
@@ -40,7 +40,7 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
                 .productId(product.getId())
                 //.user()
                 .type(Type.EXIT)
-                .time(LocalDateTime.now())
+                .timeAt(LocalDateTime.now())
                 .weight(product.getWeight())
                 .reason("Salida de producto por un total de: "+ weight + " gramos.")
                 .build();

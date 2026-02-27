@@ -13,5 +13,5 @@ public interface AdditionService {
     void create(CreateAdditionDTO createAdditionDTO);
     void update(String id, UpdateAdditionDTO updateAdditionDTO);
     void delete(String id);
-    GetAdditionDTO getAdditionById(String id);
+    GetAdditionDTO getById(String id);
 }

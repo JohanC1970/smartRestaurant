@@ -13,5 +13,4 @@ public interface DishRepository extends JpaRepository<Dish, String> {
 
     Optional<Dish> findByName(String name);
 
-    List<Dish> getAll();
 }

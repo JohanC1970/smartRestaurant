@@ -12,9 +12,9 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface SuplierMapper {
 
-    @Mapping(target = "id", expression = "java(java.util.uuid.randomUUID().toString())")
-    GetSuplierDTO toDto(Suplier suplier);
+    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     Suplier toEntity(CreateSuplierDTO createSuplierDTO);
+    GetSuplierDTO toDto(Suplier suplier);
 
     // ...
 

@@ -1,8 +1,10 @@
 package com.smartRestaurant.inventory.Repository;
 
+import com.smartRestaurant.inventory.model.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-//  No se usa de momento
-public interface AuditoryLog {
+@Repository
+public interface NotificationRepository extends JpaRepository<Notification, String> {
+
 }

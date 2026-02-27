@@ -13,7 +13,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface AdditionMapper {
 
-    @Mapping(target = "id", expression = "java(java.util.uuid.randomUUID().toString)")
+    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     Addition toEntity(CreateAdditionDTO createAdditionDTO);
     GetAdditionDTO toDto(Addition addition);
 

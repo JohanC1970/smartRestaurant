@@ -12,7 +12,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DrinkMapper {
 
-    @Mapping(target = "id", expression = "java(java.util.uuid.randomUUID().toString())")
+    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     Drink toEntity(CreateDrinkDTO createDrinkDTO);
     GetDrinkDTO toDTO(Drink drink);
 

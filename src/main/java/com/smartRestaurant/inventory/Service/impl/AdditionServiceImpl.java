@@ -74,7 +74,7 @@ public class AdditionServiceImpl implements AdditionService {
     }
 
     @Override
-    public GetAdditionDTO getAdditionById(String id) {
+    public GetAdditionDTO getById(String id) {
 
         Optional<Addition> addition = additionRepository.findById(id);
         if (addition.isEmpty() || addition.get().getState().equals(State.INACTIVE)) {

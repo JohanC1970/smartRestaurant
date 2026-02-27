@@ -1,6 +1,7 @@
 package com.smartRestaurant.inventory.Service.impl;
 
 import com.smartRestaurant.auth.model.entity.User;
+import com.smartRestaurant.inventory.Repository.NotificationRepository;
 import com.smartRestaurant.inventory.Repository.ProductRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.Service.InventoryMovementService;
@@ -13,10 +14,7 @@ import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.mapper.ProductMapper;
-import com.smartRestaurant.inventory.model.InventoryMovement;
-import com.smartRestaurant.inventory.model.Product;
-import com.smartRestaurant.inventory.model.State;
-import com.smartRestaurant.inventory.model.Type;
+import com.smartRestaurant.inventory.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final InventoryMovementService inventoryMovementService;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public void create(CreateProductDTO createProductDTO) {
@@ -102,16 +101,26 @@ public class ProductServiceImpl implements ProductService {
     public void addStock(String id, StockMovementDTO stockMovementDTO) {
 
         Optional<Product> product = productRepository.findById(id);
-        if(product.isEmpty()) {
+        if(product.isEmpty() || product.get().getState().equals(State.INACTIVE)) {
             throw new ResourceNotFoundException("producto no encontrado");
         }
+
         double newWeight = product.get().getWeight() + stockMovementDTO.weight();
         product.get().setWeight(newWeight);
         productRepository.save(product.get());
 
         if(product.get().getWeight() < product.get().getMinimumStock()){
-            // debo generar la alerta así se le esté añadiendo (Notificaciones pendientes)
+
+            Notification notification = Notification.builder()
+                    .id("java.util.uuid.randomUUID().toString()")
+                    .type("Bajo nivel de stock de: "+ product.get().getName())
+                    .createdAt(LocalDateTime.now())
+                    .description("Revisa el inventario "+ "el producto: "+product.get().getName()+ "ha llegado al stock minimo: "+product.get().getMinimumStock())
+                    .build();
+
+            notificationRepository.save(notification);
         }
+
 
         inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
     }
@@ -134,7 +143,15 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product.get());
 
         if(product.get().getWeight() < product.get().getMinimumStock()){
-            // generar la alerta (luego veo como)
+
+            Notification notification = Notification.builder()
+                    .id("java.util.uuid.randomUUID().toString()")
+                    .type("Bajo nivel de stock de: "+ product.get().getName())
+                    .createdAt(LocalDateTime.now())
+                    .description("Revisa el inventario "+ "el producto: "+product.get().getName()+ "ha llegado al stock minimo: "+product.get().getMinimumStock())
+                    .build();
+
+            notificationRepository.save(notification);
         }
 
         inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
@@ -147,8 +164,10 @@ public class ProductServiceImpl implements ProductService {
         if(product.isEmpty() || product.get().getState().equals(State.INACTIVE)) {
             throw new ResourceNotFoundException("producto no encontrado");
         }
+
         return productMapper.toDTO(product.get());
     }
+
 
     @Override
     public boolean posibleStock(List<Product> products) {

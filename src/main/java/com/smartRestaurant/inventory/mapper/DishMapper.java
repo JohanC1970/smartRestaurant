@@ -13,7 +13,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DishMapper {
 
-    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUUID().toString())")
+    @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
 
     Dish toEntity(CreateDishDTO createDishDTO);
     GetDishDTO toDTO(Dish dish);
