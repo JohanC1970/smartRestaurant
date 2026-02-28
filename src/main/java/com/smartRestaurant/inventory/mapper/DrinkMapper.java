@@ -13,6 +13,9 @@ import org.mapstruct.MappingTarget;
 public interface DrinkMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "state", constant = "ACTIVE")
+
+
     Drink toEntity(CreateDrinkDTO createDrinkDTO);
     GetDrinkDTO toDTO(Drink drink);
 

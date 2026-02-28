@@ -29,9 +29,9 @@ public class DrinkController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
-        drinkService.create(createDrinkDTO);
+    @PostMapping("/create/{categorieId}/categories")
+    public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categorieId, @Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
+        drinkService.create(categorieId, createDrinkDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Drink Created", false));
     }
 

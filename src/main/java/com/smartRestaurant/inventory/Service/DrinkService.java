@@ -9,7 +9,7 @@ import java.util.List;
 public interface DrinkService {
 
     List<GetDrinkDTO> getAll(int page);
-    void create(CreateDrinkDTO createDrinkDTO);
+    void create(String categorieId, CreateDrinkDTO createDrinkDTO);
     void update(String id, UpdateDrinkDTO updateDrinkDTO);
     void delete(String id);
     GetDrinkDTO getDrinkById(String id);

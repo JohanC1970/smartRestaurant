@@ -1,5 +1,6 @@
 package com.smartRestaurant.inventory.Service.impl;
 
+import com.smartRestaurant.inventory.Repository.CategoryRepository;
 import com.smartRestaurant.inventory.Repository.DrinkRepository;
 import com.smartRestaurant.inventory.Service.DrinkService;
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
@@ -7,6 +8,7 @@ import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DrinkMapper;
+import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.Drink;
 import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class DrinkServiceImpl implements DrinkService {
 
     private final DrinkRepository  drinkRepository;
     private final DrinkMapper drinkMapper;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<GetDrinkDTO> getAll(int page) {
@@ -41,13 +44,22 @@ public class DrinkServiceImpl implements DrinkService {
     }
 
     @Override
-    public void create(CreateDrinkDTO createDrinkDTO) {
+    public void create(String categorieId, CreateDrinkDTO createDrinkDTO) {
+
+        Optional<Category> optionalCategory = categoryRepository.findById(categorieId);
+        if (optionalCategory.isEmpty() || optionalCategory.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("No existe la categoría");
+        }
 
         Optional<Drink> drink = drinkRepository.findByName(createDrinkDTO.name());
         if (drink.isPresent() && drink.get().getState().equals(State.ACTIVE)){
             throw new RuntimeException("Drink already exists");
         }
-        drinkRepository.save(drinkMapper.toEntity(createDrinkDTO));
+
+        Drink drinkEntity = drinkMapper.toEntity(createDrinkDTO);
+        drinkEntity.setCategory(optionalCategory.get());
+
+        drinkRepository.save(drinkEntity);
     }
 
     @Override

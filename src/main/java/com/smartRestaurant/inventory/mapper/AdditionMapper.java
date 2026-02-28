@@ -14,6 +14,9 @@ import org.mapstruct.MappingTarget;
 public interface AdditionMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "state", constant = "ACTIVE")
+
     Addition toEntity(CreateAdditionDTO createAdditionDTO);
     GetAdditionDTO toDto(Addition addition);
 

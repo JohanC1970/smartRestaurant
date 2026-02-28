@@ -14,6 +14,8 @@ import org.mapstruct.MappingTarget;
 public interface DishMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "state", constant = "ACTIVE")
+    @Mapping(target = "photos", source = "photos")
 
     Dish toEntity(CreateDishDTO createDishDTO);
     GetDishDTO toDTO(Dish dish);
