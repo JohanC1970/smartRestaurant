@@ -50,6 +50,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Product product = productMapper.toEntity(createProductDTO);
+        product.setSuplier(optionalSuplier.get());
+
         productRepository.save(product);
 
         // registramos el movimiento

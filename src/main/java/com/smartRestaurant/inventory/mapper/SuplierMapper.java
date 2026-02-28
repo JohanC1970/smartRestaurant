@@ -13,10 +13,11 @@ import org.mapstruct.MappingTarget;
 public interface SuplierMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "state", constant = "ACTIVE")
+
     Suplier toEntity(CreateSuplierDTO createSuplierDTO);
     GetSuplierDTO toDto(Suplier suplier);
 
-    // ...
 
     void updateDto(UpdateSuplierDTO dto, @MappingTarget Suplier suplier);
 

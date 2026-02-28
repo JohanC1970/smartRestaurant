@@ -19,7 +19,7 @@ public record CreateDrinkDTO(
          @NotBlank
          boolean alcohol,
          @NotNull @Length(min = 1, max = 3)
-         List<String>photos,
+         List<String> photos,
          @NotBlank @Positive
          int units) {
 }

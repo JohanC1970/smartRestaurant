@@ -13,6 +13,8 @@ import org.mapstruct.MappingTarget;
 public interface ProductMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "photos", source = "photos")
+    @Mapping(target = "state", constant = "ACTIVE")
 
 
     Product toEntity(CreateProductDTO createProductDTO);

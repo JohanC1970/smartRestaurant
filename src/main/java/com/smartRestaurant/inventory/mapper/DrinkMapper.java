@@ -14,7 +14,7 @@ public interface DrinkMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(target = "state", constant = "ACTIVE")
-
+    @Mapping(target = "photos", source = "photos")
 
     Drink toEntity(CreateDrinkDTO createDrinkDTO);
     GetDrinkDTO toDTO(Drink drink);
