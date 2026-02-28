@@ -40,6 +40,8 @@ public class Drink extends BaseEntity{
     @Column(name = "photo")
     private List<String> photos;
 
+    @Column(nullable = false) @Positive
+    private int units;
 
 
 }

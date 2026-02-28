@@ -1,5 +1,6 @@
 package com.smartRestaurant.inventory.Service.impl;
 
+import com.smartRestaurant.inventory.Repository.CategoryRepository;
 import com.smartRestaurant.inventory.Repository.DishRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.Service.DishService;
@@ -8,6 +9,7 @@ import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DishMapper;
+import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class DishServiceImpl implements DishService {
 
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
+    private final CategoryRepository categoryRepository;
 
 
     // falta paginación
@@ -44,14 +47,23 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
-    public void create(CreateDishDTO createDishDTO) {
+    public void create(String categoryId, CreateDishDTO createDishDTO) {
 
-        Optional<Dish> dish = dishRepository.findByName(createDishDTO.name());
-        if (dish.isPresent()) {
+        Optional<Category> category = categoryRepository.findById(categoryId);
+
+        if(category.isEmpty() || category.get().getState().equals(State.INACTIVE)){
+            throw new ResourceNotFoundException("No existe esta categoría");
+        }
+
+        Optional<Dish> optionalDish = dishRepository.findByName(createDishDTO.name());
+        if (optionalDish.isPresent()) {
             throw new RuntimeException("Already exists");
         }
 
-        dishRepository.save(dishMapper.toEntity(createDishDTO));
+        Dish dish = dishMapper.toEntity(createDishDTO);
+        dish.setCategory(category.get());
+
+        dishRepository.save(dish);
 
     }
 

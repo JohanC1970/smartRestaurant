@@ -1,4 +1,7 @@
 package com.smartRestaurant.inventory.dto.Product;
 
-public record StockMovementDTO(double weight) {
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+public record StockMovementDTO(@Positive @NotBlank double weight) {
 }

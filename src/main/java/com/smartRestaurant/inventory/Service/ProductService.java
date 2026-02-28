@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ProductService {
 
-    void create(CreateProductDTO createProductDTO);
+    void create(String idSuplier, CreateProductDTO createProductDTO);
     void update(String id, UpdateProductDTO updateProductDTO);
     void delete(String id);
     List<GetProductDTO> getAll(int page);

@@ -3,6 +3,7 @@ package com.smartRestaurant.inventory.Service.impl;
 import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.inventory.Repository.NotificationRepository;
 import com.smartRestaurant.inventory.Repository.ProductRepository;
+import com.smartRestaurant.inventory.Repository.SuplierRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.Service.InventoryMovementService;
 import com.smartRestaurant.inventory.Service.ProductService;
@@ -33,17 +34,24 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final InventoryMovementService inventoryMovementService;
     private final NotificationRepository notificationRepository;
+    private final SuplierRepository suplierRepository;
 
     @Override
-    public void create(CreateProductDTO createProductDTO) {
+    public void create(String idSuplier,  CreateProductDTO createProductDTO) {
+
+        Optional<Suplier> optionalSuplier = suplierRepository.findById(idSuplier);
+        if(optionalSuplier.isEmpty() || optionalSuplier.get().getState().equals(State.INACTIVE)){
+            throw new ResourceNotFoundException("El proveedor no existe");
+        }
 
         Optional<Product> productOptional = productRepository.findByName(createProductDTO.name());
         if (productOptional.isPresent()) {
-            throw new RuntimeException("Product already exists");
+            throw new RuntimeException("El producto ya existe");
         }
 
         Product product = productMapper.toEntity(createProductDTO);
         productRepository.save(product);
+
         // registramos el movimiento
         inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
 

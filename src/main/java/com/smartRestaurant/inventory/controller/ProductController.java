@@ -22,9 +22,9 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<String>> create(@RequestBody @Valid CreateProductDTO createProductDTO){
-        productService.create(createProductDTO);
+    @PostMapping("/create/{idSuplier}/supliers")
+    public ResponseEntity<ResponseDTO<String>> create(@PathVariable String idSuplier, @RequestBody @Valid CreateProductDTO createProductDTO){
+        productService.create(idSuplier, createProductDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Product Created", false));
 
     }

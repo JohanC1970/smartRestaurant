@@ -27,9 +27,9 @@ public class DishController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<String>> create(CreateDishDTO createDishDTO){
-        dishService.create(createDishDTO);
+    @PostMapping("/category/{categoryId}/create")
+    public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categoryId, @RequestBody CreateDishDTO createDishDTO){
+        dishService.create(categoryId, createDishDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Created", false));
     }
 

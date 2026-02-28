@@ -1,4 +1,15 @@
 package com.smartRestaurant.inventory.dto.Suplier;
 
-public record UpdateSuplierDTO() {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.Length;
+
+public record UpdateSuplierDTO(@NotBlank @Length(min = 1, max = 50)
+                               String name,
+                               @NotBlank @Length(min = 1, max = 50)
+                               String address,
+                               @NotBlank @Length(min = 1, max = 10)
+                               String phone,
+                               @NotBlank @Email @Length(min = 1, max = 50)
+                               String email) {
 }
