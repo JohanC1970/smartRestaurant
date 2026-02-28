@@ -14,7 +14,7 @@ public interface CategoryMapper {
 
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(target = "state", constant = "ACTIVE")
-    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime())")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
 
 
     Category toEntity(CreateCategoryDTO category);

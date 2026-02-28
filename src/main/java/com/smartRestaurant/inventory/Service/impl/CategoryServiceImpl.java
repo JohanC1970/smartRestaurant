@@ -48,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void update(String id, UpdateCategoryDTO updateCategoryDTO) {
 
         Optional<Category> category = categoryRepository.findById(id);
-        if(category.isEmpty()){
+        if(category.isEmpty() || category.get().getState().equals(State.INACTIVE)){
             throw new RuntimeException("Category not found");
         }
 

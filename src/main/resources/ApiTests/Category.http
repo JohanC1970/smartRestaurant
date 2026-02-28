@@ -2,5 +2,37 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
-###
+### Crear la categoría
+
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+  "name": "EEEEEEEE",
+  "description": "Tenemos distintos platos para que vengas a disfrutar una mañana excelente"
+}
+
+### Actualizar la categoría
+
+PUT http://localhost:8080/api/categories/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+Content-Type: application/json
+
+{
+  "name": "Desayunos",
+  "description": "No Tenemos distintos platos para que vengas a disfrutar una mañana excelente"
+}
+
+### Obtener el detalle de la categoría
+
+GET http://localhost:8080/api/categories/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Eliminar una categoría
+
+DELETE http://localhost:8080/api/categories/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Obtener todas las categorías
+
+GET http://localhost:8080/api/categories
+
+
 

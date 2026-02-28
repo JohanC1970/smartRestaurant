@@ -34,8 +34,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Public endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints
-                        .anyRequest().authenticated())
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        // desactivado mientras .anyRequest().authenticated())
+                        .anyRequest().permitAll() )// Permite todas las peticiones sin autenticación
+
+                        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

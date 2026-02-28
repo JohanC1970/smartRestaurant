@@ -22,32 +22,32 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @GetMapping("/getAll")
+    @GetMapping()
     public ResponseEntity<ResponseDTO<List<GetCategoriesDTO>>> getAll(){
 
         List<GetCategoriesDTO> list = categoryService.getAll();
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateCategoryDTO createCategoryDTO) {
         categoryService.create(createCategoryDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Dish Created", false));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Categoría creada", false));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateCategoryDTO updateCategoryDTO) {
         categoryService.update(id, updateCategoryDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         categoryService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO<GetCategoriesDTO>> getById(@PathVariable String id){
         GetCategoriesDTO categorieDTO = categoryService.getCategoryById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(categorieDTO, false));

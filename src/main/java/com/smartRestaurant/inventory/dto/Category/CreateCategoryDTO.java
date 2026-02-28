@@ -9,7 +9,7 @@ public record CreateCategoryDTO(@NotBlank @Length(min = 1, max = 100)
                                 String name,
                                 @NotBlank @Length(min = 10, max = 500)
                                 String description)
-                              //  List<String> photos)
+
                                 {
 
 }
