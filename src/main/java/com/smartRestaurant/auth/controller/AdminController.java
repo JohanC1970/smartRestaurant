@@ -21,10 +21,10 @@ public class AdminController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register-employee")
-    // @PreAuthorize("hasRole('ADMIN')") - Will configure in SecurityConfig or
-    // enable method security
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> registerEmployee(@RequestBody @Valid RegisterAdminRequest request) {
         authenticationService.registerEmployee(request);
         return ResponseEntity.ok("Empleado registrado exitosamente.");
     }
+    
 }

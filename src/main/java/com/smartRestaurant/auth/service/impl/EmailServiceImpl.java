@@ -10,6 +10,7 @@ import org.thymeleaf.context.Context;
 
 import com.smartRestaurant.auth.service.EmailService;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,11 @@ public class EmailServiceImpl implements EmailService {
 
     @Value("${spring.mail.username}")
     private String fromEmail;
+
+    @PostConstruct
+    public void init() {
+        log.info("EmailService inicializado con remitente: {}", fromEmail);
+    }
 
     @Async
     @Override
@@ -94,9 +100,9 @@ public class EmailServiceImpl implements EmailService {
             log.info("Email enviado a {} con asunto '{}'", to, subject);
 
         } catch (MessagingException e) {
-            log.error("Error al enviar email a {}: {}", to, e.getMessage());
-            // No lanzamos la excepción para no interrumpir el flujo principal, pero se
-            // loguea el error
+            log.error("Error de mensajería al enviar email a {}: {}. Causa: {}", to, e.getMessage(), e.getCause());
+        } catch (Exception e) {
+            log.error("Error inesperado al enviar email a {}: {}", to, e.getMessage(), e);
         }
     }
 }
