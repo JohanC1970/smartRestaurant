@@ -24,7 +24,7 @@ Content-Type: application/json
 
 ### Obtener el detalle de la categoría
 
-GET http://localhost:8080/api/categories/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+GET http://localhost:8080/api/categories/944124b8-61d5-4e31-adda-56b6fbee7405
 
 ### Eliminar una categoría
 

@@ -1,5 +1,6 @@
 package com.smartRestaurant.inventory.dto.Dish;
 
+import com.smartRestaurant.inventory.dto.recipe.CreateRecipeDTO;
 import com.smartRestaurant.inventory.model.Addition;
 import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.Product;
@@ -15,5 +16,7 @@ public record CreateDishDTO(@NotBlank @Length(min = 1, max = 100)
                             @Positive @NotNull
                             double price,
                             @NotEmpty @Size(min = 1, max = 10)
-                            List<String> photos) {
+                            List<String> photos,
+                            @NotEmpty
+                            List<CreateRecipeDTO> ingredients) {
 }

@@ -37,8 +37,7 @@ public class Dish extends BaseEntity {
     private Category category;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @CollectionTable(name = "Additions", joinColumns = @JoinColumn(name = "dish_id"))
-    @Column(name = "addition")
-    private List<Addition> additions;
+    private List<Recipe> recipes;
+
 
 }
