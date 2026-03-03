@@ -34,13 +34,17 @@ public class DataInitializer implements CommandLineRunner {
                         .lastName("User")
                         .email(adminEmail)
                         .password(passwordEncoder.encode(adminPassword))
-                        .role(UserRole.ADMIN)
+                        .role(UserRole.RESTAURANTE)
                         .status(UserStatus.ACTIVE)
                         .isEmailVerified(true)
                         .requiresPasswordChange(false)
                         .build();
 
+                admin = userRepository.save(admin);
+                // Set restaurantId to user's own ID
+                admin.setRestaurantId(admin.getId());
                 userRepository.save(admin);
+
                 System.out.println("[DataInitializer] Admin creado: " + adminEmail + " / " + adminPassword);
             }
         } catch (Exception e) {

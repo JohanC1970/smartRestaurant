@@ -52,6 +52,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         // Usar el rol solicitado, por defecto CUSTOMER
                         UserRole role = request.getRole() != null ? request.getRole() : UserRole.CUSTOMER;
 
+                        // Validar restaurantId según el rol
+                        Long restaurantId = request.getRestaurantId();
+
+                        if (role == UserRole.RESTAURANTE) {
+                                // Para RESTAURANTE, se genera automáticamente un restaurantId único
+                                // Se usará el ID del usuario después de guardarlo
+                        } else if (role == UserRole.COCINA || role == UserRole.MESERO) {
+                                // Para COCINA y MESERO, el restaurantId es obligatorio
+                                if (restaurantId == null) {
+                                        throw new RuntimeException("El ID del restaurante es obligatorio para el rol "
+                                                        + role.getDisplayName());
+                                }
+                                // Validar que el restaurantId exista (un usuario RESTAURANTE con ese ID)
+                                User restaurantOwner = userRepository.findById(restaurantId)
+                                                .orElseThrow(() -> new RuntimeException(
+                                                                "No existe un restaurante con el ID proporcionado"));
+                                if (restaurantOwner.getRole() != UserRole.RESTAURANTE) {
+                                        throw new RuntimeException(
+                                                        "El ID proporcionado no corresponde a un restaurante válido");
+                                }
+                        }
+
                         User user = User.builder()
                                         .firstName(request.getFirstName())
                                         .lastName(request.getLastName())
@@ -64,9 +86,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
                         user = userRepository.save(user);
 
-                        // Si es ADMIN, su restaurantId es su propio ID (él es el restaurante)
-                        if (role == UserRole.ADMIN) {
+                        // Si es RESTAURANTE, su restaurantId es su propio ID
+                        if (role == UserRole.RESTAURANTE) {
                                 user.setRestaurantId(user.getId());
+                                userRepository.save(user);
+                        } else if (restaurantId != null) {
+                                // Para COCINA y MESERO, usar el restaurantId proporcionado
+                                user.setRestaurantId(restaurantId);
                                 userRepository.save(user);
                         }
 
@@ -78,6 +104,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         auditService.logEvent(user, AuditEventType.USER_REGISTERED,
                                         "Usuario registrado públicamente con rol " + role, null, null);
                 } catch (Exception e) {
+                        if (e instanceof EmailAlreadyExistsException ||
+                                        e.getMessage().contains("ID del restaurante") ||
+                                        e.getMessage().contains("No existe un restaurante") ||
+                                        e.getMessage().contains("no corresponde")) {
+                                throw e;
+                        }
                         throw new RuntimeException("Error al registrar el usuario: " + e.getMessage());
                 }
         }
@@ -221,6 +253,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .message("Login exitoso")
                                 .is2faRequired(false)
                                 .requiresPasswordChange(user.isRequiresPasswordChange())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .email(user.getEmail())
+                                .role(user.getRole().name())
+                                .restaurantId(user.getRestaurantId())
                                 .build();
         }
 
@@ -263,6 +300,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .message("Login exitoso")
                                 .is2faRequired(false)
                                 .requiresPasswordChange(user.isRequiresPasswordChange()) // RF-02
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .email(user.getEmail())
+                                .role(user.getRole().name())
+                                .restaurantId(user.getRestaurantId())
                                 .build();
         }
 
@@ -367,6 +409,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                                 .refreshToken(refreshToken)
                                                 .message("Token refrescado exitosamente")
                                                 .is2faRequired(false)
+                                                .firstName(user.getFirstName())
+                                                .lastName(user.getLastName())
+                                                .email(user.getEmail())
+                                                .role(user.getRole().name())
+                                                .restaurantId(user.getRestaurantId())
                                                 .build();
                         }
                 }

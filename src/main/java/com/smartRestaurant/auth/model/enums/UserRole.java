@@ -12,14 +12,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserRole {
 
-    // Administrador del sistema - Acceso completo a todas las funcionalidades
-    ADMIN("Administrador", 4),
+    // Dueño del restaurante - Acceso completo a todas las funcionalidades del
+    // restaurante
+    RESTAURANTE("Dueño de Restaurante", 4),
 
     // Personal de cocina - Gestión de órdenes y menú
-    KITCHEN("Cocina", 3),
+    COCINA("Cocina", 3),
 
     // Mesero - Gestión de mesas, órdenes y atención al cliente
-    WAITER("Mesero", 2),
+    MESERO("Mesero", 2),
 
     // Cliente - Acceso limitado para realizar pedidos
     CUSTOMER("Cliente", 1);
@@ -46,19 +47,19 @@ public enum UserRole {
     /**
      * Verifica si este rol es administrador
      * 
-     * @return true si el rol es ADMIN
+     * @return true si el rol es RESTAURANTE
      */
     public boolean isAdmin() {
-        return this == ADMIN;
+        return this == RESTAURANTE;
     }
 
     /**
      * Verifica si este rol es personal del restaurante (no cliente)
      * 
-     * @return true si el rol es ADMIN, KITCHEN o WAITER
+     * @return true si el rol es RESTAURANTE, COCINA o MESERO
      */
     public boolean isStaff() {
-        return this == ADMIN || this == KITCHEN || this == WAITER;
+        return this == RESTAURANTE || this == COCINA || this == MESERO;
     }
 
     /**
@@ -67,7 +68,7 @@ public enum UserRole {
      * @return true si el rol puede gestionar órdenes
      */
     public boolean canManageOrders() {
-        return this == ADMIN || this == KITCHEN || this == WAITER;
+        return this == RESTAURANTE || this == COCINA || this == MESERO;
     }
 
     /**
@@ -76,7 +77,7 @@ public enum UserRole {
      * @return true si el rol puede gestionar el menú
      */
     public boolean canManageMenu() {
-        return this == ADMIN || this == KITCHEN;
+        return this == RESTAURANTE || this == COCINA;
     }
 
     /**
@@ -85,6 +86,6 @@ public enum UserRole {
      * @return true si el rol puede gestionar usuarios
      */
     public boolean canManageUsers() {
-        return this == ADMIN;
+        return this == RESTAURANTE;
     }
 }

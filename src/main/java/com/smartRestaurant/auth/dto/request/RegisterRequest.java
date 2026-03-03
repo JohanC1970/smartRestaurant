@@ -25,4 +25,11 @@ public class RegisterRequest {
     private String password;
 
     private com.smartRestaurant.auth.model.enums.UserRole role;
+
+    /**
+     * ID del restaurante al que pertenece el usuario.
+     * Obligatorio para COCINA y MESERO.
+     * Para RESTAURANTE, se genera automáticamente.
+     */
+    private Long restaurantId;
 }
