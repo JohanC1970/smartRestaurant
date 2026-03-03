@@ -13,7 +13,7 @@ spring:
   # Database Configuration
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5433/smart_restaurant}
-    username: ${DB_USERNAME:postgres}
+    username: ${DB_USERNAME:jeyson}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   
