@@ -12,9 +12,15 @@ spring:
   
   # Database Configuration
   datasource:
+<<<<<<< HEAD
     url: ${DB_URL:jdbc:postgresql://localhost:5433/smart_restaurant}
     username: ${DB_USERNAME:jeyson}
     password: ${DB_PASSWORD:postgres}
+=======
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/smart_restaurant}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1970}
+>>>>>>> origin/master
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
@@ -29,10 +35,10 @@ spring:
   
   # Mail Configuration
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    host: smtp.gmail.com
+    port: 587
+    username: garciacamilo1970@gmail.com
+    password: lulf fxpj ancz ayie
     properties:
       mail:
         smtp:

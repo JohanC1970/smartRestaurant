@@ -1,7 +1,9 @@
 package com.smartRestaurant.auth.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import org.thymeleaf.context.Context;
 
 import com.smartRestaurant.auth.service.EmailService;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,32 @@ public class EmailServiceImpl implements EmailService {
 
     @Value("${spring.mail.username}")
     private String fromEmail;
+
+    @PostConstruct
+    public void init() {
+
+        log.info("EmailService inicializado con remitente: {}", fromEmail);
+        testSmtpConnection();
+    }
+
+    private void testSmtpConnection() {
+        log.info("=== Verificando conexión SMTP con Gmail ===");
+        try {
+            if (mailSender instanceof JavaMailSenderImpl mailSenderImpl) {
+                mailSenderImpl.testConnection();
+                log.info("=== Conexión SMTP exitosa ✓ ===");
+            } else {
+                log.warn("No se pudo verificar la conexión: mailSender no es una instancia de JavaMailSenderImpl");
+            }
+        } catch (Exception e) {
+            log.error("=== FALLO DE CONEXIÓN SMTP ✗ ===");
+            log.error("No se pudo conectar al servidor de correo.");
+            log.error("Host: smtp.gmail.com | Puerto: 587 | Usuario: {}", fromEmail);
+            log.error("Causa: {}", e.getMessage());
+            log.error("Stack trace completo:", e);
+        }
+    }
+
 
     @Async
     @Override
@@ -79,6 +108,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private void sendHtmlEmail(String to, String subject, String templateName, Context context) {
+        log.info("Intentando enviar email a '{}' con plantilla '{}'", to, templateName);
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -91,11 +121,30 @@ public class EmailServiceImpl implements EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(mimeMessage);
-            log.info("Email enviado a {} con asunto '{}'", to, subject);
+            log.info("✓ Email enviado exitosamente a '{}' | Asunto: '{}'", to, subject);
 
+<<<<<<< HEAD
         } catch (Exception e) {
             log.error("Error al enviar email a {}: {}", to, e.getMessage());
             // No lanzamos la excepción para no interrumpir el flujo principal
+=======
+        } catch (MessagingException e) {
+            log.error("✗ Error de mensajería al enviar email a '{}'", to);
+            log.error("  Mensaje: {}", e.getMessage());
+            log.error("  Causa raíz: {}", e.getCause() != null ? e.getCause().getMessage() : "N/A");
+            log.error("  Stack trace:", e);
+        } catch (MailException e) {
+            log.error("✗ Error de Spring Mail al enviar a '{}'", to);
+            log.error("  Mensaje: {}", e.getMessage());
+            log.error("  Causa raíz: {}", e.getMostSpecificCause().getMessage());
+            log.error("  Stack trace:", e);
+        } catch (Exception e) {
+            log.error("✗ Error inesperado al enviar email a '{}'", to);
+            log.error("  Tipo: {}", e.getClass().getName());
+            log.error("  Mensaje: {}", e.getMessage());
+            log.error("  Stack trace:", e);
+>>>>>>> origin/master
         }
     }
+
 }
