@@ -13,9 +13,11 @@ import com.smartRestaurant.auth.repository.OtpTokenRepository;
 import com.smartRestaurant.auth.service.OtpService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OtpServiceImpl implements OtpService {
 
     private final OtpTokenRepository otpTokenRepository;
@@ -56,8 +58,11 @@ public class OtpServiceImpl implements OtpService {
     @Override
     @Transactional(readOnly = true)
     public boolean validateOtp(User user, String code, OtpTokenType type) {
-        return otpTokenRepository.findValidTokenByUser(user, code, type, LocalDateTime.now())
+        log.info("Validating OTP for user: {}, code: {}, type: {}", user.getEmail(), code, type);
+        boolean isValid = otpTokenRepository.findValidTokenByUser(user, code, type, LocalDateTime.now())
                 .isPresent();
+        log.info("OTP validation result: {}", isValid);
+        return isValid;
     }
 
     @Override

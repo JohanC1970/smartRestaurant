@@ -159,6 +159,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         throw new AccountLockedException("La cuenta está bloqueada: " + user.getLockReason());
                 }
 
+                // RF-14: Verificar si el email está verificado antes de permitir login
+                if (!user.isEmailVerified()) {
+                        auditService.logEvent(user, AuditEventType.LOGIN_FAILED,
+                                        "Intento de login sin verificar email", null, null, false);
+                        throw new RuntimeException(
+                                        "Debe verificar su correo electrónico antes de iniciar sesión. Revise su bandeja de entrada.");
+                }
+
                 // Validar contraseña
                 if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                         user.incrementFailedAttempts();

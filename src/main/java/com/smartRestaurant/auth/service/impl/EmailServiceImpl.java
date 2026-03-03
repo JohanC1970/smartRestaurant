@@ -54,7 +54,6 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-
     @Async
     @Override
     public void sendVerificationEmail(String to, String name, String otp) {
@@ -123,11 +122,6 @@ public class EmailServiceImpl implements EmailService {
             mailSender.send(mimeMessage);
             log.info("✓ Email enviado exitosamente a '{}' | Asunto: '{}'", to, subject);
 
-<<<<<<< HEAD
-        } catch (Exception e) {
-            log.error("Error al enviar email a {}: {}", to, e.getMessage());
-            // No lanzamos la excepción para no interrumpir el flujo principal
-=======
         } catch (MessagingException e) {
             log.error("✗ Error de mensajería al enviar email a '{}'", to);
             log.error("  Mensaje: {}", e.getMessage());
@@ -143,7 +137,6 @@ public class EmailServiceImpl implements EmailService {
             log.error("  Tipo: {}", e.getClass().getName());
             log.error("  Mensaje: {}", e.getMessage());
             log.error("  Stack trace:", e);
->>>>>>> origin/master
         }
     }
 
