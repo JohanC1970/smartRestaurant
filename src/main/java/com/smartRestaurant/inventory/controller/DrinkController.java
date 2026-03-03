@@ -22,32 +22,32 @@ public class DrinkController {
 
     private final DrinkService drinkService;
 
-    @GetMapping("/{page}/getAll")
+    @GetMapping("/{page}/page")
     public ResponseEntity<ResponseDTO<List<GetDrinkDTO>>> getAll(@PathVariable int page){
 
         List<GetDrinkDTO> list = drinkService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create/{categorieId}/categories")
+    @PostMapping("/{categorieId}/categories")
     public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categorieId, @Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
         drinkService.create(categorieId, createDrinkDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Drink Created", false));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateDrinkDTO updateDrinkDTO) {
         drinkService.update(id, updateDrinkDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Drink Updated", false));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         drinkService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Drink Deleted", false));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO<GetDrinkDTO>> getById(@PathVariable String id){
         GetDrinkDTO drink = drinkService.getDrinkById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(drink, false));

@@ -1,0 +1,17 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Agregar plato al menú diario
+
+POST http://localhost:8080/api/dailyMenus/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/dish
+Content-Type: application/json
+
+### Obtener todos los platos del menú diario
+
+GET http://localhost:8080/api/dailyMenus/0/page
+
+### Eliminar plato del menú diario
+
+DELETE http://localhost:8080/api/dailyMenus/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/dishes
+

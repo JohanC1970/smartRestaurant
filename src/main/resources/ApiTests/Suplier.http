@@ -1,0 +1,40 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Crear un proveedor
+
+POST http://localhost:8080/api/supliers
+Content-Type: application/json
+
+{
+  "name": "Distribuidora ABC",
+  "address": "Calle 123 # 45-67",
+  "phone": "3123456789",
+  "email": "contacto@distribuidoraabc.com"
+}
+
+### Actualizar un proveedor
+
+PUT http://localhost:8080/api/supliers/0dc76c06-398d-4c0d-af40-b640e0b85c2c
+Content-Type: application/json
+
+{
+  "name": "PRUEBA",
+  "address": "Carrera 456 # 78-90",
+  "phone": "3123456789",
+  "email": "ventas@distribuidoraabc.com"
+}
+
+### Obtener detalle de un proveedor
+
+GET http://localhost:8080/api/supliers/0dc76c06-398d-4c0d-af40-b640e0b85c2c
+
+### Eliminar un proveedor
+
+DELETE http://localhost:8080/api/supliers/0dc76c06-398d-4c0d-af40-b640e0b85c2c
+
+### Obtener todos los proveedores
+
+GET http://localhost:8080/api/supliers
+

@@ -42,6 +42,7 @@ public class DishServiceImpl implements DishService {
         }
 
         return dishes.stream()
+                .filter(dish -> dish.getState().equals(State.ACTIVE))
                 .map(dishMapper::toDTO)
                 .toList();
     }

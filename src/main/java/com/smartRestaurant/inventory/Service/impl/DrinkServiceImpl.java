@@ -39,6 +39,7 @@ public class DrinkServiceImpl implements DrinkService {
         }
 
         return drinks.stream()
+                .filter(drink -> drink.getState().equals(State.ACTIVE))
                 .map(drinkMapper::toDTO)
                 .toList();
     }

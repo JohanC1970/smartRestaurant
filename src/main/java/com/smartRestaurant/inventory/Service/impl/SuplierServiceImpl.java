@@ -26,7 +26,11 @@ public class SuplierServiceImpl implements SuplierService {
 
     @Override
     public List<GetSuplierDTO> getAll() {
-        return suplierRepository.findAll().stream().map(suplierMapper::toDto).toList();
+        return suplierRepository.findAll().stream()
+                .filter(suplier -> suplier.getState().equals(State.ACTIVE))
+                .map(suplierMapper::toDto)
+                .toList();
+
     }
 
     @Override
@@ -34,8 +38,8 @@ public class SuplierServiceImpl implements SuplierService {
 
         Optional<Suplier> suplier = suplierRepository.findByEmail(createSuplierDTO.email());
 
-        if(suplier.isEmpty()){
-            throw new ResourceNotFoundException("Suplier not found");
+        if(suplier.isPresent()){
+            throw new ResourceNotFoundException("Ya existe el proveedor");
         }
 
         suplierRepository.save(suplierMapper.toEntity(createSuplierDTO));
@@ -47,7 +51,7 @@ public class SuplierServiceImpl implements SuplierService {
 
         Optional<Suplier> suplier = suplierRepository.findById(id);
         if(suplier.isEmpty()){
-            throw new ResourceNotFoundException("Suplier not found");
+            throw new ResourceNotFoundException("Proveedor no encontrado");
         }
 
         suplierMapper.updateDto(updateSuplierDTO, suplier.get());
@@ -58,7 +62,7 @@ public class SuplierServiceImpl implements SuplierService {
     public void delete(String id) {
         Optional<Suplier> suplier = suplierRepository.findById(id);
         if(suplier.isEmpty()){
-            throw new ResourceNotFoundException("Suplier not found");
+            throw new ResourceNotFoundException("Proveedor no encontrado");
         }
 
         suplier.get().setState(State.INACTIVE);
@@ -71,7 +75,7 @@ public class SuplierServiceImpl implements SuplierService {
         Optional<Suplier> suplier = suplierRepository.findById(id);
 
         if(suplier.isEmpty() || suplier.get().getState().equals(State.INACTIVE)){
-            throw new ResourceNotFoundException("Suplier not found");
+            throw new ResourceNotFoundException("Proveedor no encontrado");
         }
 
         return suplierMapper.toDto(suplier.get());

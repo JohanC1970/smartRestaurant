@@ -25,32 +25,32 @@ public class AdditionController {
 
     private final AdditionService additionService;
 
-    @GetMapping("/{page}/getAll")
+    // pagination
+    @GetMapping("/{page}/page")
     public ResponseEntity<ResponseDTO<List<GetAdditionDTO>>> getAll(@PathVariable int page){
-
         List<GetAdditionDTO> list = additionService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateAdditionDTO createAdditionDTO) {
         additionService.create(createAdditionDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Addition Created", false));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateAdditionDTO updateAdditionDTO) {
         additionService.update(id, updateAdditionDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Addition Updated", false));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         additionService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Addition Deleted", false));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO<GetAdditionDTO>> getById(@PathVariable String id){
         GetAdditionDTO additionDTO = additionService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(additionDTO, false));

@@ -1,0 +1,62 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Crear un producto
+
+POST http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/supliers
+Content-Type: application/json
+
+{
+  "name": "Arroz",
+  "Description": "Arroz blanco de primera calidad",
+  "price": 5000,
+  "weight": 1000,
+  "photos": ["https://example.com/arroz1.jpg"],
+  "minimumStock": 50
+}
+
+### Actualizar un producto
+
+PUT http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+Content-Type: application/json
+
+{
+  "name": "Arroz",
+  "description": "Arroz blanco de primera calidad premium",
+  "price": 5500,
+  "weight": 1000,
+  "photos": ["https://example.com/arroz1.jpg"],
+  "minimumStock": 50
+}
+
+### Obtener detalle de un producto
+
+GET http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Eliminar un producto
+
+DELETE http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Obtener todos los productos
+
+GET http://localhost:8080/api/products/0/page
+
+### Agregar stock a un producto
+
+PATCH http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/add
+Content-Type: application/json
+
+{
+  "weight": 100
+}
+
+### Descontar stock de un producto
+
+PATCH http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/discount
+Content-Type: application/json
+
+{
+  "weight": 50
+}
+

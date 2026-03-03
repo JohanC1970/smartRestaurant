@@ -23,31 +23,31 @@ public class SuplierController {
 
     private final SuplierService suplierService;
 
-    @GetMapping("/getAll")
+    @GetMapping()
     public ResponseEntity<ResponseDTO<List<GetSuplierDTO>>> getAll(){
         List<GetSuplierDTO> list = suplierService.getAll();
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateSuplierDTO createSuplierDTO) {
         suplierService.create(createSuplierDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Suplier Created", false));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Proveedor creado", false));
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateSuplierDTO updateSuplierDTO) {
         suplierService.update(id, updateSuplierDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Suplier Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Proveedor actualizado", false));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         suplierService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Suplier Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Proveedor eliminado", false));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO<GetSuplierDTO>> getById(@PathVariable String id){
         GetSuplierDTO suplierDTO = suplierService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(suplierDTO, false));

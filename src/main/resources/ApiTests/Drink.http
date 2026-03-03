@@ -1,0 +1,44 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Crear una bebida
+
+POST http://localhost:8080/api/drinks/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/categories
+Content-Type: application/json
+
+{
+  "name": "Jugo de Mango",
+  "description": "Delicioso jugo de mango natural",
+  "mililiters": 500,
+  "alcohol": false,
+  "photos": ["https://example.com/jugo1.jpg"],
+  "units": 10
+}
+
+### Actualizar una bebida
+
+PUT http://localhost:8080/api/drinks/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+Content-Type: application/json
+
+{
+  "name": "Jugo de Mango",
+  "description": "Delicioso jugo de mango natural recien hecho",
+  "mililiters": 500,
+  "alcohol": false,
+  "photos": ["https://example.com/jugo1.jpg"],
+  "units": 15
+}
+
+### Obtener detalle de una bebida
+
+GET http://localhost:8080/api/drinks/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Eliminar una bebida
+
+DELETE http://localhost:8080/api/drinks/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Obtener todas las bebidas
+
+GET http://localhost:8080/api/drinks/0/page
+

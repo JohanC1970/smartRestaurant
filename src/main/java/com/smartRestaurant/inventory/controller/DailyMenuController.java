@@ -18,19 +18,19 @@ public class DailyMenuController {
 
     private final DailyMenuService dailyMenuService;
 
-    @PostMapping("/add/{id}/dish")
+    @PostMapping("/{id}/dishes")
     public ResponseEntity<ResponseDTO<String>> addDish(@PathVariable String id){
         dailyMenuService.add(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish added to daily menu", false));
     }
 
-    @GetMapping("/{page}/all")
+    @GetMapping("/{page}/page")
     public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAllDishes(@PathVariable int page){
         List<GetDishDTO> list = dailyMenuService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @DeleteMapping("/delete/{id}/dish")
+    @DeleteMapping("{id}/dishes")
     public ResponseEntity<ResponseDTO<String>> deleteDish(@PathVariable String id){
         dailyMenuService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish deleted from daily menu", false));

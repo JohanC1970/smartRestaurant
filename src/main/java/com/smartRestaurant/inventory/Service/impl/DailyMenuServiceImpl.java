@@ -9,6 +9,7 @@ import com.smartRestaurant.inventory.mapper.DailyMenuMapper;
 import com.smartRestaurant.inventory.mapper.DishMapper;
 import com.smartRestaurant.inventory.model.DailyMenu;
 import com.smartRestaurant.inventory.model.Dish;
+import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +50,7 @@ public class DailyMenuServiceImpl implements DailyMenuService {
         }
 
         return dishPage.stream()
+                .filter(dish -> dish.getState().equals(State.ACTIVE))
                 .map(dishMapper::toDTO)
                 .toList();
     }

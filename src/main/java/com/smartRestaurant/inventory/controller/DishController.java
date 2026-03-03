@@ -21,31 +21,31 @@ public class DishController {
 
     private final DishService dishService;
 
-    @GetMapping("/{page}/all")
+    @GetMapping("/{page}/page")
     public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(@PathVariable int page){
         List<GetDishDTO> list = dishService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
-    @PostMapping("/category/{categoryId}/create")
+    @PostMapping("/{categoryId}/categories")
     public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categoryId, @RequestBody CreateDishDTO createDishDTO){
         dishService.create(categoryId, createDishDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Created", false));
     }
 
-    @PutMapping("update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @RequestBody @Valid UpdateDishDTO updateDishDTO){
         dishService.update(id, updateDishDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         dishService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
     }
 
-    @GetMapping("/{id}/detail")
+    @GetMapping("/{id}")
     public ResponseEntity<ResponseDTO<GetDishDTO>> getById(@PathVariable String id){
         GetDishDTO dishDTO = dishService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(dishDTO, false));

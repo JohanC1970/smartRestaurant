@@ -103,6 +103,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return products.stream()
+                .filter(product -> product.getState().equals(State.ACTIVE))
                 .map(productMapper::toDTO)
                 .toList();
     }

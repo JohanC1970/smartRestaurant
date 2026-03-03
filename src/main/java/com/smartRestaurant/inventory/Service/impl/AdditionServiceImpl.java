@@ -36,6 +36,7 @@ public class AdditionServiceImpl implements AdditionService {
         }
 
         return additions.stream()
+                .filter(addition -> addition.getState().equals(State.ACTIVE))
                 .map(additionMapper::toDto)
                 .toList();
     }
