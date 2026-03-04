@@ -15,12 +15,11 @@ public class PasswordValidator implements ConstraintValidator<Password, String> 
     // (?=.*[@#$%^&+=!*]) : At least one special character
     // .{6,} : At least 6 characters
 
-    // User request: 1 lowercase, 1 special, 1 uppercase, min 6 chars.
-    // Does not mention digits. I will stick strictly to user request to avoid
-    // frustration, but adding digit is common.
-    // I'll stick to user request: lower, upper, special, min 6.
+    // User request: 1 lowercase, 1 special, 1 uppercase, min 8 chars (RF-08).
+    // Updated to comply with security requirement RF-08: minimum 8 characters
 
-    private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*?.\\-_]).{6,}$";
+    private static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*?.\\-_]).{8,}$";
+
     private static final Pattern PATTERN = Pattern.compile(PASSWORD_PATTERN);
 
     @Override

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.smartRestaurant.auth.dto.request.ChangePasswordRequest;
 import com.smartRestaurant.auth.dto.request.LoginRequest;
 import com.smartRestaurant.auth.dto.request.RegisterRequest;
 import com.smartRestaurant.auth.dto.request.ResetPasswordRequest;
@@ -66,5 +67,36 @@ public class AuthenticationController {
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody AuthResponse request) {
         return ResponseEntity.ok(authenticationService.refreshToken(request.getRefreshToken()));
+    }
+
+    /**
+     * RF-07: Solicita cambio de contraseña voluntario
+     */
+    @PostMapping("/request-password-change")
+    public ResponseEntity<String> requestPasswordChange(@RequestBody VerifyRequest request) {
+        authenticationService.requestPasswordChange(request.getEmail());
+        return ResponseEntity.ok("Código OTP enviado a su correo para cambio de contraseña.");
+    }
+
+    /**
+     * RF-07: Cambia la contraseña del usuario
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+        authenticationService.changePassword(
+                request.getEmail(),
+                request.getCurrentPassword(),
+                request.getNewPassword(),
+                request.getOtp());
+        return ResponseEntity.ok("Contraseña cambiada exitosamente.");
+    }
+
+    /**
+     * RF-12: Cierra la sesión del usuario
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody AuthResponse request) {
+        authenticationService.logout(request.getRefreshToken());
+        return ResponseEntity.ok("Sesión cerrada exitosamente.");
     }
 }

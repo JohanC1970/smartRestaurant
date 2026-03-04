@@ -1,4 +1,4 @@
-package com.smartRestaurant.auth.service;
+package com.smartRestaurant.security.service;
 
 import com.smartRestaurant.auth.model.entity.User;
 import io.jsonwebtoken.Claims;

@@ -1,4 +1,4 @@
-package com.smartRestaurant.auth.security;
+package com.smartRestaurant.security.filter;
 
 import java.io.IOException;
 
@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.smartRestaurant.auth.service.JwtService;
+import com.smartRestaurant.security.service.JwtService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
