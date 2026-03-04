@@ -27,16 +27,18 @@ public class Dish extends BaseEntity {
 
     @ElementCollection
     @CollectionTable(name = "Dish_photos", joinColumns = @JoinColumn(name = "dish_id"))
-    @Column(name = "photos")
+    @Column(name = "photos", nullable = false)
     private List<String> photos;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private State state;
 
     @ManyToOne
     private Category category;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(nullable = false)
     private List<Recipe> recipes;
 
 

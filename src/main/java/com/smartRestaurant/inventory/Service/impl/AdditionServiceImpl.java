@@ -4,9 +4,11 @@ import com.smartRestaurant.inventory.Repository.AdditionRepository;
 import com.smartRestaurant.inventory.Service.AdditionService;
 import com.smartRestaurant.inventory.dto.Addition.CreateAdditionDTO;
 import com.smartRestaurant.inventory.dto.Addition.GetAdditionDTO;
+import com.smartRestaurant.inventory.dto.Addition.GetAdditionDetailDTO;
 import com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.AdditionMapper;
+import com.smartRestaurant.inventory.mapper.ShowAdditionDetailMapper;
 import com.smartRestaurant.inventory.model.Addition;
 import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class AdditionServiceImpl implements AdditionService {
 
     private final AdditionRepository additionRepository;
     private final AdditionMapper additionMapper;
+    private final ShowAdditionDetailMapper showAdditionDetailMapper;
 
     @Override
     public List<GetAdditionDTO> getAll(int page) {
@@ -75,14 +78,14 @@ public class AdditionServiceImpl implements AdditionService {
     }
 
     @Override
-    public GetAdditionDTO getById(String id) {
+    public GetAdditionDetailDTO getById(String id) {
 
         Optional<Addition> addition = additionRepository.findById(id);
         if (addition.isEmpty() || addition.get().getState().equals(State.INACTIVE)) {
             throw new ResourceNotFoundException("Addition does not exist");
         }
 
-        return additionMapper.toDto(addition.get());
+        return showAdditionDetailMapper.toDTO(addition.get());
     }
 
 }

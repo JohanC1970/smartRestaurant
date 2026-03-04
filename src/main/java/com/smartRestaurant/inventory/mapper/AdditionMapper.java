@@ -18,6 +18,8 @@ public interface AdditionMapper {
     @Mapping(target = "state", constant = "ACTIVE")
 
     Addition toEntity(CreateAdditionDTO createAdditionDTO);
+
+    @Mapping(target = "photo", expression = "java(addition.getPhotos() != null && !addition.getPhotos().isEmpty() ? addition.getPhotos().get(0) : null)")
     GetAdditionDTO toDto(Addition addition);
 
     // atributos a mapear en la actualizada

@@ -2,6 +2,7 @@ package com.smartRestaurant.inventory.Service;
 
 import com.smartRestaurant.inventory.dto.Addition.CreateAdditionDTO;
 import com.smartRestaurant.inventory.dto.Addition.GetAdditionDTO;
+import com.smartRestaurant.inventory.dto.Addition.GetAdditionDetailDTO;
 import com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO;
 import com.smartRestaurant.inventory.model.Addition;
 
@@ -13,5 +14,5 @@ public interface AdditionService {
     void create(CreateAdditionDTO createAdditionDTO);
     void update(String id, UpdateAdditionDTO updateAdditionDTO);
     void delete(String id);
-    GetAdditionDTO getById(String id);
+    GetAdditionDetailDTO getById(String id);
 }

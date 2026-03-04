@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,5 +31,11 @@ public class Addition extends BaseEntity {
     @Column(length = 10,   nullable = false)
     @Enumerated(EnumType.STRING)
     private State state;
+
+    @ElementCollection
+    @CollectionTable(name = "Addition_photos", joinColumns = @JoinColumn(name = "addition_id"))
+
+    @Column(nullable = false)
+    private List<String> photos;
 
 }

@@ -5,7 +5,7 @@ import jakarta.persistence.Id;
 
 public record GetAdditionDTO(String id,
                              String name,
-                             String description,
+                             String photo,
                              double price) {
 
 }

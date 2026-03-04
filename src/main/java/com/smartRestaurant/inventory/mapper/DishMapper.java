@@ -17,13 +17,12 @@ public interface DishMapper {
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(target = "state", constant = "ACTIVE")
     @Mapping(target = "photos", source = "photos")
-    @Mapping(target = "categoryName", source = "dish.category.name")
-    @Mapping(target = "ingredients", source = "recipes")
-
 
     Dish toEntity(CreateDishDTO createDishDTO);
-    GetDishDetailDTO toDTO(Dish dish);
 
+    @Mapping(target = "categoryName", source = "dish.category.name")
+    @Mapping(target = "ingredients", source = "recipes")
+    GetDishDetailDTO toDTO(Dish dish);
 
     void updateDish(UpdateDishDTO updateDishDTO, @MappingTarget Dish dish);
 }

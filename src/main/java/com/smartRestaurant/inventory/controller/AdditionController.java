@@ -4,6 +4,7 @@ import com.smartRestaurant.inventory.Service.AdditionService;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.dto.Addition.CreateAdditionDTO;
 import com.smartRestaurant.inventory.dto.Addition.GetAdditionDTO;
+import com.smartRestaurant.inventory.dto.Addition.GetAdditionDetailDTO;
 import com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO;
 import com.smartRestaurant.inventory.dto.Category.CreateCategoryDTO;
 import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
@@ -51,8 +52,8 @@ public class AdditionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<GetAdditionDTO>> getById(@PathVariable String id){
-        GetAdditionDTO additionDTO = additionService.getById(id);
+    public ResponseEntity<ResponseDTO<GetAdditionDetailDTO>> getById(@PathVariable String id){
+        GetAdditionDetailDTO additionDTO = additionService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(additionDTO, false));
     }
 }

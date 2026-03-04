@@ -3,6 +3,7 @@ package com.smartRestaurant.inventory.controller;
 import com.smartRestaurant.inventory.Service.DishService;
 import com.smartRestaurant.inventory.dto.Dish.CreateDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
+import com.smartRestaurant.inventory.dto.Dish.GetDishDetailDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
 import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
@@ -46,8 +47,8 @@ public class DishController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<GetDishDTO>> getById(@PathVariable String id){
-        GetDishDTO dishDTO = dishService.getById(id);
+    public ResponseEntity<ResponseDTO<GetDishDetailDTO>> getById(@PathVariable String id){
+        GetDishDetailDTO dishDTO = dishService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(dishDTO, false));
     }
 

@@ -7,6 +7,7 @@ import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DailyMenuMapper;
 import com.smartRestaurant.inventory.mapper.DishMapper;
+import com.smartRestaurant.inventory.mapper.ShowDishesMappper;
 import com.smartRestaurant.inventory.model.DailyMenu;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.State;
@@ -27,6 +28,7 @@ public class DailyMenuServiceImpl implements DailyMenuService {
     private final DishRepository dishRepository;
     private final DailyMenuMapper dailyMenuMapper;
     private final DishMapper dishMapper;
+    private final ShowDishesMappper showDishesMappper;
 
     @Override
     public void add(String id) {
@@ -51,10 +53,9 @@ public class DailyMenuServiceImpl implements DailyMenuService {
 
         return dishPage.stream()
                 .filter(dish -> dish.getState().equals(State.ACTIVE))
-                .map(dishMapper::toDTO)
+                .map(showDishesMappper::toDTO)
                 .toList();
     }
-
 
     @Override
     public void delete(String id) {
