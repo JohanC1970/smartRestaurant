@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,7 @@ public class DrinkServiceImpl implements DrinkService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void create(String categorieId, CreateDrinkDTO createDrinkDTO) {
 
@@ -64,6 +66,7 @@ public class DrinkServiceImpl implements DrinkService {
         drinkRepository.save(drinkEntity);
     }
 
+    @Transactional
     @Override
     public void update(String id, UpdateDrinkDTO updateDrinkDTO) {
         Optional<Drink> drink = drinkRepository.findById(id);
@@ -74,6 +77,7 @@ public class DrinkServiceImpl implements DrinkService {
         drinkRepository.save(drink.get());
     }
 
+    @Transactional
     @Override
     public void delete(String id) {
         Optional<Drink> drink = drinkRepository.findById(id);

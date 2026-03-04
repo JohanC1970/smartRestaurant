@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private final NotificationRepository notificationRepository;
     private final SuplierRepository suplierRepository;
 
+    @Transactional
     @Override
     public void create(String idSuplier,  CreateProductDTO createProductDTO) {
 
@@ -42,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Optional<Product> productOptional = productRepository.findByName(createProductDTO.name());
-        if (productOptional.isPresent()) {
+        if (productOptional.isEmpty() || productOptional.get().getState().equals(State.ACTIVE)) {
             throw new RuntimeException("El producto ya existe");
         }
 
@@ -51,11 +53,12 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(product);
 
-        // registramos el movimiento
-        inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
+        // registramos el movimiento (aun no porque no he podido hacer uso de la auth para sacar el current user)
+      //  inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
 
     }
 
+    @Transactional
     @Override
     public void update(String id, UpdateProductDTO updateProductDTO) {
 
@@ -71,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
 
     // hay que verificar primero si el producto está en algun carrito
 
+    @Transactional
     @Override
     public void delete(String id) {
         boolean found = productRepository.existsById(id);
@@ -105,6 +109,7 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void addStock(String id, StockMovementDTO stockMovementDTO) {
 
@@ -129,10 +134,11 @@ public class ProductServiceImpl implements ProductService {
             notificationRepository.save(notification);
         }
 
-
-        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
+        // de momento porque no he sacado el user que esté registrado
+        //inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
     }
 
+    @Transactional
     @Override
     public void discountStock(String id, StockMovementDTO stockMovementDTO) {
 
@@ -162,7 +168,8 @@ public class ProductServiceImpl implements ProductService {
             notificationRepository.save(notification);
         }
 
-        inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
+
+        //inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
 
     }
 

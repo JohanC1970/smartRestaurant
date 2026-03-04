@@ -1,6 +1,7 @@
 package com.smartRestaurant.inventory.model;
 
 import jakarta.persistence.*;
+import com.smartRestaurant.inventory.model.State;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,9 @@ public class Recipe {
 
     @Column(nullable = false)
     private String unit;
+
+    @Enumerated(EnumType.STRING)
+    private State state = State.ACTIVE;
 
 
 }

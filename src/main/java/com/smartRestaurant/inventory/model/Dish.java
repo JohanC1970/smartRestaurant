@@ -18,7 +18,7 @@ public class Dish extends BaseEntity {
     @Column(length = 50, nullable = false)
     private String name;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 500, nullable = false)
     private String description;
 
     @Column( nullable = false)
@@ -37,8 +37,7 @@ public class Dish extends BaseEntity {
     @ManyToOne
     private Category category;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(nullable = false)
+    @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Recipe> recipes;
 
 

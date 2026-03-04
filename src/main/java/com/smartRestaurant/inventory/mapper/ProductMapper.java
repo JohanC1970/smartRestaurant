@@ -23,7 +23,7 @@ public interface ProductMapper {
     @Mapping(target = "state", source = "product.state")
     GetProductDTO toDTO(Product product);
 
-    @Mapping(target = "photo", expression = "java(product.getPhotos() != null && !product.getPhotos().isEmpty() ? product.getPhotos().get(0) : null)")
+    @Mapping(target = "photos", source = "photos")
     @Mapping(target = "state", source = "product.state")
     @Mapping(target = "suplier", source = "product.suplier")
     GetProductDetailDTO toDetailDTO(Product product);

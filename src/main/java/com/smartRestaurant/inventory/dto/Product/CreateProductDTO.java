@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
@@ -14,12 +15,12 @@ public record CreateProductDTO( @NotBlank @Length(min = 1, max = 50)
                                 String name,
                                 @NotBlank @Length(min = 10, max = 500)
                                 String description,
-                                @Positive @NotBlank
+                                @Positive @NotNull
                                 double price,
-                                @Positive @NotBlank
+                                @Positive @NotNull
                                 double weight,
-                                @NotNull @Length(min = 1, max = 10)
+                                @NotNull @Size(min = 1, max = 10)
                                 List<String> photos,
-                                @Positive @NotBlank
+                                @Positive @NotNull
                                 double minimumStock) {
 }

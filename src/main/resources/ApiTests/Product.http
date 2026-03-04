@@ -2,23 +2,35 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
-### Crear un producto
+### Obtener todos los productos (listado)
+GET http://localhost:8080/api/products/0/page
+//Authorization: Bearer {{token}}
+Content-Type: application/json
+# Respuesta: Lista de GetProductDTO (id, name, price, weight, photo, minimumStock, state)
 
-POST http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/supliers
+### Crear un producto
+POST http://localhost:8080/api/products/9aac2f3c-92dd-4305-9066-9711ab208848/supliers
+//Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "name": "Arroz",
-  "Description": "Arroz blanco de primera calidad",
+  "description": "Arroz blanco de primera calidad",
   "price": 5000,
   "weight": 1000,
   "photos": ["https://example.com/arroz1.jpg"],
   "minimumStock": 50
 }
 
-### Actualizar un producto
+### Obtener detalle de un producto
+GET http://localhost:8080/api/products/b1bee3f6-f14f-482d-a619-d2acd80b5229
+//Authorization: Bearer {{token}}
+Content-Type: application/json
 
-PUT http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+
+### Actualizar un producto
+PUT http://localhost:8080/api/products/4992d7f2-c710-4593-bdd7-04dc74d4999b
+// Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -30,21 +42,13 @@ Content-Type: application/json
   "minimumStock": 50
 }
 
-### Obtener detalle de un producto
-
-GET http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
-
 ### Eliminar un producto
-
-DELETE http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
-
-### Obtener todos los productos
-
-GET http://localhost:8080/api/products/0/page
+DELETE http://localhost:8080/api/products/4992d7f2-c710-4593-bdd7-04dc74d4999b
+// Authorization: Bearer {{token}}
 
 ### Agregar stock a un producto
-
-PATCH http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/add
+PATCH http://localhost:8080/api/products/b1bee3f6-f14f-482d-a619-d2acd80b5229/add
+//Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -52,11 +56,10 @@ Content-Type: application/json
 }
 
 ### Descontar stock de un producto
-
-PATCH http://localhost:8080/api/products/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e/discount
+PATCH http://localhost:8080/api/products/b1bee3f6-f14f-482d-a619-d2acd80b5229/discount
+//Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "weight": 50
 }
-

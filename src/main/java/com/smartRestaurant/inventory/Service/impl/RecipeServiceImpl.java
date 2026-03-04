@@ -13,6 +13,7 @@ import com.smartRestaurant.inventory.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class RecipeServiceImpl implements RecipeService {
     private final ProductRepository productRepository;
 
 
+    @Transactional
     @Override
     public void registerRecipe(List<CreateRecipeDTO> recipe, Dish dish) {
 

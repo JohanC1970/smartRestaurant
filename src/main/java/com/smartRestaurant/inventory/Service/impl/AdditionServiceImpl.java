@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,7 @@ public class AdditionServiceImpl implements AdditionService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void create(CreateAdditionDTO createAdditionDTO) {
         Optional<Addition> addition = additionRepository.findByName(createAdditionDTO.name());
@@ -53,6 +55,7 @@ public class AdditionServiceImpl implements AdditionService {
         additionRepository.save(additionMapper.toEntity(createAdditionDTO));
     }
 
+    @Transactional
     @Override
     public void update(String id, UpdateAdditionDTO updateAdditionDTO) {
 
@@ -66,6 +69,7 @@ public class AdditionServiceImpl implements AdditionService {
         }
     }
 
+    @Transactional
     @Override
     public void delete(String id) {
         Optional<Addition> addition = additionRepository.findById(id);

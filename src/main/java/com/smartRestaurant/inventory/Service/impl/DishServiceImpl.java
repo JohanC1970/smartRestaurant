@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,7 @@ public class DishServiceImpl implements DishService {
     private final CategoryRepository categoryRepository;
     private final RecipeService recipeService;
     private final ShowDishesMappper showDishesMappper;
+    private final RecipeRepository recipeRepository;
 
 
     // falta paginación
@@ -55,6 +57,7 @@ public class DishServiceImpl implements DishService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void create(String categoryId, CreateDishDTO createDishDTO) {
 
@@ -72,13 +75,15 @@ public class DishServiceImpl implements DishService {
         Dish dish = dishMapper.toEntity(createDishDTO);
         dish.setCategory(category.get());
 
-        // registramos toda la receta
-        recipeService.registerRecipe(createDishDTO.ingredients(), dish);
-
+        // Primero guardamos el dish para que tenga un ID
         dishRepository.save(dish);
+
+        // Luego registramos las recipes con el dish ya persistido
+        recipeService.registerRecipe(createDishDTO.ingredients(), dish);
 
     }
 
+    @Transactional
     @Override
     public void update(String id, UpdateDishDTO updateDishDTO) {
         Optional<Dish> dishOptional = dishRepository.findById(id);
@@ -93,6 +98,7 @@ public class DishServiceImpl implements DishService {
     }
 
     // validar que un plato no esté pendiente de pago o que no afecte borrarlo
+    @Transactional
     @Override
     public void delete(String id) {
 
@@ -101,6 +107,10 @@ public class DishServiceImpl implements DishService {
             throw new RuntimeException("No existe, no puede ser eliminado");
         }
 
+        // Primero deshabilitamos las recipes asociadas al plato
+        recipeRepository.updateStateByDishId(id, State.INACTIVE);
+
+        // Luego deshabilitamos el plato
         dishOptional.get().setState(State.INACTIVE);
         dishRepository.save(dishOptional.get());
     }

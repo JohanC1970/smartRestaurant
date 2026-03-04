@@ -38,13 +38,13 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateCategoryDTO updateCategoryDTO) {
         categoryService.update(id, updateCategoryDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Categoria actualizada", false));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         categoryService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Categoría eliminada", false));
     }
 
     @GetMapping("/{id}")

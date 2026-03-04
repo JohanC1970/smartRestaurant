@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,24 +36,27 @@ public class CategoryServiceImpl implements CategoryService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void create(CreateCategoryDTO createCategoryDTO) {
 
         Optional<Category> category = categoryRepository.findByName(createCategoryDTO.name());
+
         if(category.isPresent() && category.get().getState().equals(State.ACTIVE)){
-            throw new RuntimeException("Category already exists");
+            throw new RuntimeException("La categoría ya existe");
         }
 
         categoryRepository.save(categoryMapper.toEntity(createCategoryDTO));
 
     }
 
+    @Transactional
     @Override
     public void update(String id, UpdateCategoryDTO updateCategoryDTO) {
 
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty() || category.get().getState().equals(State.INACTIVE)){
-            throw new RuntimeException("Category not found");
+            throw new RuntimeException("Categoria no encontrada");
         }
 
         categoryMapper.update(updateCategoryDTO, category.get() );
@@ -61,12 +65,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     }
 
+    @Transactional
     @Override
     public void delete(String id) {
 
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty()){
-            throw new RuntimeException("Category not found");
+            throw new RuntimeException("Categoria no encontrada");
         }
 
         // Falta validar que si tiene platos dentro como se hará para inhabilitar la categoría
@@ -80,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty() ||  category.get().getState().equals(State.INACTIVE)){
-            throw new ResourceNotFoundException("Category not found");
+            throw new ResourceNotFoundException("Categoria no encontrada");
         }
 
         return categoryMapper.toDTO(category.get());

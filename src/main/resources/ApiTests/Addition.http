@@ -2,8 +2,12 @@
 GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
-### Crear una adición
+### Obtener todas las adiciones (listado con paginación)
+GET http://localhost:8080/api/additions/0/page
+Content-Type: application/json
+# Respuesta: Lista de GetAdditionDTO (id, name, photo, price)
 
+### Crear una adición
 POST http://localhost:8080/api/additions
 Content-Type: application/json
 
@@ -13,9 +17,12 @@ Content-Type: application/json
   "price": 5000
 }
 
-### Actualizar una adición
+### Obtener el detalle de una adición por id
+GET http://localhost:8080/api/additions/{id}
+Content-Type: application/json
 
-PUT http://localhost:8080/api/additions/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
+### Actualizar una adición
+PUT http://localhost:8080/api/additions/{id}
 Content-Type: application/json
 
 {
@@ -24,15 +31,5 @@ Content-Type: application/json
   "price": 2000
 }
 
-### Obtener el detalle por id
-
-GET http://localhost:8080/api/additions/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
-
 ### Eliminar una adición
-
-DELETE http://localhost:8080/api/additions/e3fcd2cd-32cd-4955-bf1c-0a527fba1d9e
-
-### Obtener todas las adiciones
-
-GET http://localhost:8080/api/additions
-
+DELETE http://localhost:8080/api/additions/{id}

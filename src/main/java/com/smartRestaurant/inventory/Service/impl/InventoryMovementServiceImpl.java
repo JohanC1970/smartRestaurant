@@ -10,6 +10,8 @@ import com.smartRestaurant.inventory.model.Type;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+import com.smartRestaurant.inventory.util.CurrentUserProvider;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,14 +21,16 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
 
     private final InventoryMovementRepository inventoryMovementRepository;
     private final InventoryMovementMapper inventoryMovementMapper;
+    private final CurrentUserProvider currentUserProvider;
 
+    @Transactional
     @Override
     public void registerMovementEntry(Product product, double weight) {
 
         InventoryMovement movement = InventoryMovement.builder()
                 .id(java.util.UUID.randomUUID().toString())
                 .productId(product.getId())
-                //.user()
+                .user(currentUserProvider.getCurrentUser())
                 .type(Type.ENTRY)
                 .timeAt(LocalDateTime.now())
                 .weight(product.getWeight())
@@ -36,13 +40,14 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
         inventoryMovementRepository.save(movement);
     }
 
+    @Transactional
     @Override
     public void registerMovementExit(Product product, double weight) {
 
         InventoryMovement movement = InventoryMovement.builder()
                 .id(java.util.UUID.randomUUID().toString())
                 .productId(product.getId())
-                //.user()
+                .user(currentUserProvider.getCurrentUser())
                 .type(Type.EXIT)
                 .timeAt(LocalDateTime.now())
                 .weight(product.getWeight())
