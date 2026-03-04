@@ -1,0 +1,51 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Obtener todos los platos (listado)
+GET http://localhost:8080/api/dishes/0/page
+Content-Type: application/json
+
+### Crear un plato
+POST http://localhost:8080/api/dishes/7d6bab3a-c670-4e03-aec7-13f69de5db85/categories
+Content-Type: application/json
+
+{
+  "name": "Bandeja Paisa",
+  "description": "Una deliciosa bandeja paisa con todos los acompañamientos",
+  "price": 25000,
+  "photos": ["https://example.com/plato1.jpg", "https://example.com/plato2.jpg"],
+  "ingredients": [
+    {
+      "product_id": "b1bee3f6-f14f-482d-a619-d2acd80b5229",
+      "quantity": 200,
+      "unit": "g"
+    }
+  ]
+}
+
+### Obtener detalle de un plato
+GET http://localhost:8080/api/dishes/de0bae16-1489-47f2-99e9-bd4f7d733160
+Content-Type: application/json
+
+# Respuesta: GetDishDetailDTO (id, name, description, price, photos, ingredients: List<GetRecipeDTO>, categoryName)
+# ingredients incluye: product_id, product_name, weight, unit
+
+### Actualizar un plato
+PUT http://localhost:8080/api/dishes/de0bae16-1489-47f2-99e9-bd4f7d733160
+Content-Type: application/json
+
+{
+  "name": "Bandeja Paisa",
+  "description": "Una deliciosa bandeja paisa con todos los acompañamientos y mas cosas",
+  "price": 28000,
+  "photos": ["https://example.com/plato1.jpg", "https://example.com/plato2.jpg"],
+  "ingredients": [{
+    "product_id": "b1bee3f6-f14f-482d-a619-d2acd80b5229",
+    "quantity": 200,
+    "unit": "g"
+  }]
+}
+
+### Eliminar un plato
+DELETE http://localhost:8080/api/dishes/de0bae16-1489-47f2-99e9-bd4f7d733160

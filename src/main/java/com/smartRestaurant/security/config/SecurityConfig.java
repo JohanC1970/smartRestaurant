@@ -35,7 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // Public endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints
                         .anyRequest().authenticated())
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

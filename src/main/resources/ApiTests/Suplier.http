@@ -1,0 +1,38 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Obtener todos los proveedores
+GET http://localhost:8080/api/supliers
+Content-Type: application/json
+# Respuesta: Lista de GetSuplierDTO (id, name, address, phone, email)
+
+### Crear un proveedor
+POST http://localhost:8080/api/supliers
+Content-Type: application/json
+
+{
+  "name": "Distribuidora ABC",
+  "address": "Calle 123 # 45-67",
+  "phone": "3123456789",
+  "email": "contacto@distribuidoraabc.com"
+}
+
+### Obtener detalle de un proveedor
+GET http://localhost:8080/api/supliers/9aac2f3c-92dd-4305-9066-9711ab208848
+Content-Type: application/json
+# Respuesta: GetSuplierDTO (id, name, address, phone, email)
+
+### Actualizar un proveedor
+PUT http://localhost:8080/api/supliers/9aac2f3c-92dd-4305-9066-9711ab208848
+Content-Type: application/json
+
+{
+  "name": "Distribuidora ABC",
+  "address": "Carrera 456 # 78-90",
+  "phone": "3123456789",
+  "email": "ventas@distribuidoraabc.com"
+}
+
+### Eliminar un proveedor
+DELETE http://localhost:8080/api/supliers/{id}

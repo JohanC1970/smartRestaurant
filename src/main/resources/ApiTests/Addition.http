@@ -1,0 +1,35 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Obtener todas las adiciones (listado con paginación)
+GET http://localhost:8080/api/additions/0/page
+Content-Type: application/json
+# Respuesta: Lista de GetAdditionDTO (id, name, photo, price)
+
+### Crear una adición
+POST http://localhost:8080/api/additions
+Content-Type: application/json
+
+{
+  "name": "Papas a la francesa",
+  "description": "Papas fritas cortadas en finos pedazos",
+  "price": 5000
+}
+
+### Obtener el detalle de una adición por id
+GET http://localhost:8080/api/additions/{id}
+Content-Type: application/json
+
+### Actualizar una adición
+PUT http://localhost:8080/api/additions/{id}
+Content-Type: application/json
+
+{
+  "name": "Papitas a la francesa",
+  "description": "Papas fritas cortadas en finos pedazos",
+  "price": 2000
+}
+
+### Eliminar una adición
+DELETE http://localhost:8080/api/additions/{id}

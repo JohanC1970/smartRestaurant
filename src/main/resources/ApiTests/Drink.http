@@ -1,0 +1,42 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### Obtener todas las bebidas (listado)
+GET http://localhost:8080/api/drinks/0/page
+Content-Type: application/json
+# Respuesta: Lista de GetDrinkDTO (id, name, mililiters, alcohol, photo, units, state)
+
+### Crear una bebida
+POST http://localhost:8080/api/drinks/7d6bab3a-c670-4e03-aec7-13f69de5db85/categories
+Content-Type: application/json
+
+{
+  "name": "Jugo de Mango",
+  "description": "Delicioso jugo de mango natural",
+  "mililiters": 500,
+  "alcohol": false,
+  "photos": ["https://example.com/jugo1.jpg"],
+  "units": 10
+}
+
+### Obtener detalle de una bebida
+GET http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
+Content-Type: application/json
+# Respuesta: GetDrinkDetailDTO (id, name, description, mililiters, alcohol, photo, units, state, categoryName)
+
+### Actualizar una bebida
+PUT http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
+Content-Type: application/json
+
+{
+  "name": "Jugo de Mango",
+  "description": "Delicioso jugo de mango natural recien hecho",
+  "mililiters": 500,
+  "alcohol": false,
+  "photos": ["https://example.com/jugo1.jpg"],
+  "units": 15
+}
+
+### Eliminar una bebida
+DELETE http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
