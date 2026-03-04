@@ -1,5 +1,6 @@
 package com.smartRestaurant.inventory.dto.Dish;
 
+import com.smartRestaurant.inventory.dto.recipe.CreateRecipeDTO;
 import com.smartRestaurant.inventory.model.Product;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
@@ -13,5 +14,7 @@ public record UpdateDishDTO(@NotBlank @Length(min = 1, max = 100)
                             @Positive @NotNull
                             double price,
                             @NotEmpty @Size(min = 1, max = 10)
-                            List<String> photos) {
+                            List<String> photos,
+                            @NotEmpty
+                            List<CreateRecipeDTO> ingredients) {
 }

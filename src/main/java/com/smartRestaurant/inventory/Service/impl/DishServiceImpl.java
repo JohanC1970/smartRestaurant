@@ -2,13 +2,18 @@ package com.smartRestaurant.inventory.Service.impl;
 
 import com.smartRestaurant.inventory.Repository.CategoryRepository;
 import com.smartRestaurant.inventory.Repository.DishRepository;
+import com.smartRestaurant.inventory.Repository.RecipeRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.Service.DishService;
+import com.smartRestaurant.inventory.Service.RecipeService;
 import com.smartRestaurant.inventory.dto.Dish.CreateDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
+import com.smartRestaurant.inventory.dto.Dish.GetDishDetailDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
+import com.smartRestaurant.inventory.dto.recipe.GetRecipeDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DishMapper;
+import com.smartRestaurant.inventory.mapper.ShowDishesMappper;
 import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.State;
@@ -28,6 +33,8 @@ public class DishServiceImpl implements DishService {
     private final DishRepository dishRepository;
     private final DishMapper dishMapper;
     private final CategoryRepository categoryRepository;
+    private final RecipeService recipeService;
+    private final ShowDishesMappper showDishesMappper;
 
 
     // falta paginación
@@ -41,9 +48,10 @@ public class DishServiceImpl implements DishService {
             throw new ResourceNotFoundException("No hay platos registrados");
         }
 
+
         return dishes.stream()
                 .filter(dish -> dish.getState().equals(State.ACTIVE))
-                .map(dishMapper::toDTO)
+                .map(showDishesMappper::toDTO)
                 .toList();
     }
 
@@ -58,11 +66,14 @@ public class DishServiceImpl implements DishService {
 
         Optional<Dish> optionalDish = dishRepository.findByName(createDishDTO.name());
         if (optionalDish.isPresent()) {
-            throw new RuntimeException("Already exists");
+            throw new RuntimeException("Ya existe este plato");
         }
 
         Dish dish = dishMapper.toEntity(createDishDTO);
         dish.setCategory(category.get());
+
+        // registramos toda la receta
+        recipeService.registerRecipe(createDishDTO.ingredients(), dish);
 
         dishRepository.save(dish);
 
@@ -72,7 +83,7 @@ public class DishServiceImpl implements DishService {
     public void update(String id, UpdateDishDTO updateDishDTO) {
         Optional<Dish> dishOptional = dishRepository.findById(id);
         if (dishOptional.isEmpty()) {
-            throw new RuntimeException("Not found");
+            throw new RuntimeException("No se encuentra el plato");
         }
 
         dishMapper.updateDish(updateDishDTO, dishOptional.get());
@@ -81,14 +92,13 @@ public class DishServiceImpl implements DishService {
 
     }
 
-
     // validar que un plato no esté pendiente de pago o que no afecte borrarlo
     @Override
     public void delete(String id) {
 
         Optional<Dish> dishOptional = dishRepository.findById(id);
         if (dishOptional.isEmpty() || dishOptional.get().getState().equals(State.INACTIVE)) {
-            throw new RuntimeException("Not found, can´t be deleted");
+            throw new RuntimeException("No existe, no puede ser eliminado");
         }
 
         dishOptional.get().setState(State.INACTIVE);
@@ -96,12 +106,14 @@ public class DishServiceImpl implements DishService {
     }
 
     @Override
-    public GetDishDTO getById(String id) {
+    public GetDishDetailDTO getById(String id) {
         Optional<Dish> dish = dishRepository.findById(id);
+
         if(dish.isEmpty() || dish.get().getState().equals(State.INACTIVE)) {
-            throw new ResourceNotFoundException("Dish not found");
+            throw new ResourceNotFoundException("Plato no encontrado");
         }
 
         return dishMapper.toDTO(dish.get());
+
     }
 }
