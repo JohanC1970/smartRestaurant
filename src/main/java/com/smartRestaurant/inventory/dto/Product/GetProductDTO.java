@@ -10,11 +10,9 @@ import java.util.List;
 
 public record GetProductDTO(String id,
                             String name,
-                            String description,
                             double price,
                             double weight,
                             String photo,
                             double minimumStock,
-                            String state,
-                            GetSuplierDTO suplier) {
+                            String state) {
 }

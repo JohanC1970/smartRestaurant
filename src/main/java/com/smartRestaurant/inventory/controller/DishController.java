@@ -6,7 +6,6 @@ import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDetailDTO;
 import com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
-import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

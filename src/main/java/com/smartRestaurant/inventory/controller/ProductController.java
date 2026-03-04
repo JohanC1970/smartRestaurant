@@ -1,10 +1,7 @@
 package com.smartRestaurant.inventory.controller;
 
 import com.smartRestaurant.inventory.Service.ProductService;
-import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
-import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
-import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
-import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
+import com.smartRestaurant.inventory.dto.Product.*;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
 import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import jakarta.validation.Valid;
@@ -60,8 +57,8 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<GetProductDTO>> getById(@PathVariable String id){
-        GetProductDTO productDTO = productService.getById(id);
+    public ResponseEntity<ResponseDTO<GetProductDetailDTO>> getById(@PathVariable String id){
+        GetProductDetailDTO productDTO = productService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(productDTO, false));
     }
 

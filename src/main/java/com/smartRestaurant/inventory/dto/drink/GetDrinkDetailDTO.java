@@ -5,8 +5,10 @@ import java.util.List;
 public record GetDrinkDetailDTO(String id,
                                 String name,
                                 String description,
-                                double  mililiters,
+                                double mililiters,
                                 boolean alcohol,
-                                List<String> photos,
-                                int units) {
+                                String photo,
+                                int units,
+                                String state,
+                                String categoryName) {
 }

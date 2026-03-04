@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.dto.ResponseDTO;
 import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
+import com.smartRestaurant.inventory.dto.drink.GetDrinkDetailDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +49,8 @@ public class DrinkController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDTO<GetDrinkDTO>> getById(@PathVariable String id){
-        GetDrinkDTO drink = drinkService.getDrinkById(id);
+    public ResponseEntity<ResponseDTO<GetDrinkDetailDTO>> getById(@PathVariable String id){
+        GetDrinkDetailDTO drink = drinkService.getDrinkById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(drink, false));
     }
 }

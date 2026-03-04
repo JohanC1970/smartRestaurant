@@ -9,8 +9,9 @@ import java.util.List;
 
 public record GetDrinkDTO(String id,
                           String name,
-                          double  mililiters,
+                          double mililiters,
                           boolean alcohol,
                           String photo,
-                          int units) {
+                          int units,
+                          String state) {
 }

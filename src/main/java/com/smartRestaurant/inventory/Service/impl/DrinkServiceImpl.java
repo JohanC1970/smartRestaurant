@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.Repository.DrinkRepository;
 import com.smartRestaurant.inventory.Service.DrinkService;
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
+import com.smartRestaurant.inventory.dto.drink.GetDrinkDetailDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.DrinkMapper;
@@ -85,12 +86,12 @@ public class DrinkServiceImpl implements DrinkService {
     }
 
     @Override
-    public GetDrinkDTO getDrinkById(String id) {
+    public GetDrinkDetailDTO getDrinkById(String id) {
         Optional<Drink> drink = drinkRepository.findById(id);
         if (drink.isEmpty() || drink.get().getState().equals(State.INACTIVE)) {
             throw new ResourceNotFoundException("Drink does not exist");
         }
-        return drinkMapper.toDTO(drink.get());
+        return drinkMapper.toDetailDTO(drink.get());
     }
 
 }

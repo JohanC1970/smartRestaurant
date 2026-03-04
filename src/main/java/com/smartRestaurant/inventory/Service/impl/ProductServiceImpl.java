@@ -7,10 +7,7 @@ import com.smartRestaurant.inventory.Repository.SuplierRepository;
 import com.smartRestaurant.inventory.Service.CategoryService;
 import com.smartRestaurant.inventory.Service.InventoryMovementService;
 import com.smartRestaurant.inventory.Service.ProductService;
-import com.smartRestaurant.inventory.dto.Product.CreateProductDTO;
-import com.smartRestaurant.inventory.dto.Product.GetProductDTO;
-import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
-import com.smartRestaurant.inventory.dto.Product.UpdateProductDTO;
+import com.smartRestaurant.inventory.dto.Product.*;
 import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.exceptions.ValueConflictException;
@@ -170,13 +167,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GetProductDTO getById(String id) {
+    public GetProductDetailDTO getById(String id) {
         Optional<Product> product = productRepository.findById(id);
         if(product.isEmpty() || product.get().getState().equals(State.INACTIVE)) {
             throw new ResourceNotFoundException("producto no encontrado");
         }
 
-        return productMapper.toDTO(product.get());
+        return productMapper.toDetailDTO(product.get());
     }
 
 

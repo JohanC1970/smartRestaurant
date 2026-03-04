@@ -9,7 +9,8 @@ public record GetProductDetailDTO(String id,
                                   String description,
                                   double price,
                                   double weight,
-                                  List<String> photos,
+                                  String photo,
                                   double minimumStock,
+                                  String state,
                                   GetSuplierDTO suplier) {
 }
