@@ -33,19 +33,19 @@ public class DrinkController {
     @PostMapping("/{categorieId}/categories")
     public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categorieId, @Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
         drinkService.create(categorieId, createDrinkDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Drink Created", false));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Bebida creada", false));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateDrinkDTO updateDrinkDTO) {
         drinkService.update(id, updateDrinkDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Drink Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Bebida actualizada", false));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         drinkService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Drink Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Bebida eliminada", false));
     }
 
     @GetMapping("/{id}")

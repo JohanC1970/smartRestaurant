@@ -36,19 +36,19 @@ public class AdditionController {
     @PostMapping()
     public ResponseEntity<ResponseDTO<String>> create(@Valid @RequestBody CreateAdditionDTO createAdditionDTO) {
         additionService.create(createAdditionDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Addition Created", false));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Adicion creada", false));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateAdditionDTO updateAdditionDTO) {
         additionService.update(id, updateAdditionDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Addition Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Adicion actualizada", false));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         additionService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Addition Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Adicion eliminada", false));
     }
 
     @GetMapping("/{id}")

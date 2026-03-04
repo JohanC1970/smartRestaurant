@@ -22,20 +22,20 @@ public class ProductController {
     @PostMapping("/{idSuplier}/supliers")
     public ResponseEntity<ResponseDTO<String>> create(@PathVariable String idSuplier, @RequestBody @Valid CreateProductDTO createProductDTO){
         productService.create(idSuplier, createProductDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Product Created", false));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Producto creado", false));
 
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @RequestBody @Valid UpdateProductDTO updateProductDTO){
         productService.update(id, updateProductDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Product Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Producto actualizado", false));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         productService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Product Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Producto eliminado", false));
     }
 
     @GetMapping("/{page}/page")
@@ -47,13 +47,13 @@ public class ProductController {
     @PatchMapping("/{id}/add")
     public ResponseEntity<ResponseDTO<String>> addStock(@PathVariable String id, @Valid @RequestBody StockMovementDTO stockMovementDTO){
         productService.addStock(id, stockMovementDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock Added", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock añadido", false));
     }
 
     @PatchMapping("/{id}/discount")
     public ResponseEntity<ResponseDTO<String>> discountStock(@PathVariable String id, @Valid @RequestBody StockMovementDTO stockMovementDTO){
         productService.discountStock(id, stockMovementDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock discounted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock descontado", false));
     }
 
     @GetMapping("/{id}")

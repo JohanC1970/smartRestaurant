@@ -21,7 +21,7 @@ public class DailyMenuController {
     @PostMapping("/{id}/dishes")
     public ResponseEntity<ResponseDTO<String>> addDish(@PathVariable String id){
         dailyMenuService.add(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish added to daily menu", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Plato añadido al menu diario", false));
     }
 
     @GetMapping("/{page}/page")
@@ -33,6 +33,6 @@ public class DailyMenuController {
     @DeleteMapping("{id}/dishes")
     public ResponseEntity<ResponseDTO<String>> deleteDish(@PathVariable String id){
         dailyMenuService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish deleted from daily menu", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Plato eliminado del menu diario", false));
     }
 }

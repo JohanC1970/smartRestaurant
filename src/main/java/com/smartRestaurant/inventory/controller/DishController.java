@@ -30,19 +30,19 @@ public class DishController {
     @PostMapping("/{categoryId}/categories")
     public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categoryId, @RequestBody CreateDishDTO createDishDTO){
         dishService.create(categoryId, createDishDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Created", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Plato creado", false));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @RequestBody @Valid UpdateDishDTO updateDishDTO){
         dishService.update(id, updateDishDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Updated", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Plato actualizado", false));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
         dishService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Dish Deleted", false));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Plato eliminado", false));
     }
 
     @GetMapping("/{id}")
