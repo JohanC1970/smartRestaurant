@@ -34,8 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Public endpoints
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints
-                        // desactivado mientras .anyRequest().authenticated())
-                        .anyRequest().permitAll() )// Permite todas las peticiones sin autenticación
+                        .anyRequest().authenticated())
 
                         .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

@@ -135,7 +135,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // de momento porque no he sacado el user que esté registrado
-        //inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
+        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
     }
 
     @Transactional
