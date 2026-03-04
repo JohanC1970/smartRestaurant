@@ -48,4 +48,4 @@ Content-Type: application/json
 }
 
 ### Eliminar un plato
-DELETE http://localhost:8080/api/dishes/{id}
+DELETE http://localhost:8080/api/dishes/de0bae16-1489-47f2-99e9-bd4f7d733160

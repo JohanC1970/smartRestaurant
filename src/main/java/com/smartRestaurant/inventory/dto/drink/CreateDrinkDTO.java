@@ -10,13 +10,13 @@ import org.hibernate.validator.constraints.Length;
 import java.util.List;
 
 public record CreateDrinkDTO(
-        @NotBlank @Length(min = 1, max = 50)
-        String name,
+         @NotBlank @Length(min = 1, max = 50)
+         String name,
          @NotBlank @Length(min = 10, max = 500)
          String description,
-         @Positive @NotBlank
+         @Positive @NotNull
          double  mililiters,
-         @NotBlank
+         @NotNull
          boolean alcohol,
          @NotNull @Length(min = 1, max = 3)
          List<String> photos,

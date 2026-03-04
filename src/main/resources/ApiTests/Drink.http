@@ -8,7 +8,7 @@ Content-Type: application/json
 # Respuesta: Lista de GetDrinkDTO (id, name, mililiters, alcohol, photo, units, state)
 
 ### Crear una bebida
-POST http://localhost:8080/api/drinks/{categoryId}/categories
+POST http://localhost:8080/api/drinks/7d6bab3a-c670-4e03-aec7-13f69de5db85/categories
 Content-Type: application/json
 
 {
