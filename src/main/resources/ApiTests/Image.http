@@ -1,0 +1,17 @@
+### Subir una imagen (JPEG)
+# Para probar, asegúrate de tener un archivo llamado 'test-image.jpg' en la raíz del proyecto
+POST http://localhost:8080/api/images
+Content-Type: multipart/form-data
+
+prueba.jpg
+
+### Subir una imagen (PNG)
+# Para probar, asegúrate de tener un archivo llamado 'test-image.png' en la raíz del proyecto
+POST http://localhost:8080/api/images
+Content-Type: multipart/form-data
+
+< ./test-image.png
+
+### Eliminar una imagen
+# Usa el public_id que obtienes en la respuesta de Cloudinary (ej: SmartRestaurant/xyz123)
+DELETE http://localhost:8080/api/images?id=SmartRestaurant/sample-image-id

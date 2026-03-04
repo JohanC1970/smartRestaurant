@@ -46,3 +46,15 @@ server:
   #error:
     #include-message: always
     #include-binding-errors: always
+
+# Cloudinary Configuration
+cloudinary:
+  cloud_name: ${CLOUDINARY_NAME:dje3qr8tq}
+  api_key: ${CLOUDINARY_KEY:693381465632364}
+  api_secret: ${CLOUDINARY_SECRET:5cICFV1EvZ-E8FPCAyNSh5WGUt0}
+
+# Multipart Configuration (para subida de imágenes)
+spring.servlet.multipart:
+  enabled: true
+  max-file-size: 10MB
+  max-request-size: 10MB
