@@ -3,6 +3,7 @@ package com.smartRestaurant.inventory.dto.drink;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
@@ -11,12 +12,12 @@ public record UpdateDrinkDTO(@NotBlank @Length(min = 1, max = 50)
                              String name,
                              @NotBlank @Length(min = 10, max = 500)
                              String description,
-                             @Positive @NotBlank
+                             @Positive @NotNull
                              double  mililiters,
-                             @NotBlank
+                             @NotNull
                              boolean alcohol,
-                             @NotNull @Length(min = 1, max = 3)
+                             @NotNull @Size(min = 1, max = 3)
                              List<String> photos,
-                             @NotBlank @Positive
+                             @NotNull @Positive
                              int units) {
 }

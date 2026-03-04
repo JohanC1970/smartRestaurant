@@ -21,12 +21,12 @@ Content-Type: application/json
 }
 
 ### Obtener detalle de una bebida
-GET http://localhost:8080/api/drinks/{id}
+GET http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
 Content-Type: application/json
 # Respuesta: GetDrinkDetailDTO (id, name, description, mililiters, alcohol, photo, units, state, categoryName)
 
 ### Actualizar una bebida
-PUT http://localhost:8080/api/drinks/{id}
+PUT http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
 Content-Type: application/json
 
 {
@@ -39,4 +39,4 @@ Content-Type: application/json
 }
 
 ### Eliminar una bebida
-DELETE http://localhost:8080/api/drinks/{id}
+DELETE http://localhost:8080/api/drinks/84f5e8a5-7322-47b6-b82a-73287ba008f7
