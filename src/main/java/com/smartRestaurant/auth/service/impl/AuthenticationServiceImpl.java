@@ -1,25 +1,34 @@
 package com.smartRestaurant.auth.service.impl;
 
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.smartRestaurant.auth.dto.SocialUserInfo;
 import com.smartRestaurant.auth.dto.request.LoginRequest;
 import com.smartRestaurant.auth.dto.request.RegisterAdminRequest;
 import com.smartRestaurant.auth.dto.request.RegisterRequest;
+import com.smartRestaurant.auth.dto.request.SocialLoginRequest;
 import com.smartRestaurant.auth.dto.request.VerifyRequest;
 import com.smartRestaurant.auth.dto.response.AuthResponse;
 import com.smartRestaurant.auth.model.entity.RefreshToken;
+import com.smartRestaurant.auth.model.entity.SocialAccount;
 import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.auth.model.enums.AuditEventType;
 import com.smartRestaurant.auth.model.enums.OtpTokenType;
+import com.smartRestaurant.auth.model.enums.SocialProvider;
 import com.smartRestaurant.auth.model.enums.UserRole;
 import com.smartRestaurant.auth.model.enums.UserStatus;
 import com.smartRestaurant.auth.repository.RefreshTokenRepository;
+import com.smartRestaurant.auth.repository.SocialAccountRepository;
 import com.smartRestaurant.auth.repository.UserRepository;
 import com.smartRestaurant.auth.service.AuditService;
 import com.smartRestaurant.auth.service.AuthenticationService;
 import com.smartRestaurant.auth.service.EmailService;
+import com.smartRestaurant.auth.service.SocialAuthValidator;
+import com.smartRestaurant.common.exception.AccountLockedException;
 import com.smartRestaurant.security.service.JwtService;
 import com.smartRestaurant.auth.service.OtpService;
 import com.smartRestaurant.auth.util.PasswordGenerator;
@@ -32,11 +41,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SocialAccountRepository socialAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final OtpService otpService;
     private final EmailService emailService;
     private final AuditService auditService;
+    private final SocialAuthValidator socialAuthValidator;
 
     @Override
     @Transactional
@@ -377,5 +388,146 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         "Usuario cerró sesión", null, null);
             }
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.smartRestaurant.auth.dto.response.UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return com.smartRestaurant.auth.dto.response.UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .roleDisplayName(user.getRole().getDisplayName())
+                .status(user.getStatus())
+                .statusDisplayName(user.getStatus().getDisplayName())
+                .isEmailVerified(user.isEmailVerified())
+                .requiresPasswordChange(user.isRequiresPasswordChange())
+                .failedLoginAttempts(user.getFailedLoginAttempts())
+                .lockReason(user.getLockReason())
+                .lockedAt(user.getLockedAt())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse socialLogin(SocialLoginRequest request) {
+        // 1. Validar token y obtener información del usuario
+        SocialUserInfo socialUserInfo = socialAuthValidator.validateAndGetUserInfo(
+                request.getProvider(),
+                request.getAccessToken());
+
+        // 2. Verificar si ya existe una cuenta social vinculada
+        java.util.Optional<SocialAccount> existingSocialAccount = socialAccountRepository
+                .findByProviderAndProviderId(request.getProvider(), socialUserInfo.getProviderId());
+
+        User user;
+
+        if (existingSocialAccount.isPresent()) {
+            // Usuario existente con cuenta social vinculada
+            user = existingSocialAccount.get().getUsuario();
+
+            // Actualizar información si es necesario
+            updateSocialAccount(existingSocialAccount.get(), socialUserInfo);
+
+        } else {
+            // Verificar si existe un usuario con el mismo email
+            java.util.Optional<User> existingUser = userRepository.findByEmail(socialUserInfo.getEmail());
+
+            if (existingUser.isPresent()) {
+                // Vincular cuenta social a usuario existente
+                user = existingUser.get();
+                createSocialAccount(user, request.getProvider(), socialUserInfo);
+
+            } else {
+                // Crear nuevo usuario
+                user = createUserFromSocialLogin(socialUserInfo);
+                createSocialAccount(user, request.getProvider(), socialUserInfo);
+            }
+        }
+
+        // 3. Verificar estado del usuario
+        if (!user.getStatus().canLogin()) {
+            throw new AccountLockedException("La cuenta está " + user.getStatus().getDisplayName());
+        }
+
+        // 4. Generar tokens
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        // 5. Guardar refresh token
+        RefreshToken refreshTokenEntity = RefreshToken.builder()
+                .usuario(user)
+                .token(refreshToken)
+                .build();
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        // 6. Registrar auditoría
+        auditService.logEvent(
+                user,
+                AuditEventType.LOGIN_SUCCESS,
+                "Login exitoso con " + request.getProvider().getDisplayName(),
+                null,
+                null);
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .message("Login exitoso con " + request.getProvider().getDisplayName())
+                .is2faRequired(false)
+                .requiresPasswordChange(false)
+                .build();
+    }
+
+    /**
+     * Crea un nuevo usuario desde información de login social
+     */
+    private User createUserFromSocialLogin(SocialUserInfo socialUserInfo) {
+        User user = User.builder()
+                .firstName(socialUserInfo.getFirstName())
+                .lastName(socialUserInfo.getLastName())
+                .email(socialUserInfo.getEmail())
+                .password(passwordEncoder.encode(UUID.randomUUID().toString())) // Password aleatorio
+                .role(UserRole.CUSTOMER) // Por defecto CUSTOMER
+                .status(socialUserInfo.isEmailVerified() ? UserStatus.ACTIVE : UserStatus.PENDING)
+                .isEmailVerified(socialUserInfo.isEmailVerified())
+                .requiresPasswordChange(false)
+                .build();
+
+        user = userRepository.save(user);
+
+        // Registrar auditoría
+        auditService.logEvent(user, AuditEventType.USER_REGISTERED,
+                "Usuario registrado vía login social", null, null);
+
+        return user;
+    }
+
+    /**
+     * Crea una cuenta social vinculada a un usuario
+     */
+    private void createSocialAccount(User user, SocialProvider provider, SocialUserInfo socialUserInfo) {
+        SocialAccount socialAccount = SocialAccount.builder()
+                .usuario(user)
+                .provider(provider)
+                .providerId(socialUserInfo.getProviderId())
+                .profilePictureUrl(socialUserInfo.getProfilePicture())
+                .build();
+
+        socialAccountRepository.save(socialAccount);
+    }
+
+    /**
+     * Actualiza información de una cuenta social existente
+     */
+    private void updateSocialAccount(SocialAccount socialAccount, SocialUserInfo socialUserInfo) {
+        socialAccount.setProfilePictureUrl(socialUserInfo.getProfilePicture());
+        socialAccountRepository.save(socialAccount);
     }
 }

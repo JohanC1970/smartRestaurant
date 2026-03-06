@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
  * Solo accesible para administradores.
  */
 @RestController
-@RequestMapping("/admin/audit-logs")
+@RequestMapping("/api/admin/audit-logs")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AuditController {

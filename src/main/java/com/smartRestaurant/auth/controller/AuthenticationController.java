@@ -1,6 +1,7 @@
 package com.smartRestaurant.auth.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
@@ -98,5 +99,24 @@ public class AuthenticationController {
     public ResponseEntity<String> logout(@RequestBody AuthResponse request) {
         authenticationService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Sesión cerrada exitosamente.");
+    }
+
+    /**
+     * Obtiene la información del usuario actualmente autenticado
+     */
+    @GetMapping("/me")
+    public ResponseEntity<com.smartRestaurant.auth.dto.response.UserResponse> getCurrentUser(
+            org.springframework.security.core.Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(authenticationService.getCurrentUser(email));
+    }
+
+    /**
+     * Login/Registro con proveedor social (Google, Facebook, GitHub)
+     */
+    @PostMapping("/social-login")
+    public ResponseEntity<AuthResponse> socialLogin(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.SocialLoginRequest request) {
+        return ResponseEntity.ok(authenticationService.socialLogin(request));
     }
 }
