@@ -96,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
         if(page < 0){
             throw new BadRequestException("pagina invalida (negativa), debe ser >= 0");
         }
-        Pageable pageable = PageRequest.of(page,1);
+        Pageable pageable = PageRequest.of(page,10);
 
         Page<Product> products = productRepository.findAll(pageable);
         if(products.getTotalElements() == 0){

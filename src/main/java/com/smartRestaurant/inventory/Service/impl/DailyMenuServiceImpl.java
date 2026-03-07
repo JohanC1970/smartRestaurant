@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.Repository.DishRepository;
 import com.smartRestaurant.inventory.Service.DailyMenuService;
 import com.smartRestaurant.inventory.dto.Dish.GetDishDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
+import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.mapper.DailyMenuMapper;
 import com.smartRestaurant.inventory.mapper.DishMapper;
 import com.smartRestaurant.inventory.mapper.ShowDishesMappper;
@@ -37,6 +38,12 @@ public class DailyMenuServiceImpl implements DailyMenuService {
             throw new ResourceNotFoundException("Plato no encontrado");
         }
 
+        // Verificar si el plato ya está en el menú diario
+        if (dailyMenuRepository.existsByDish_Id(id)) {
+            throw new ValueConflictException(
+                "El plato ya está en el menú diario");
+        }
+
         dailyMenuRepository.save(dailyMenuMapper.toEntity(optionalDish.get()));
 
     }
@@ -59,11 +66,12 @@ public class DailyMenuServiceImpl implements DailyMenuService {
 
     @Override
     public void delete(String id) {
-        Optional<DailyMenu> optionalDailyMenu = dailyMenuRepository.findByDish_Id(id);
+        List<DailyMenu> dailyMenus = dailyMenuRepository.findByDish_Id(id);
 
-        if (optionalDailyMenu.isEmpty()) {
-            throw new ResourceNotFoundException("Plato no encontrado");
+        if (dailyMenus.isEmpty()) {
+            throw new ResourceNotFoundException("Plato no encontrado en el menú diario");
         }
-        dailyMenuRepository.delete(optionalDailyMenu.get());
+        // Eliminar todos los registros encontrados (incluyendo duplicados)
+        dailyMenuRepository.deleteAll(dailyMenus);
     }
 }
