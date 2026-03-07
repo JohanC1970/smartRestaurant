@@ -63,9 +63,9 @@ social:
 
 # Cloudinary Configuration
 cloudinary:
-  cloud_name: ${CLOUDINARY_NAME:dje3qr8tq}
-  api_key: ${CLOUDINARY_KEY:693381465632364}
-  api_secret: ${CLOUDINARY_SECRET:5cICFV1EvZ-E8FPCAyNSh5WGUt0}
+  cloud_name: ${CLOUDINARY_NAME}
+  api_key: ${CLOUDINARY_KEY}
+  api_secret: ${CLOUDINARY_SECRET}
 
 # Multipart Configuration (para subida de imágenes)
 spring.servlet.multipart:
