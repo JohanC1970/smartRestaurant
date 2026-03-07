@@ -54,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
 
         // registramos el movimiento (aun no porque no he podido hacer uso de la auth para sacar el current user)
-      //  inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
+        inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
 
     }
 
@@ -72,7 +72,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    // hay que verificar primero si el producto está en algun carrito
 
     @Transactional
     @Override
@@ -134,7 +133,6 @@ public class ProductServiceImpl implements ProductService {
             notificationRepository.save(notification);
         }
 
-        // de momento porque no he sacado el user que esté registrado
         inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
     }
 
@@ -169,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
-        //inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
+        inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
 
     }
 
