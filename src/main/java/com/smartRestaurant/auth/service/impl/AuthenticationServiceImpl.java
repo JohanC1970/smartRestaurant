@@ -6,28 +6,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.smartRestaurant.auth.dto.SocialUserInfo;
+//import com.smartRestaurant.auth.dto.SocialUserInfo;
 import com.smartRestaurant.auth.dto.request.LoginRequest;
 import com.smartRestaurant.auth.dto.request.RegisterAdminRequest;
 import com.smartRestaurant.auth.dto.request.RegisterRequest;
-import com.smartRestaurant.auth.dto.request.SocialLoginRequest;
+//import com.smartRestaurant.auth.dto.request.SocialLoginRequest;
 import com.smartRestaurant.auth.dto.request.VerifyRequest;
 import com.smartRestaurant.auth.dto.response.AuthResponse;
 import com.smartRestaurant.auth.model.entity.RefreshToken;
-import com.smartRestaurant.auth.model.entity.SocialAccount;
+//import com.smartRestaurant.auth.model.entity.SocialAccount;
 import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.auth.model.enums.AuditEventType;
 import com.smartRestaurant.auth.model.enums.OtpTokenType;
-import com.smartRestaurant.auth.model.enums.SocialProvider;
+//import com.smartRestaurant.auth.model.enums.SocialProvider;
 import com.smartRestaurant.auth.model.enums.UserRole;
 import com.smartRestaurant.auth.model.enums.UserStatus;
 import com.smartRestaurant.auth.repository.RefreshTokenRepository;
-import com.smartRestaurant.auth.repository.SocialAccountRepository;
+//import com.smartRestaurant.auth.repository.SocialAccountRepository;
 import com.smartRestaurant.auth.repository.UserRepository;
 import com.smartRestaurant.auth.service.AuditService;
 import com.smartRestaurant.auth.service.AuthenticationService;
 import com.smartRestaurant.auth.service.EmailService;
-import com.smartRestaurant.auth.service.SocialAuthValidator;
+//import com.smartRestaurant.auth.service.SocialAuthValidator;
 import com.smartRestaurant.common.exception.AccountLockedException;
 import com.smartRestaurant.security.service.JwtService;
 import com.smartRestaurant.auth.service.OtpService;
@@ -41,13 +41,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final SocialAccountRepository socialAccountRepository;
+    //private final SocialAccountRepository socialAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final OtpService otpService;
     private final EmailService emailService;
     private final AuditService auditService;
-    private final SocialAuthValidator socialAuthValidator;
+   // private final SocialAuthValidator socialAuthValidator;
 
     @Override
     @Transactional
@@ -415,6 +415,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
+    /**
     @Override
     @Transactional
     public AuthResponse socialLogin(SocialLoginRequest request) {
@@ -483,11 +484,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .is2faRequired(false)
                 .requiresPasswordChange(false)
                 .build();
-    }
+    }*/
 
     /**
      * Crea un nuevo usuario desde información de login social
      */
+    /**
     private User createUserFromSocialLogin(SocialUserInfo socialUserInfo) {
         User user = User.builder()
                 .firstName(socialUserInfo.getFirstName())
@@ -512,6 +514,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * Crea una cuenta social vinculada a un usuario
      */
+    /**
     private void createSocialAccount(User user, SocialProvider provider, SocialUserInfo socialUserInfo) {
         SocialAccount socialAccount = SocialAccount.builder()
                 .usuario(user)
@@ -526,8 +529,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * Actualiza información de una cuenta social existente
      */
+    /**
     private void updateSocialAccount(SocialAccount socialAccount, SocialUserInfo socialUserInfo) {
         socialAccount.setProfilePictureUrl(socialUserInfo.getProfilePicture());
         socialAccountRepository.save(socialAccount);
     }
+    */
 }

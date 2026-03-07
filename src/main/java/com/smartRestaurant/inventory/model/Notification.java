@@ -18,7 +18,7 @@ public class Notification {
     @Id
     private String id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String type;
 
     @Column(nullable = false, length = 250)

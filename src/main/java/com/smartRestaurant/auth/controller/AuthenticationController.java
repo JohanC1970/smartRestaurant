@@ -107,6 +107,9 @@ public class AuthenticationController {
     @GetMapping("/me")
     public ResponseEntity<com.smartRestaurant.auth.dto.response.UserResponse> getCurrentUser(
             org.springframework.security.core.Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
         String email = authentication.getName();
         return ResponseEntity.ok(authenticationService.getCurrentUser(email));
     }
@@ -114,9 +117,10 @@ public class AuthenticationController {
     /**
      * Login/Registro con proveedor social (Google, Facebook, GitHub)
      */
+    /**
     @PostMapping("/social-login")
     public ResponseEntity<AuthResponse> socialLogin(
             @RequestBody @Valid com.smartRestaurant.auth.dto.request.SocialLoginRequest request) {
         return ResponseEntity.ok(authenticationService.socialLogin(request));
-    }
+    }*/
 }

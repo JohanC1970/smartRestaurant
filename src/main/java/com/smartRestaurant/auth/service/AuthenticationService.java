@@ -64,5 +64,5 @@ public interface AuthenticationService {
      * @param request Solicitud con proveedor y token de acceso
      * @return AuthResponse con tokens JWT
      */
-    AuthResponse socialLogin(com.smartRestaurant.auth.dto.request.SocialLoginRequest request);
+    //AuthResponse socialLogin(com.smartRestaurant.auth.dto.request.SocialLoginRequest request);
 }

@@ -44,7 +44,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Optional<Product> productOptional = productRepository.findByName(createProductDTO.name());
-        if (productOptional.isEmpty() || productOptional.get().getState().equals(State.ACTIVE)) {
+        if (productOptional.isPresent() && productOptional.get().getState().equals(State.ACTIVE)) {
             throw new RuntimeException("El producto ya existe");
         }
 
@@ -96,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
         if(page < 0){
             throw new BadRequestException("pagina invalida (negativa), debe ser >= 0");
         }
-        Pageable pageable = PageRequest.of(page,10);
+        Pageable pageable = PageRequest.of(page,1);
 
         Page<Product> products = productRepository.findAll(pageable);
         if(products.getTotalElements() == 0){
