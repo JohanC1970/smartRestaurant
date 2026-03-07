@@ -48,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("El producto ya existe");
         }
 
+
         Product product = productMapper.toEntity(createProductDTO);
         product.setSuplier(optionalSuplier.get());
 
