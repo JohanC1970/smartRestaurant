@@ -66,3 +66,9 @@ spring.servlet.multipart:
   enabled: true
   max-file-size: 10MB
   max-request-size: 10MB
+# Application Specific Configuration
+app:
+  init:
+    admin:
+      email: ${ADMIN_EMAIL:smartrestaurant15@gmail.com}
+      password: ${ADMIN_PASSWORD:Smart1234!}
