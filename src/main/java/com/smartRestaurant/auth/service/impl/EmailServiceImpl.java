@@ -31,9 +31,10 @@ public class EmailServiceImpl implements EmailService {
 
     @PostConstruct
     public void init() {
-
         log.info("EmailService inicializado con remitente: {}", fromEmail);
-        testSmtpConnection();
+        // Note: Comentado para evitar que bloquee el inicio en Render si hay problemas
+        // de red
+        // testSmtpConnection();
     }
 
     private void testSmtpConnection() {
