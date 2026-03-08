@@ -239,6 +239,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
 
+                // Eliminar refresh tokens existentes del usuario antes de guardar uno nuevo
+                refreshTokenRepository.deleteByUsuario(user);
+
                 // Guardar refresh token en base de datos
                 RefreshToken refreshTokenEntity = RefreshToken.builder()
                                 .usuario(user)
@@ -443,6 +446,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
 
+                // Eliminar refresh tokens existentes del usuario antes de guardar uno nuevo
+                refreshTokenRepository.deleteByUsuario(user);
+
                 // Guardar refresh token en base de datos
                 RefreshToken refreshTokenEntity = RefreshToken.builder()
                                 .usuario(user)
@@ -571,14 +577,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 String accessToken = jwtService.generateAccessToken(user);
                 String refreshToken = jwtService.generateRefreshToken(user);
 
-                // 5. Guardar refresh token
+                // 5. Eliminar refresh tokens existentes del usuario antes de guardar uno nuevo
+                refreshTokenRepository.deleteByUsuario(user);
+
+                // 6. Guardar refresh token
                 RefreshToken refreshTokenEntity = RefreshToken.builder()
                                 .usuario(user)
                                 .token(refreshToken)
                                 .build();
                 refreshTokenRepository.save(refreshTokenEntity);
 
-                // 6. Registrar auditoría
+                // 7. Registrar auditoría
                 auditService.logEvent(
                                 user,
                                 AuditEventType.LOGIN_SUCCESS,
