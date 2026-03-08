@@ -53,6 +53,9 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean validateToken(String token) {
         try {
+            if (token == null || token.isBlank()) {
+                return false;
+            }
             return !isTokenExpired(token);
         } catch (Exception e) {
             return false;
@@ -61,6 +64,9 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String extractUsername(String token) {
+        if (token == null || token.isBlank()) {
+            return null;
+        }
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -76,6 +82,9 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public Claims extractAllClaims(String token) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Token no puede ser nulo o vacío");
+        }
         return Jwts.parser()
                 .verifyWith(getSignInKey())
                 .build()
@@ -85,6 +94,9 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public boolean isTokenExpired(String token) {
+        if (token == null || token.isBlank()) {
+            return true;
+        }
         return extractExpiration(token).before(new Date());
     }
 

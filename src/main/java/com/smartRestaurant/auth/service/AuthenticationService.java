@@ -46,9 +46,35 @@ public interface AuthenticationService {
     void changePassword(String email, String currentPassword, String newPassword, String otp);
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Solo para usuarios con requiresPasswordChange = true
+     * 
+     * @param email       Email del usuario
+     * @param newPassword Nueva contraseña
+     * @return AuthResponse con nuevos tokens JWT para mantener la sesión
+     */
+    AuthResponse changePasswordFirstLogin(String email, String newPassword);
+
+    /**
      * Cierra la sesión del usuario invalidando su refresh token (RF-12)
      * 
      * @param refreshToken Token de refresco a invalidar
      */
     void logout(String refreshToken);
+
+    /**
+     * Obtiene la información del usuario actualmente autenticado
+     * 
+     * @param email Email del usuario autenticado
+     * @return UserResponse con la información del usuario
+     */
+    com.smartRestaurant.auth.dto.response.UserResponse getCurrentUser(String email);
+
+    /**
+     * Procesa login/registro con proveedor social (Google, Facebook, GitHub)
+     * 
+     * @param request Solicitud con proveedor y token de acceso
+     * @return AuthResponse con tokens JWT
+     */
+    //AuthResponse socialLogin(com.smartRestaurant.auth.dto.request.SocialLoginRequest request);
 }

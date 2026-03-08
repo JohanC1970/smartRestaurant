@@ -33,6 +33,7 @@ public enum AuditEventType {
     // Eventos de cuenta
     ACCOUNT_LOCKED("Cuenta bloqueada", "Cuenta bloqueada por intentos fallidos"),
     ACCOUNT_UNLOCKED("Cuenta desbloqueada", "Cuenta desbloqueada exitosamente"),
+    USER_UPDATED("Usuario actualizado", "Datos del usuario modificados por administrador"),  // ← agregar aquí
 
     // Eventos de tokens
     TOKEN_REFRESHED("Token renovado", "Token de acceso renovado"),

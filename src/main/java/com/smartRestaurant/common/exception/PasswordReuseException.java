@@ -6,7 +6,7 @@ package com.smartRestaurant.common.exception;
 public class PasswordReuseException extends AuthException {
 
     public PasswordReuseException() {
-        super("No puede reutilizar su contraseña anterior", "PASSWORD_REUSE");
+        super("No puede usar la misma contraseña anterior. Por favor elija una contraseña diferente.", "PASSWORD_REUSE");
     }
 
     public PasswordReuseException(String message) {

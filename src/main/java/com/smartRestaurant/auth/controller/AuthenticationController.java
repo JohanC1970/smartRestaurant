@@ -1,6 +1,7 @@
 package com.smartRestaurant.auth.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
@@ -101,6 +102,24 @@ public class AuthenticationController {
     }
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Mantiene la sesión activa devolviendo nuevos tokens JWT
+     */
+    @PostMapping("/change-password-first-login")
+    public ResponseEntity<AuthResponse> changePasswordFirstLogin(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.FirstLoginPasswordChangeRequest request) {
+        
+        // Validar que las contraseñas coincidan
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Las contraseñas no coinciden");
+        }
+        
+        return ResponseEntity.ok(authenticationService.changePasswordFirstLogin(
+                request.getEmail(),
+                request.getNewPassword()));
+    }
+
+    /**
      * RF-12: Cierra la sesión del usuario
      */
     @PostMapping("/logout")
@@ -108,4 +127,27 @@ public class AuthenticationController {
         authenticationService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Sesión cerrada exitosamente.");
     }
+
+    /**
+     * Obtiene la información del usuario actualmente autenticado
+     */
+    @GetMapping("/me")
+    public ResponseEntity<com.smartRestaurant.auth.dto.response.UserResponse> getCurrentUser(
+            org.springframework.security.core.Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(authenticationService.getCurrentUser(email));
+    }
+
+    /**
+     * Login/Registro con proveedor social (Google, Facebook, GitHub)
+     */
+    /**
+    @PostMapping("/social-login")
+    public ResponseEntity<AuthResponse> socialLogin(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.SocialLoginRequest request) {
+        return ResponseEntity.ok(authenticationService.socialLogin(request));
+    }*/
 }
