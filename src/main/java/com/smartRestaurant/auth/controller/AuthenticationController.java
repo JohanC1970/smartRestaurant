@@ -93,6 +93,24 @@ public class AuthenticationController {
     }
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Mantiene la sesión activa devolviendo nuevos tokens JWT
+     */
+    @PostMapping("/change-password-first-login")
+    public ResponseEntity<AuthResponse> changePasswordFirstLogin(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.FirstLoginPasswordChangeRequest request) {
+        
+        // Validar que las contraseñas coincidan
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Las contraseñas no coinciden");
+        }
+        
+        return ResponseEntity.ok(authenticationService.changePasswordFirstLogin(
+                request.getEmail(),
+                request.getNewPassword()));
+    }
+
+    /**
      * RF-12: Cierra la sesión del usuario
      */
     @PostMapping("/logout")

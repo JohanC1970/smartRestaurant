@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Habilita @PreAuthorize y @PostAuthorize
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -38,7 +40,15 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Public endpoints
+                        .requestMatchers("/api/auth/register", 
+                                       "/api/auth/login", 
+                                       "/api/auth/verify-2fa",
+                                       "/api/auth/verify-email",
+                                       "/api/auth/forgot-password",
+                                       "/api/auth/reset-password",
+                                       "/api/auth/unlock-account",
+                                       "/api/auth/refresh-token").permitAll() // Public endpoints
+                        .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren autenticación
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
                         .anyRequest().authenticated())
 

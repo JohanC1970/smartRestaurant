@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyAuthority('user:read', 'ROLE_ADMIN')")
 public class AdminController {
 
     private final AuthenticationService authenticationService;
@@ -38,6 +38,7 @@ public class AdminController {
     // ── Registro ─────────────────────────────────────────────────────────────
 
     @PostMapping("/register-employee")
+    @PreAuthorize("hasAnyAuthority('user:write', 'ROLE_ADMIN')")
     public ResponseEntity<String> registerEmployee(@RequestBody @Valid RegisterAdminRequest request) {
         authenticationService.registerEmployee(request);
         return ResponseEntity.ok("Empleado registrado exitosamente.");
@@ -54,6 +55,7 @@ public class AdminController {
      * GET /admin/users?role=KITCHEN&status=INACTIVE
      */
     @GetMapping("/users")
+    @PreAuthorize("hasAnyAuthority('user:read', 'ROLE_ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) UserStatus status) {
@@ -66,6 +68,7 @@ public class AdminController {
      * GET /admin/users/{id}
      */
     @GetMapping("/users/{id}")
+    @PreAuthorize("hasAnyAuthority('user:read', 'ROLE_ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.getUserById(id));
     }
@@ -79,6 +82,7 @@ public class AdminController {
      * Body: { "firstName": "...", "lastName": "..." }
      */
     @PutMapping("/users/{id}")
+    @PreAuthorize("hasAnyAuthority('user:write', 'ROLE_ADMIN')")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
             @RequestBody @Valid UpdateUserRequest request) {
@@ -92,6 +96,7 @@ public class AdminController {
      * Body: { "role": "WAITER" }  →  ADMIN | KITCHEN | WAITER | CUSTOMER
      */
     @PatchMapping("/users/{id}/role")
+    @PreAuthorize("hasAnyAuthority('user:write', 'ROLE_ADMIN')")
     public ResponseEntity<UserResponse> changeRole(
             @PathVariable Long id,
             @RequestBody @Valid ChangeRoleRequest request) {
@@ -106,6 +111,7 @@ public class AdminController {
      * PATCH /admin/users/{id}/deactivate
      */
     @PatchMapping("/users/{id}/deactivate")
+    @PreAuthorize("hasAnyAuthority('user:write', 'ROLE_ADMIN')")
     public ResponseEntity<UserResponse> deactivateUser(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.deactivateUser(id));
     }
@@ -116,6 +122,7 @@ public class AdminController {
      * PATCH /admin/users/{id}/activate
      */
     @PatchMapping("/users/{id}/activate")
+    @PreAuthorize("hasAnyAuthority('user:write', 'ROLE_ADMIN')")
     public ResponseEntity<UserResponse> activateUser(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.activateUser(id));
     }

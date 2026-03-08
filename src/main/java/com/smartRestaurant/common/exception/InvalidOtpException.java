@@ -6,7 +6,7 @@ package com.smartRestaurant.common.exception;
 public class InvalidOtpException extends AuthException {
 
     public InvalidOtpException() {
-        super("Código OTP inválido o expirado", "INVALID_OTP");
+        super("El código de verificación es inválido o ha expirado. Solicite uno nuevo.", "INVALID_OTP");
     }
 
     public InvalidOtpException(String message) {

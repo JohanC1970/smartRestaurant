@@ -29,6 +29,10 @@ import com.smartRestaurant.auth.service.AuthenticationService;
 import com.smartRestaurant.auth.service.EmailService;
 //import com.smartRestaurant.auth.service.SocialAuthValidator;
 import com.smartRestaurant.common.exception.AccountLockedException;
+import com.smartRestaurant.common.exception.EmailAlreadyExistsException;
+import com.smartRestaurant.common.exception.InvalidCredentialsException;
+import com.smartRestaurant.common.exception.InvalidOtpException;
+import com.smartRestaurant.common.exception.UserNotFoundException;
 import com.smartRestaurant.security.service.JwtService;
 import com.smartRestaurant.auth.service.OtpService;
 import com.smartRestaurant.auth.util.PasswordGenerator;
@@ -53,7 +57,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public void registerPublic(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = User.builder()
@@ -81,7 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public void registerEmployee(RegisterAdminRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         // RF-02: Generar contraseña temporal aleatoria
@@ -93,18 +97,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(tempPassword))
                 .role(request.getRole())
-                .status(UserStatus.PENDING) // RF-02: Pendiente hasta verificar OTP
-                .isEmailVerified(false)
+                .status(UserStatus.ACTIVE) // Usuario activo inmediatamente
+                .isEmailVerified(true) // Email verificado automáticamente
                 .requiresPasswordChange(true) // RF-02: Forzar cambio de contraseña
                 .build();
 
         userRepository.save(user);
 
-        // RF-02: Generar y enviar OTP de verificación
-        String otp = otpService.generateOtp(user, OtpTokenType.VERIFICACION_EMAIL);
-
-        // RF-02: Enviar email con credenciales temporales y OTP
-        emailService.sendEmployeeCredentials(user.getEmail(), user.getFirstName(), tempPassword, otp);
+        // RF-02: Enviar email solo con contraseña temporal (sin OTP)
+        emailService.sendEmployeeCredentials(user.getEmail(), user.getFirstName(), tempPassword, null);
 
         // RF-13: Auditoría
         auditService.logEvent(user, AuditEventType.EMPLOYEE_REGISTERED,
@@ -122,14 +123,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (user == null) {
             auditService.logEventByEmail(request.getEmail(), AuditEventType.LOGIN_FAILED,
                     "Usuario no encontrado", null, null, false);
-            throw new RuntimeException("Credenciales inválidas");
+            throw new InvalidCredentialsException();
         }
 
         // Verificar si la cuenta está bloqueada
         if (user.isLocked()) {
             auditService.logEvent(user, AuditEventType.LOGIN_FAILED,
                     "Intento de login con cuenta bloqueada", null, null, false);
-            throw new RuntimeException("La cuenta está bloqueada");
+            throw new AccountLockedException("La cuenta está bloqueada. Revise su email para desbloquearla.");
+        }
+
+        // Verificar si la cuenta está inactiva
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            auditService.logEvent(user, AuditEventType.LOGIN_FAILED,
+                    "Intento de login con cuenta inactiva", null, null, false);
+            throw new com.smartRestaurant.common.exception.AccountInactiveException();
+        }
+
+        // Verificar si la cuenta está pendiente de verificación
+        if (user.getStatus() == UserStatus.PENDING) {
+            auditService.logEvent(user, AuditEventType.LOGIN_FAILED,
+                    "Intento de login con cuenta pendiente de verificación", null, null, false);
+            throw new com.smartRestaurant.common.exception.AccountPendingException();
         }
 
         // Validar contraseña
@@ -147,7 +162,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 auditService.logEvent(user, AuditEventType.ACCOUNT_LOCKED,
                         "Cuenta bloqueada por " + user.getFailedLoginAttempts() + " intentos fallidos", null, null);
 
-                throw new RuntimeException("Cuenta bloqueada por intentos fallidos. Revise su email.");
+                throw new AccountLockedException("Cuenta bloqueada por intentos fallidos. Revise su email para desbloquearla.");
             }
 
             userRepository.save(user);
@@ -156,7 +171,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             auditService.logEvent(user, AuditEventType.LOGIN_FAILED,
                     "Contraseña incorrecta. Intento " + user.getFailedLoginAttempts() + " de 3", null, null, false);
 
-            throw new RuntimeException("Credenciales inválidas");
+            throw new InvalidCredentialsException();
         }
 
         // Credenciales válidas - resetear intentos fallidos
@@ -178,13 +193,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthResponse verify2fa(VerifyRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException());
+
+        // Verificar si la cuenta está bloqueada
+        if (user.isLocked()) {
+            auditService.logEvent(user, AuditEventType.TWO_FA_FAILED,
+                    "Intento de 2FA con cuenta bloqueada", null, null, false);
+            throw new AccountLockedException("La cuenta está bloqueada. Revise su email para desbloquearla.");
+        }
+
+        // Verificar si la cuenta está inactiva
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            auditService.logEvent(user, AuditEventType.TWO_FA_FAILED,
+                    "Intento de 2FA con cuenta inactiva", null, null, false);
+            throw new com.smartRestaurant.common.exception.AccountInactiveException();
+        }
+
+        // Verificar si la cuenta está pendiente de verificación
+        if (user.getStatus() == UserStatus.PENDING) {
+            auditService.logEvent(user, AuditEventType.TWO_FA_FAILED,
+                    "Intento de 2FA con cuenta pendiente de verificación", null, null, false);
+            throw new com.smartRestaurant.common.exception.AccountPendingException();
+        }
 
         if (!otpService.validateOtp(user, request.getCode(), OtpTokenType.LOGIN_2FA)) {
             // RF-13: Auditoría de 2FA fallido
             auditService.logEvent(user, AuditEventType.TWO_FA_FAILED,
                     "Código 2FA inválido o expirado", null, null, false);
-            throw new RuntimeException("Código OTP inválido o expirado");
+            throw new InvalidOtpException();
         }
 
         otpService.consumeOtp(user, request.getCode(), OtpTokenType.LOGIN_2FA);
@@ -371,6 +407,53 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // RF-13: Auditoría
         auditService.logEvent(user, AuditEventType.PASSWORD_CHANGED,
                 "Contraseña cambiada voluntariamente", null, null);
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse changePasswordFirstLogin(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Validar que el usuario realmente requiere cambio de contraseña
+        if (!user.isRequiresPasswordChange()) {
+            throw new RuntimeException("Este usuario no requiere cambio de contraseña");
+        }
+
+        // RF-08: Validar que no reutilice la contraseña anterior
+        if (user.getPreviousPasswordHash() != null &&
+                passwordEncoder.matches(newPassword, user.getPreviousPasswordHash())) {
+            throw new RuntimeException("No puede reutilizar su contraseña anterior");
+        }
+
+        // Guardar contraseña anterior y actualizar
+        user.setPreviousPasswordHash(user.getPassword());
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setRequiresPasswordChange(false); // Ya cambió la contraseña
+        userRepository.save(user);
+
+        // Generar nuevos tokens para mantener la sesión activa
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        // Guardar refresh token en base de datos
+        RefreshToken refreshTokenEntity = RefreshToken.builder()
+                .usuario(user)
+                .token(refreshToken)
+                .build();
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        // RF-13: Auditoría
+        auditService.logEvent(user, AuditEventType.PASSWORD_CHANGED,
+                "Contraseña cambiada en primer login", null, null);
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .message("Contraseña cambiada exitosamente")
+                .is2faRequired(false)
+                .requiresPasswordChange(false)
+                .build();
     }
 
     @Override

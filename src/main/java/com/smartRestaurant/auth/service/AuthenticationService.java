@@ -44,6 +44,16 @@ public interface AuthenticationService {
     void changePassword(String email, String currentPassword, String newPassword, String otp);
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Solo para usuarios con requiresPasswordChange = true
+     * 
+     * @param email       Email del usuario
+     * @param newPassword Nueva contraseña
+     * @return AuthResponse con nuevos tokens JWT para mantener la sesión
+     */
+    AuthResponse changePasswordFirstLogin(String email, String newPassword);
+
+    /**
      * Cierra la sesión del usuario invalidando su refresh token (RF-12)
      * 
      * @param refreshToken Token de refresco a invalidar
