@@ -12,9 +12,9 @@ spring:
   
   # Database Configuration
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/smart_restaurant}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/smart_restaurant}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:1970}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
@@ -49,12 +49,13 @@ server:
 
 # CORS Configuration
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000}
 
 # Social Login Configuration
 social:
   google:
-    client-id: ${GOOGLE_CLIENT_ID:}
+    client-id: ${GOOGLE_CLIENT_ID:512756127640-hm9hitju6rp7d749v8v9tiifqj19b3ko.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET: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}
   facebook:
     app-id: ${FACEBOOK_APP_ID:}
   github:

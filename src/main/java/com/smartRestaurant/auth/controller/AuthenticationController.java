@@ -108,12 +108,12 @@ public class AuthenticationController {
     @PostMapping("/change-password-first-login")
     public ResponseEntity<AuthResponse> changePasswordFirstLogin(
             @RequestBody @Valid com.smartRestaurant.auth.dto.request.FirstLoginPasswordChangeRequest request) {
-        
+
         // Validar que las contraseñas coincidan
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Las contraseñas no coinciden");
         }
-        
+
         return ResponseEntity.ok(authenticationService.changePasswordFirstLogin(
                 request.getEmail(),
                 request.getNewPassword()));
@@ -144,10 +144,9 @@ public class AuthenticationController {
     /**
      * Login/Registro con proveedor social (Google, Facebook, GitHub)
      */
-    /**
     @PostMapping("/social-login")
     public ResponseEntity<AuthResponse> socialLogin(
             @RequestBody @Valid com.smartRestaurant.auth.dto.request.SocialLoginRequest request) {
         return ResponseEntity.ok(authenticationService.socialLogin(request));
-    }*/
+    }
 }

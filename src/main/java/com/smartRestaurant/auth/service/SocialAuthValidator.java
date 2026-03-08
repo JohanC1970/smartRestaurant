@@ -52,20 +52,22 @@ public class SocialAuthValidator {
      */
     private SocialUserInfo validateGoogleToken(String accessToken) {
         try {
-            String url = "https://www.googleapis.com/oauth2/v3/userinfo";
+            // GSI brinda un ID Token, no un Access Token.
+            // Se debe validar contra el endpoint tokeninfo.
+            String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + accessToken;
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(accessToken);
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    entity,
-                    Map.class);
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> userInfo = response.getBody();
+
+                // Verificar que el token fue emitido para nuestro cliente (opcional pero
+                // recomendado)
+                String aud = (String) userInfo.get("aud");
+                if (googleClientId != null && !googleClientId.isEmpty() && !googleClientId.equals(aud)) {
+                    log.error("Token de Google aud mismatch: {} vs {}", googleClientId, aud);
+                    // throw new AuthException("Token de Google no pertenece a esta aplicación");
+                }
 
                 return SocialUserInfo.builder()
                         .providerId((String) userInfo.get("sub"))
@@ -73,7 +75,8 @@ public class SocialAuthValidator {
                         .firstName((String) userInfo.get("given_name"))
                         .lastName((String) userInfo.get("family_name"))
                         .profilePicture((String) userInfo.get("picture"))
-                        .emailVerified((Boolean) userInfo.getOrDefault("email_verified", false))
+                        .emailVerified(
+                                Boolean.parseBoolean(String.valueOf(userInfo.getOrDefault("email_verified", "false"))))
                         .build();
             }
 

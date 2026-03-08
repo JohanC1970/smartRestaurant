@@ -34,7 +34,7 @@ public class DataInitializer implements CommandLineRunner {
                         .lastName("User")
                         .email(adminEmail)
                         .password(passwordEncoder.encode(adminPassword))
-                        .role(UserRole.RESTAURANTE)
+                        .role(UserRole.ADMIN)
                         .status(UserStatus.ACTIVE)
                         .isEmailVerified(true)
                         .requiresPasswordChange(false)
