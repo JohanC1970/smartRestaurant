@@ -1,9 +1,6 @@
 target/
+*.log
 .git/
-.git/
-.gitignore
-Dockerfile
-.dockerignore
 .idea/
 .vscode/
 *.iml
