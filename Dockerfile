@@ -18,6 +18,6 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 # Optimize for Render Free Tier (512MB RAM)
-# -Xmx384m leaves room for meta-space and OS
+# -Xmx256m is safer to avoid OOM kills by Render
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java -Xmx384m -jar app.jar --server.port=${PORT:-8080}"]
+ENTRYPOINT ["sh", "-c", "java -Xmx256m -Djava.security.egd=file:/dev/./urandom -jar app.jar --server.port=${PORT:-8080}"]
