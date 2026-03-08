@@ -31,21 +31,21 @@ spring:
   # Mail Configuration
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
+    port: ${MAIL_PORT:465}
     username: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
     password: ${MAIL_PASSWORD:lulf fxpj ancz ayie}
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
-            enable: true
-            required: true
           ssl:
+            enable: true
             trust: smtp.gmail.com
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+          starttls:
+            enable: false
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
 # Server Configuration
 server:
