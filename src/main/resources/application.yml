@@ -28,24 +28,10 @@ spring:
       hibernate:
         format_sql: true
   
-  # Mail Configuration
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
-    password: ${MAIL_PASSWORD:lulf fxpj ancz ayie}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          ssl:
-            trust: smtp.gmail.com
-          connectiontimeout: 15000
-          timeout: 15000
-          writetimeout: 15000
+  # SendGrid Configuration
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY}
+    from-email: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
 
 # Server Configuration
 server:
