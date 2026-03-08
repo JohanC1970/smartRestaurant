@@ -1,18 +1,21 @@
 # Build stage
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-COPY pom.xml .
+# Copy the maven wrapper and pom file
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+# Ensure mvnw is executable
+RUN chmod +x mvnw
+# Download dependencies (optional but speeds up builds)
+RUN ./mvnw dependency:go-offline -B
+# Copy source and build
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
 # Run stage
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Render uses the PORT environment variable. 
-# Spring Boot needs SERVER_PORT.
-# We will pass -Dserver.port=$PORT at runtime.
 EXPOSE 8080
-
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
