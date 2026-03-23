@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin/audit-logs")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
 public class AuditController {
 
     private final SecurityAuditLogRepository auditLogRepository;
@@ -38,6 +38,7 @@ public class AuditController {
      * Obtiene todos los logs de auditoría con paginación
      */
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getAllLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -53,6 +54,7 @@ public class AuditController {
      * Obtiene logs de un usuario específico
      */
     @GetMapping("/by-user")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getLogsByUser(
             @RequestParam Long userId,
             @RequestParam(defaultValue = "0") int page,
@@ -69,6 +71,7 @@ public class AuditController {
      * Obtiene logs por tipo de evento
      */
     @GetMapping("/by-event-type")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getLogsByEventType(
             @RequestParam AuditEventType eventType,
             @RequestParam(defaultValue = "0") int page,
@@ -85,6 +88,7 @@ public class AuditController {
      * Obtiene logs en un rango de fechas
      */
     @GetMapping("/by-date-range")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getLogsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
@@ -103,6 +107,7 @@ public class AuditController {
      * Obtiene logs fallidos (eventos no exitosos)
      */
     @GetMapping("/failed")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getFailedLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -118,6 +123,7 @@ public class AuditController {
      * Obtiene logs críticos (eventos que requieren atención)
      */
     @GetMapping("/critical")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getCriticalLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -139,6 +145,7 @@ public class AuditController {
      * Obtiene los últimos 10 eventos de un usuario
      */
     @GetMapping("/recent-by-user")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<List<AuditLogResponse>> getRecentLogsByUser(@RequestParam Long userId) {
         List<SecurityAuditLog> logs = auditLogRepository.findTop10ByUserIdOrderByTimestampDesc(userId);
 
@@ -153,6 +160,7 @@ public class AuditController {
      * Obtiene logs por dirección IP
      */
     @GetMapping("/by-ip")
+    @PreAuthorize("hasAnyAuthority('audit:read', 'ROLE_ADMIN')")
     public ResponseEntity<Page<AuditLogResponse>> getLogsByIp(
             @RequestParam String ipAddress,
             @RequestParam(defaultValue = "0") int page,

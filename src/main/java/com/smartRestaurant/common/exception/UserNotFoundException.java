@@ -6,7 +6,7 @@ package com.smartRestaurant.common.exception;
 public class UserNotFoundException extends AuthException {
 
     public UserNotFoundException() {
-        super("Usuario no encontrado", "USER_NOT_FOUND");
+        super("No se encontró el usuario solicitado", "USER_NOT_FOUND");
     }
 
     public UserNotFoundException(String message) {
