@@ -1,0 +1,88 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.smartRestaurant:smartRestaurant >-----------------
+[INFO] Building smartRestaurant 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.4.2:run (default-cli) > test-compile @ smartRestaurant >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ smartRestaurant ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 15 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ smartRestaurant ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ smartRestaurant ---
+[INFO] skip non existing resourceDirectory /Users/jeyson/Documents/ISW3/smartRestaurant/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ smartRestaurant ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 15 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] <<< spring-boot:3.4.2:run (default-cli) < test-compile @ smartRestaurant <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.4.2:run (default-cli) @ smartRestaurant ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.2)
+
+2026-03-08T03:25:41.263-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.SmartRestaurantApplication           : Starting SmartRestaurantApplication using Java 23.0.1 with PID 18208 (/Users/jeyson/Documents/ISW3/smartRestaurant/target/classes started by jeyson in /Users/jeyson/Documents/ISW3/smartRestaurant)
+2026-03-08T03:25:41.265-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.SmartRestaurantApplication           : No active profile set, falling back to 1 default profile: "default"
+2026-03-08T03:25:42.218-05:00  INFO 18208 --- [smartRestaurant] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-08T03:25:42.345-05:00  INFO 18208 --- [smartRestaurant] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 118 ms. Found 15 JPA repository interfaces.
+2026-03-08T03:25:43.017-05:00  INFO 18208 --- [smartRestaurant] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-03-08T03:25:43.036-05:00  INFO 18208 --- [smartRestaurant] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-08T03:25:43.036-05:00  INFO 18208 --- [smartRestaurant] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-03-08T03:25:43.096-05:00  INFO 18208 --- [smartRestaurant] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-03-08T03:25:43.098-05:00  INFO 18208 --- [smartRestaurant] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1764 ms
+2026-03-08T03:25:43.272-05:00  INFO 18208 --- [smartRestaurant] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-03-08T03:25:43.336-05:00  INFO 18208 --- [smartRestaurant] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
+2026-03-08T03:25:43.381-05:00  INFO 18208 --- [smartRestaurant] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-03-08T03:25:43.723-05:00  INFO 18208 --- [smartRestaurant] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-08T03:25:43.759-05:00  INFO 18208 --- [smartRestaurant] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-03-08T03:25:43.933-05:00  INFO 18208 --- [smartRestaurant] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7da77305
+2026-03-08T03:25:43.935-05:00  INFO 18208 --- [smartRestaurant] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-03-08T03:25:43.960-05:00  WARN 18208 --- [smartRestaurant] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-03-08T03:25:43.977-05:00  INFO 18208 --- [smartRestaurant] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 15.17
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-03-08T03:25:45.209-05:00  INFO 18208 --- [smartRestaurant] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-08T03:25:46.385-05:00  INFO 18208 --- [smartRestaurant] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-08T03:25:46.665-05:00  INFO 18208 --- [smartRestaurant] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-08T03:25:47.907-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.auth.service.impl.EmailServiceImpl   : EmailService inicializado con remitente: garciacamilo1970@gmail.com
+2026-03-08T03:25:47.907-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.auth.service.impl.EmailServiceImpl   : === Verificando conexión SMTP con Gmail ===
+2026-03-08T03:25:50.126-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.auth.service.impl.EmailServiceImpl   : === Conexión SMTP exitosa ✓ ===
+2026-03-08T03:25:50.746-05:00  WARN 18208 --- [smartRestaurant] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-08T03:25:50.780-05:00  INFO 18208 --- [smartRestaurant] [           main] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-03-08T03:25:50.780-05:00  WARN 18208 --- [smartRestaurant] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-03-08T03:25:51.442-05:00  INFO 18208 --- [smartRestaurant] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-03-08T03:25:51.451-05:00  INFO 18208 --- [smartRestaurant] [           main] c.s.SmartRestaurantApplication           : Started SmartRestaurantApplication in 10.746 seconds (process running for 11.223)
+Hibernate: 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+2026-03-08T03:30:45.469-05:00  INFO 18208 --- [smartRestaurant] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-08T03:30:45.478-05:00  INFO 18208 --- [smartRestaurant] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-03-08T03:30:45.487-05:00  INFO 18208 --- [smartRestaurant] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-08T03:30:45.493-05:00  INFO 18208 --- [smartRestaurant] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-08T03:30:45.497-05:00  INFO 18208 --- [smartRestaurant] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

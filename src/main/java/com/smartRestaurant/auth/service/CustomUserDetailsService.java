@@ -22,17 +22,14 @@ public class CustomUserDetailsService implements UserDetailsService {
                                 .orElseThrow(() -> new UsernameNotFoundException(
                                                 "Usuario no encontrado con email: " + email));
 
-                // Convertir User a UserDetails de Spring Security
+                // Convertir User a UserDetails de Spring Security con permisos granulares
                 return org.springframework.security.core.userdetails.User
                                 .withUsername(user.getEmail())
                                 .password(user.getPassword())
-                                .roles(user.getRole().name())
+                                .authorities(user.getRole().getAuthorities()) // Incluye rol y permisos
                                 .accountLocked(user.isLocked())
                                 .disabled(user.getStatus() != com.smartRestaurant.auth.model.enums.UserStatus.ACTIVE
-                                                && user.getStatus() != com.smartRestaurant.auth.model.enums.UserStatus.PENDING) // Adjust
-                                                                                                                                // logic
-                                                                                                                                // if
-                                                                                                                                // needed
+                                                && user.getStatus() != com.smartRestaurant.auth.model.enums.UserStatus.PENDING)
                                 .build();
         }
 }

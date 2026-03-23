@@ -92,6 +92,13 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    /**
+     * ID del restaurante al que pertenece el usuario.
+     * Para administradores (dueños), es su propio ID o un ID único de restaurante.
+     * Para empleados, es el ID del administrador que los creó.
+     */
+    private Long restaurantId;
+
     // Relaciones
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)

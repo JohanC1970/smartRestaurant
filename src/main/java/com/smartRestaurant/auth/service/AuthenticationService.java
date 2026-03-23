@@ -12,6 +12,8 @@ public interface AuthenticationService {
 
     void registerEmployee(RegisterAdminRequest request);
 
+    void resendVerification(String email);
+
     AuthResponse login(LoginRequest request);
 
     AuthResponse verify2fa(VerifyRequest request);
@@ -44,6 +46,16 @@ public interface AuthenticationService {
     void changePassword(String email, String currentPassword, String newPassword, String otp);
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Solo para usuarios con requiresPasswordChange = true
+     * 
+     * @param email       Email del usuario
+     * @param newPassword Nueva contraseña
+     * @return AuthResponse con nuevos tokens JWT para mantener la sesión
+     */
+    AuthResponse changePasswordFirstLogin(String email, String newPassword);
+
+    /**
      * Cierra la sesión del usuario invalidando su refresh token (RF-12)
      * 
      * @param refreshToken Token de refresco a invalidar
@@ -64,5 +76,5 @@ public interface AuthenticationService {
      * @param request Solicitud con proveedor y token de acceso
      * @return AuthResponse con tokens JWT
      */
-    //AuthResponse socialLogin(com.smartRestaurant.auth.dto.request.SocialLoginRequest request);
+    AuthResponse socialLogin(com.smartRestaurant.auth.dto.request.SocialLoginRequest request);
 }

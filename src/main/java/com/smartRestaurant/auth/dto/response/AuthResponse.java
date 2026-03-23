@@ -23,4 +23,11 @@ public class AuthResponse {
      */
     @Builder.Default
     private boolean requiresPasswordChange = false;
+
+    // Información del usuario
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String role;
+    private Long restaurantId;
 }

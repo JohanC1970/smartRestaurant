@@ -6,7 +6,7 @@ package com.smartRestaurant.common.exception;
 public class AccountLockedException extends AuthException {
 
     public AccountLockedException() {
-        super("La cuenta está bloqueada", "ACCOUNT_LOCKED");
+        super("Su cuenta ha sido bloqueada. Por favor revise su correo electrónico para desbloquearla.", "ACCOUNT_LOCKED");
     }
 
     public AccountLockedException(String message) {
