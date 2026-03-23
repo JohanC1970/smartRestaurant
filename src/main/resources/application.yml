@@ -42,7 +42,7 @@ server:
 
 # CORS Configuration
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000,https://smart-restaurant-front-web.vercel.app}
 
 # Social Login Configuration
 social:
