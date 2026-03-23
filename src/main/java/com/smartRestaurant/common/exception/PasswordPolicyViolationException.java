@@ -7,7 +7,7 @@ package com.smartRestaurant.common.exception;
 public class PasswordPolicyViolationException extends AuthException {
 
     public PasswordPolicyViolationException() {
-        super("La contraseña no cumple con las políticas de seguridad", "PASSWORD_POLICY_VIOLATION");
+        super("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales", "PASSWORD_POLICY_VIOLATION");
     }
 
     public PasswordPolicyViolationException(String message) {

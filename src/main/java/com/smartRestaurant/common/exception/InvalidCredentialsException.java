@@ -6,7 +6,7 @@ package com.smartRestaurant.common.exception;
 public class InvalidCredentialsException extends AuthException {
 
     public InvalidCredentialsException() {
-        super("Credenciales inválidas", "INVALID_CREDENTIALS");
+        super("El email o la contraseña son incorrectos", "INVALID_CREDENTIALS");
     }
 
     public InvalidCredentialsException(String message) {

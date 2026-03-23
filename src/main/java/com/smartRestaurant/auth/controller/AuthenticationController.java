@@ -26,9 +26,10 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Valid RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody @Valid RegisterRequest request) {
         authenticationService.registerPublic(request);
-        return ResponseEntity.ok("Usuario registrado exitosamente. Por favor verifique su email.");
+        return ResponseEntity
+                .ok(java.util.Map.of("message", "Usuario registrado exitosamente. Por favor verifique su email."));
     }
 
     @PostMapping("/login")
@@ -42,21 +43,29 @@ public class AuthenticationController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestBody @Valid VerifyRequest request) {
+    public ResponseEntity<?> verifyEmail(@RequestBody @Valid VerifyRequest request) {
         authenticationService.verifyEmail(request);
-        return ResponseEntity.ok("Email verificado exitosamente. Ya puede iniciar sesión.");
+        return ResponseEntity
+                .ok(java.util.Map.of("message", "Email verificado exitosamente. Ya puede iniciar sesión."));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody VerifyRequest request) {
+        authenticationService.resendVerification(request.getEmail());
+        return ResponseEntity.ok(java.util.Map.of("message", "Nuevo código de verificación enviado a su correo."));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody VerifyRequest request) {
+    public ResponseEntity<?> forgotPassword(@RequestBody VerifyRequest request) {
         authenticationService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok("Si el email existe, se ha enviado un código de recuperación.");
+        return ResponseEntity
+                .ok(java.util.Map.of("message", "Si el email existe, se ha enviado un código de recuperación."));
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
-        return ResponseEntity.ok("Contraseña restablecida exitosamente.");
+        return ResponseEntity.ok(java.util.Map.of("message", "Contraseña restablecida exitosamente."));
     }
 
     @PostMapping("/unlock-account")
@@ -93,6 +102,24 @@ public class AuthenticationController {
     }
 
     /**
+     * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
+     * Mantiene la sesión activa devolviendo nuevos tokens JWT
+     */
+    @PostMapping("/change-password-first-login")
+    public ResponseEntity<AuthResponse> changePasswordFirstLogin(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.FirstLoginPasswordChangeRequest request) {
+
+        // Validar que las contraseñas coincidan
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Las contraseñas no coinciden");
+        }
+
+        return ResponseEntity.ok(authenticationService.changePasswordFirstLogin(
+                request.getEmail(),
+                request.getNewPassword()));
+    }
+
+    /**
      * RF-12: Cierra la sesión del usuario
      */
     @PostMapping("/logout")
@@ -117,10 +144,9 @@ public class AuthenticationController {
     /**
      * Login/Registro con proveedor social (Google, Facebook, GitHub)
      */
-    /**
     @PostMapping("/social-login")
     public ResponseEntity<AuthResponse> socialLogin(
             @RequestBody @Valid com.smartRestaurant.auth.dto.request.SocialLoginRequest request) {
         return ResponseEntity.ok(authenticationService.socialLogin(request));
-    }*/
+    }
 }
