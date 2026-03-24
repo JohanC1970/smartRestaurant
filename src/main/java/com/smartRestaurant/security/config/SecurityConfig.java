@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/unlock-account",
-                                "/api/auth/refresh-token")
+                                "/api/auth/refresh-token",
+                                "/")
                         .permitAll() // Public endpoints
                         .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren
                                                                          // autenticación
