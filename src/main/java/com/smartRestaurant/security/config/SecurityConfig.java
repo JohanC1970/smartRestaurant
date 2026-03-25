@@ -1,5 +1,6 @@
 package com.smartRestaurant.security.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,7 +32,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://44.195.31.1}")
+    @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthFilter;
