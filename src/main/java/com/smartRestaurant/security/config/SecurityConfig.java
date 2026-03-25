@@ -31,7 +31,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://localhost:4200}")
+    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://44.195.31.1}")
     private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -51,7 +51,9 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/unlock-account",
-                                "/api/auth/refresh-token")
+                                "/api/auth/refresh-token",
+                                "api/images/**",
+                                "/")
                         .permitAll() // Public endpoints
                         .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren
                                                                          // autenticación
