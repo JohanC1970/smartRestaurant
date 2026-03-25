@@ -12,9 +12,9 @@ spring:
   
   # Database Configuration
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:http://localhost:5432/SmartRestaurant}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:holasoysamu4}
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
@@ -30,7 +30,7 @@ spring:
   
   # SendGrid Configuration
   sendgrid:
-    api-key: ${SENDGRID_API_KEY}
+    api-key: ${SENDGRID_API_KEY:***REMOVED***}
     from-email: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
 
 # Server Configuration
@@ -70,5 +70,5 @@ spring.servlet.multipart:
 app:
   init:
     admin:
-      email: ${ADMIN_EMAIL:smartrestaurant15@gmail.com}
+      email: ${ADMIN_EMAIL:samuelandrescm@gmail.com}
       password: ${ADMIN_PASSWORD:Smart1234!}
