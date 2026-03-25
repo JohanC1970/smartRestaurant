@@ -61,7 +61,7 @@ class DishServiceTest {
         testDish = new Dish();
         testDish.setId("dish-1");
         testDish.setName("Bandeja Paisa");
-        testDish.setPrice("25000");
+        testDish.setPrice(25000);
         testDish.setState(State.ACTIVE);
         testDish.setCategory(testCategory);
     }
