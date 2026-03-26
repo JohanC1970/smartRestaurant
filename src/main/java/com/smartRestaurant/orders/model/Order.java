@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Table(name = "orders")
 @Getter
 @Setter
 public class Order {
@@ -38,7 +39,7 @@ public class Order {
     private LocalDateTime updatedAt; // null if don´t
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<OrderItem<?>> items;
+    private List<OrderItem> items;
 
     @OneToOne(mappedBy= "order")
     private Payment payment; // null if was presential
