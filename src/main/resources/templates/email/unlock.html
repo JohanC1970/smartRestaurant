@@ -3,71 +3,122 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Desbloqueo de Cuenta</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
             margin: 0;
             padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .container {
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f1f5f9;
+            padding-bottom: 40px;
+        }
+
+        .main-container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-top: 40px;
         }
 
         .header {
-            background-color: #FF9800;
-            color: white;
-            padding: 10px;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            padding: 40px 20px;
             text-align: center;
-            border-radius: 8px 8px 0 0;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
         }
 
         .content {
-            padding: 20px;
+            padding: 40px 30px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .otp-container {
+            background-color: #fef2f2;
+            border: 2px dashed #fecaca;
+            border-radius: 12px;
+            padding: 30px;
             text-align: center;
+            margin: 30px 0;
         }
 
         .otp-code {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
-            letter-spacing: 5px;
-            margin: 20px 0;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border: 1px dashed #ccc;
+            font-size: 42px;
+            font-weight: 800;
+            color: #dc2626;
+            letter-spacing: 8px;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
         }
 
         .footer {
+            padding: 30px;
             text-align: center;
-            color: #777;
-            font-size: 12px;
-            margin-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .accent-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #ef4444 0%, #991b1b 100%);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Cuenta Bloqueada</h1>
-        </div>
-        <div class="content">
-            <p>Hola <span th:text="${name}">Usuario</span>,</p>
-            <p>Tu cuenta ha sido bloqueada temporalmente por seguridad. Para desbloquearla, usa el siguiente código:</p>
-            <div class="otp-code" th:text="${otp}">123456</div>
-            <p>Este código expirará en 1 hora.</p>
-            <p>Si no reconoces esta actividad, por favor contacta a soporte.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 Smart Restaurant by CamiloG. Todos los derechos reservados.</p>
+    <div class="wrapper">
+        <div class="main-container">
+            <div class="accent-bar"></div>
+            <div class="header">
+                <h1>Cuenta Bloqueada</h1>
+            </div>
+            <div class="content">
+                <p>Hola <span class="user-name" th:text="${name}">Usuario</span>,</p>
+                <p>Por motivos de seguridad, tu cuenta de SmartRestaurant ha sido bloqueada temporalmente debido a
+                    múltiples intentos fallidos de acceso. Para reactivarla, por favor usa el siguiente código:</p>
+
+                <div class="otp-container">
+                    <div class="otp-code" th:text="${otp}">123456</div>
+                </div>
+
+                <p>Una vez ingreses este código en la aplicación, podrás volver a usar tu cuenta normalmente.</p>
+                <p>Si no has sido tú quien intentó acceder, te recomendamos cambiar tu clave lo antes posible.</p>
+
+                <p>Atentamente,<br>Seguridad SmartRestaurant</p>
+            </div>
+            <div class="footer">
+                <p>&copy; 2026 SmartRestaurant - Proteccion de Datos</p>
+            </div>
         </div>
     </div>
 </body>
