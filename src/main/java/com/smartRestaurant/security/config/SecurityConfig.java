@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Public endpoints
+                        .requestMatchers("/api/chatbot/**").permitAll() // Chatbot endpoints (public)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
                         .anyRequest().authenticated())
 
