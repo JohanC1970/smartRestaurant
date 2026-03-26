@@ -1,32 +1,132 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <title>Verificación de Email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificacion de Cuenta</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { padding: 20px; text-align: center; }
-        .otp-code { font-size: 32px; font-weight: bold; color: #333; letter-spacing: 5px; margin: 20px 0; background-color: #f9f9f9; padding: 10px; border: 1px dashed #ccc; }
-        .footer { text-align: center; color: #777; font-size: 12px; margin-top: 20px; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f1f5f9;
+            padding-bottom: 40px;
+        }
+
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-top: 40px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .content {
+            padding: 40px 30px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .otp-container {
+            background-color: #f8fafc;
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .otp-code {
+            font-size: 42px;
+            font-weight: 800;
+            color: #2563eb;
+            letter-spacing: 8px;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .footer {
+            padding: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .accent-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Verificación de Cuenta</h1>
-        </div>
-        <div class="content">
-            <p>Hola <span th:text="${name}">Usuario</span>,</p>
-            <p>Gracias por registrarte en Smart Restaurant. Usa el siguiente código para verificar tu correo electrónico:</p>
-            <div class="otp-code" th:text="${otp}">123456</div>
-            <p>Este código expirará en 24 horas.</p>
-            <p>Si no solicitaste este código, por favor ignora este correo.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 Smart Restaurant by CamiloG. Todos los derechos reservados.</p>
+    <div class="wrapper">
+        <div class="main-container">
+            <div class="accent-bar"></div>
+            <div class="header">
+                <h1>SmartRestaurant</h1>
+            </div>
+            <div class="content">
+                <p>Hola <span class="user-name" th:text="${name}">Usuario</span>,</p>
+                <p>Bienvenido a la plataforma definitiva para gestion gastronomica. Para activar su cuenta y comenzar
+                    esta experiencia, use el siguiente codigo de verificacion:</p>
+
+                <div class="otp-container">
+                    <div class="otp-code" th:text="${otp}">123456</div>
+                </div>
+
+                <p>Este codigo es valido por las proximas 24 horas. Por motivos de seguridad, no comparta este mensaje
+                    con nadie.</p>
+                <p>Si usted no ha creado una cuenta en nuestro sistema, puede ignorar este correo tranquilamente.</p>
+
+                <p>Atentamente,<br>El equipo de SmartRestaurant</p>
+            </div>
+            <div class="footer">
+                <p>&copy; 2026 SmartRestaurant - Gestion Inteligente</p>
+                <p>Este es un mensaje automatico, por favor no responda a esta direccion.</p>
+            </div>
         </div>
     </div>
 </body>
+
 </html>
