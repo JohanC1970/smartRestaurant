@@ -7,7 +7,7 @@ import java.util.List;
 public record GetDishDetailDTO(String id,
                                String name,
                                String description,
-                               String price,
+                               double price,
                                List<String> photos,
                                List<GetRecipeDTO> ingredients,
                                String categoryName) {
