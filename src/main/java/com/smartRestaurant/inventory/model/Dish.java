@@ -23,7 +23,7 @@ public class Dish extends BaseEntity {
 
     @Column( nullable = false)
     @Positive
-    private String price;
+    private double price;
 
     @ElementCollection
     @CollectionTable(name = "Dish_photos", joinColumns = @JoinColumn(name = "dish_id"))
