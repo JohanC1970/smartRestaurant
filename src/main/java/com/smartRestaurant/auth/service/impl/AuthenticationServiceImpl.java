@@ -2,6 +2,7 @@ package com.smartRestaurant.auth.service.impl;
 
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         private final EmailService emailService;
         private final AuditService auditService;
         private final SocialAuthValidator socialAuthValidator;
+
+        @Value("${app.init.admin.email:smartrestaurant15@gmail.com}")
+        private String adminEmail;
 
         @Override
         @Transactional
@@ -183,12 +187,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 user.resetFailedAttempts();
                 userRepository.save(user);
 
-                // RF-05: 2FA Obligatorio
+                // RF-05: 2FA Obligatorio (Bypass para Admin desarrollo)
+                if (user.getEmail().equalsIgnoreCase(adminEmail)) {
+                        String accessToken = jwtService.generateAccessToken(user);
+                        String refreshToken = jwtService.generateRefreshToken(user);
+
+                        refreshTokenRepository.deleteByUsuario(user);
+                        refreshTokenRepository.save(RefreshToken.builder()
+                                        .usuario(user)
+                                        .token(refreshToken)
+                                        .build());
+
+                        return AuthResponse.builder()
+                                        .accessToken(accessToken)
+                                        .refreshToken(refreshToken)
+                                        .message("Login exitoso (Bypass 2FA)")
+                                        .is2faRequired(false)
+                                        .requiresPasswordChange(user.isRequiresPasswordChange())
+                                        .build();
+                }
+
                 String otp = otpService.generateOtp(user, OtpTokenType.LOGIN_2FA);
                 emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), otp);
 
                 return AuthResponse.builder()
-                                .message("Código 2FA enviado a su correo")
+                                .message("Codigo 2FA enviado a su correo")
                                 .is2faRequired(true)
                                 .requiresPasswordChange(user.isRequiresPasswordChange()) // RF-02: Indicar si requiere
                                                                                          // cambio
