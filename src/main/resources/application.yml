@@ -37,14 +37,14 @@ spring:
 
 # Server Configuration
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT}
   #error:
     #include-message: always
     #include-binding-errors: always
 
 # CORS Configuration
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000,https://frontend-i30i.onrender.com}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000,https://smart-restaurant-front-web.vercel.app}
 
 # Social Login Configuration
 social:
@@ -59,9 +59,10 @@ social:
 
 # Cloudinary Configuration
 cloudinary:
-  cloud_name: ${CLOUDINARY_NAME:dje3qr8tq}
-  api_key: ${CLOUDINARY_KEY:693381465632364}
-  api_secret: ${CLOUDINARY_SECRET:default_cloudinary_secret}
+
+  cloud_name: ${CLOUDINARY_NAME}
+  api_key: ${CLOUDINARY_KEY}
+  api_secret: ${CLOUDINARY_SECRET}
 
 # Multipart Configuration (para subida de imágenes)
 spring.servlet.multipart:
