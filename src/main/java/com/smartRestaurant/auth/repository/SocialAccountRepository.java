@@ -25,10 +25,11 @@ public interface SocialAccountRepository extends JpaRepository<SocialAccount, Lo
 
     /**
      * Verifica si existe una cuenta social con el proveedor y ID especificados
-     * 
-     * @param provider   Proveedor social
-     * @param providerId ID del usuario en el proveedor
-     * @return true si existe, false en caso contrario
      */
     boolean existsByProviderAndProviderId(SocialProvider provider, String providerId);
+
+    /**
+     * Verifica si un usuario tiene alguna cuenta social vinculada por email
+     */
+    boolean existsByUsuario_Email(String email);
 }

@@ -1,11 +1,7 @@
 package com.smartRestaurant.common.exception;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -250,20 +246,19 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex,
             WebRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+        // Tomar el primer mensaje de error de campo como mensaje principal
+        String firstMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getDefaultMessage())
+                .filter(msg -> msg != null && !msg.isBlank())
+                .findFirst()
+                .orElse("Error de validación en los datos enviados");
 
-        log.warn("Validation error: {}", errors);
+        log.warn("Validation error: {}", firstMessage);
 
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .errorCode("VALIDATION_ERROR")
-                .message("Error de validación en los datos enviados")
-                .details(errors.toString())
+                .message(firstMessage)
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
 

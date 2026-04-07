@@ -6,10 +6,11 @@ package com.smartRestaurant.common.exception;
 public class EmailAlreadyExistsException extends AuthException {
 
     public EmailAlreadyExistsException() {
-        super("El email ya está registrado", "EMAIL_ALREADY_EXISTS");
+        super("Este correo electrónico ya está registrado.", "EMAIL_ALREADY_EXISTS");
     }
 
-    public EmailAlreadyExistsException(String email) {
-        super("El email " + email + " ya está registrado", "EMAIL_ALREADY_EXISTS");
+    /** Constructor con mensaje personalizado (sin exponer el email). */
+    public EmailAlreadyExistsException(String customMessage) {
+        super(customMessage, "EMAIL_ALREADY_EXISTS");
     }
 }
