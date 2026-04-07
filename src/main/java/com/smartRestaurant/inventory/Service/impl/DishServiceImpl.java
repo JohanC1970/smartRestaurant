@@ -39,17 +39,11 @@ public class DishServiceImpl implements DishService {
     private final RecipeRepository recipeRepository;
 
 
-    // falta paginación
     @Override
     public List<GetDishDTO> getAll(int page) {
 
         Pageable pageable = PageRequest.of(page, 10);
         Page<Dish> dishes = dishRepository.findAll(pageable);
-
-        if(dishes.getTotalElements() == 0){
-            throw new ResourceNotFoundException("No hay platos registrados");
-        }
-
 
         return dishes.stream()
                 .filter(dish -> dish.getState().equals(State.ACTIVE))

@@ -54,10 +54,6 @@ public class DailyMenuServiceImpl implements DailyMenuService {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Dish> dishPage = dailyMenuRepository.findDishes(pageable);
 
-        if(dishPage.getTotalElements() == 0) {
-            throw new ResourceNotFoundException("Platos no encontrados");
-        }
-
         return dishPage.stream()
                 .filter(dish -> dish.getState().equals(State.ACTIVE))
                 .map(showDishesMappper::toDTO)

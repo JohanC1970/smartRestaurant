@@ -61,7 +61,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         @Transactional
         public void registerPublic(RegisterRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
-                        throw new EmailAlreadyExistsException(request.getEmail());
+                        boolean hasSocialAccount = socialAccountRepository
+                                .existsByUsuario_Email(request.getEmail());
+                        if (hasSocialAccount) {
+                                throw new EmailAlreadyExistsException(
+                                        "Este correo ya está asociado a un inicio de sesión social (Google, etc.). " +
+                                        "Inicia sesión con ese método o usa la opción de recuperar contraseña para establecer una clave.");
+                        }
+                        throw new EmailAlreadyExistsException();
                 }
 
                 User user = User.builder()
@@ -89,7 +96,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         @Transactional
         public void registerEmployee(RegisterAdminRequest request) {
                 if (userRepository.existsByEmail(request.getEmail())) {
-                        throw new EmailAlreadyExistsException(request.getEmail());
+                        throw new EmailAlreadyExistsException();
                 }
 
                 // RF-02: Generar contraseña temporal aleatoria

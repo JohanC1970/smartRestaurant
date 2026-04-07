@@ -36,10 +36,6 @@ public class DrinkServiceImpl implements DrinkService {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Drink> drinks = drinkRepository.findAll(pageable);
 
-        if (drinks.getTotalElements() == 0) {
-            throw new ResourceNotFoundException("No hay bebidas registradas");
-        }
-
         return drinks.stream()
                 .filter(drink -> drink.getState().equals(State.ACTIVE))
                 .map(drinkMapper::toDTO)

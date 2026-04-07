@@ -93,15 +93,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<GetProductDTO> getAll(int page) {
-        if(page < 0){
+        if (page < 0) {
             throw new BadRequestException("pagina invalida (negativa), debe ser >= 0");
         }
-        Pageable pageable = PageRequest.of(page,10);
-
+        Pageable pageable = PageRequest.of(page, 10);
         Page<Product> products = productRepository.findAll(pageable);
-        if(products.getTotalElements() == 0){
-            throw new ResourceNotFoundException("No existen productos encontrados");
-        }
 
         return products.stream()
                 .filter(product -> product.getState().equals(State.ACTIVE))

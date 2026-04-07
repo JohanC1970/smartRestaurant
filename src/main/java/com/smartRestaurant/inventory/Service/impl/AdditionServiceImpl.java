@@ -32,12 +32,8 @@ public class AdditionServiceImpl implements AdditionService {
     @Override
     public List<GetAdditionDTO> getAll(int page) {
 
-        Pageable pageable = PageRequest.of(page,10);
-
+        Pageable pageable = PageRequest.of(page, 10);
         Page<Addition> additions = additionRepository.findAll(pageable);
-        if(additions.getTotalElements() == 0){
-            throw new ResourceNotFoundException("No hay adiciones registradas");
-        }
 
         return additions.stream()
                 .filter(addition -> addition.getState().equals(State.ACTIVE))
