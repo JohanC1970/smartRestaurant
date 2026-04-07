@@ -28,10 +28,10 @@ public class EmailServiceImpl implements EmailService {
 
     private final TemplateEngine templateEngine;
 
-    @Value("${spring.sendgrid.api-key}")
+    @Value("${spring.sendgrid.api-key:}")
     private String sendGridApiKey;
 
-    @Value("${spring.sendgrid.from-email:garciacamilo1970@gmail.com}")
+    @Value("${spring.sendgrid.from-email:smartrestaurant15@gmail.com}")
     private String fromEmail;
 
     @PostConstruct
@@ -116,6 +116,7 @@ public class EmailServiceImpl implements EmailService {
             } else {
                 log.error("✗ Fallo al enviar email a '{}' | Status: {} | Body: {}", to, response.getStatusCode(),
                         response.getBody());
+                log.error("  Headers: {}", response.getHeaders());
             }
 
         } catch (IOException e) {
