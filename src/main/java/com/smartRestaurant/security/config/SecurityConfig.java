@@ -53,8 +53,10 @@ public class SecurityConfig {
                                 "/api/auth/unlock-account",
                                 "/api/auth/refresh-token")
                         .permitAll() // Public endpoints
+                        .requestMatchers("/api/chatbot/**").permitAll() // Chatbot endpoints (public)
                         .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren
                                                                          // autenticación
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
                         .anyRequest().authenticated())
 

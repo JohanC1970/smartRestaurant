@@ -11,7 +11,7 @@ import java.util.List;
 
 public record GetDishDTO( String id,
                           String name,
-                          String price,
+                          double price,
                           String photo
 ) {
 }

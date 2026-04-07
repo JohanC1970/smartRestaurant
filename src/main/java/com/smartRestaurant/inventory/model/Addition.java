@@ -22,13 +22,13 @@ public class Addition extends BaseEntity {
     @Column(length = 500, nullable = false)
     private String description;
 
-    @Column(length = 100,  nullable = false)
+    @Column(nullable = false)
     private double price;
 
-    @Column( nullable = false)
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(length = 10,   nullable = false)
+    @Column(length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private State state;
 
