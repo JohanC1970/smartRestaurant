@@ -57,7 +57,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren
                                                                          // autenticación
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
-                        .anyRequest().authenticated())
+                       // .anyRequest().authenticated())
+                .anyRequest().permitAll())
 
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())

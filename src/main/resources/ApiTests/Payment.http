@@ -1,0 +1,26 @@
+### Set environment variables
+@host = http://localhost:8080/api/payments
+@authToken = Bearer tu_token_aqui
+@paymentId = id_de_tu_pago_aqui
+@orderId = id_de_tu_orden_aqui
+
+### 1. Crear nuevo pago (POST)
+POST {{host}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": 1,
+  "amount": 25000.0,
+  "paymentMethod": "EFECTIVO",
+  "notes": "Pago de comida"
+}
+
+### 2. Obtener todos los pagos (GET)
+GET {{host}}
+Authorization: {{authToken}}
+
+### 3. Obtener detalle de un pago específico (GET)
+GET {{host}}/{{paymentId}}
+Authorization: {{authToken}}

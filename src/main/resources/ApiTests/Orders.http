@@ -1,0 +1,49 @@
+### Set environment variables
+@host = http://localhost:8080/api/orders
+@authToken = Bearer tu_token_aqui
+@orderId = id_de_tu_orden_aqui
+@page = 0
+
+### 1. Crear nueva orden (POST)
+POST {{host}}
+//Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "channel": "PRESENTIAL",
+  "waiterId": 1,
+  "tableNumber": "Mesa 5",
+  "items": [
+    {
+      "productId": "dish_id_example",
+      "productType": "DISH",
+      "notes": "Sin cebolla"
+    }
+  ]
+}
+
+### 2. Obtener todas las órdenes paginadas (GET)
+GET {{host}}/{{page}}/page
+Authorization: {{authToken}}
+
+### 3. Obtener detalle de una orden específica (GET)
+GET {{host}}/{{orderId}}
+Authorization: {{authToken}}
+
+### 4. Actualizar una orden (PUT)
+PUT {{host}}/{{orderId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS",
+  "tableNumber": "Mesa 6"
+}
+
+### 5. Cancelar una orden (PATCH)
+PATCH {{host}}/{{orderId}}/cancel
+Authorization: {{authToken}}
+
+### 6. Eliminar una orden (DELETE)
+DELETE {{host}}/{{orderId}}
+Authorization: {{authToken}}
