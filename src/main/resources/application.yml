@@ -30,7 +30,7 @@ spring:
   
   # SendGrid Configuration
   sendgrid:
-    api-key: ${SENDGRID_API_KEY:***REMOVED***}
+    api-key: ${SENDGRID_API_KEY}
     from-email: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
 
 # Server Configuration
