@@ -42,11 +42,6 @@ spring:
             enable: true
             required: true
         debug: false
-  
-  # SendGrid Configuration
-  sendgrid:
-    api-key: ${SENDGRID_API_KEY:SG.your_sendgrid_api_key_here}
-    from-email: ${SENDGRID_FROM_EMAIL:garciacamilo1970@gmail.com}
 
 # Server Configuration
 server:
