@@ -1,0 +1,167 @@
+### Variables de entorno
+@host = http://localhost:8080/api/invoices
+@authToken = Bearer tu_token_aqui
+@invoiceId = id_de_tu_factura_aqui
+@orderId = id_de_tu_orden_aqui
+
+### ============================================
+### FLUJO ONLINE COMPLETO
+### ============================================
+
+### 1️⃣ CLIENTE CREA ORDEN ONLINE
+### Primero se crea la orden en /api/orders con channel=ONLINE
+### POST http://localhost:8080/api/orders
+### {
+###   "channel": "ONLINE",
+###   "customerId": 1,
+###   "items": [...]
+### }
+### Respuesta: "order-uuid-123"
+
+### 2️⃣ SISTEMA CREA FACTURA AUTOMÁTICAMENTE
+### Se crea automáticamente cuando KITCHEN marca la orden como COMPLETED
+### PUT http://localhost:8080/api/orders/{orderId}
+### {
+###   "status": "COMPLETED"
+### }
+
+### 3️⃣ CLIENTE PAGA CON WOMPI
+POST {{host}}/{{invoiceId}}/pay-online
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "invoiceId": "INV-20260409-ABC123",
+  "wompiToken": "eJydUsFuwjAM_ZWLT",
+  "customerEmail": "cliente@example.com",
+  "customerPhone": "+573001234567",
+  "notes": "Pago exitoso con Wompi"
+}
+
+### Respuesta (200 OK):
+### {
+###   "data": {
+###     "id": "INV-20260409-ABC123",
+###     "orderId": "order-uuid-123",
+###     "status": "PAID",
+###     "subtotal": 50000.0,
+###     "tax": 4000.0,
+###     "total": 54000.0,
+###     "paidAt": "2026-04-09T16:30:00"
+###   },
+###   "error": false
+### }
+
+### ============================================
+### FLUJO PRESENCIAL COMPLETO
+### ============================================
+
+### 1️⃣ MESERO CREA ORDEN PRESENCIAL
+### POST http://localhost:8080/api/orders
+### {
+###   "channel": "PRESENCIAL",
+###   "waiterId": 5,
+###   "tableNumber": "A1",
+###   "items": [...]
+### }
+### Respuesta: "order-uuid-456"
+
+### 2️⃣ KITCHEN PREPARA INMEDIATAMENTE (SIN ESPERAR PAGO)
+### PUT http://localhost:8080/api/orders/{orderId}
+### {
+###   "status": "COMPLETED"
+### }
+### La orden se marca como COMPLETED y se crea factura automáticamente
+
+### 3️⃣ CLIENTE PAGA EN EFECTIVO
+POST {{host}}/{{invoiceId}}/pay-presential
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "invoiceId": "INV-20260409-DEF456",
+  "paymentMethod": "CASH",
+  "reference": null,
+  "notes": "Pagó en efectivo"
+}
+
+### Respuesta (200 OK):
+### {
+###   "data": {
+###     "id": "INV-20260409-DEF456",
+###     "status": "PAID",
+###     "total": 25000.0,
+###     "paidAt": "2026-04-09T17:15:00"
+###   },
+###   "error": false
+### }
+
+### ============================================
+### 3️⃣ ALTERNATIVA: CLIENTE PAGA POR TRANSFERENCIA
+### ============================================
+POST {{host}}/{{invoiceId}}/pay-presential
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "invoiceId": "INV-20260409-DEF456",
+  "paymentMethod": "TRANSFER",
+  "reference": "TRF-2026-0001",
+  "notes": "Transferencia bancaria confirmada"
+}
+
+### ============================================
+### 3️⃣ ALTERNATIVA: CLIENTE PAGA CON TARJETA FÍSICA
+### ============================================
+POST {{host}}/{{invoiceId}}/pay-presential
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "invoiceId": "INV-20260409-DEF456",
+  "paymentMethod": "CARD",
+  "reference": "TRX-POS-123456",
+  "notes": "Pagó con tarjeta física en POS"
+}
+
+### ============================================
+### CONSULTAS
+### ============================================
+
+### Obtener detalle de factura
+GET {{host}}/{{invoiceId}}
+Authorization: {{authToken}}
+
+### Obtener todas las facturas (solo ADMIN)
+GET {{host}}
+Authorization: {{authToken}}
+
+### ============================================
+### CANCELAR FACTURA (si no está pagada)
+### ============================================
+DELETE {{host}}/{{invoiceId}}
+Authorization: {{authToken}}
+
+### ============================================
+### MÉTODOS DE PAGO PERMITIDOS
+### ============================================
+###
+### ONLINE (Wompi):
+###  - WOMPI: Pasarela de pagos
+###
+### PRESENCIAL:
+###  - CASH: Efectivo
+###  - CARD: Tarjeta física (POS/Datafono)
+###  - TRANSFER: Transferencia bancaria
+###  - CHECK: Cheque
+###
+### ============================================
+### ESTADOS DE FACTURA
+### ============================================
+###
+###  - PENDING: Factura creada, esperando pago
+###  - PAID: Pagada completamente
+###  - CANCELLED: Cancelada/Anulada
+###
+### ============================================
+

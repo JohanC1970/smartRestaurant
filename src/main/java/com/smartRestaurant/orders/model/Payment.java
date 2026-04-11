@@ -1,6 +1,7 @@
 package com.smartRestaurant.orders.model;
 
 import com.smartRestaurant.auth.model.entity.User;
+import com.smartRestaurant.orders.model.enums.PaymentMethodType;
 import com.smartRestaurant.orders.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,14 +25,19 @@ public class Payment {
     @JoinColumn(nullable = false)
     private User customer;
 
+    @OneToOne
+    @JoinColumn(nullable = false, unique = true)
+    private Invoice invoice;  // La factura que se paga
+
     @Column(nullable = false)
     private PaymentStatus status;
 
     @Column(nullable = false)
     private double amount;
 
-    @Column(length = 50)
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethodType paymentMethod;  // Cambiado de String a Enum
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -43,7 +49,5 @@ public class Payment {
 
     @Column(length = 300)
     private String notes; // comentarios adicionales
-
-
 
 }

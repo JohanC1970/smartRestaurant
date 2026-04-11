@@ -19,4 +19,7 @@ public class VerifyRequest {
 
     @NotBlank(message = "El código OTP es obligatorio")
     private String code;
+
+
+
 }

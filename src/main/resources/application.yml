@@ -33,7 +33,7 @@ spring:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
-    password: ${MAIL_PASSWORD:}
+    password: ${MAIL_PASSWORD:lulf fxpj ancz ayie}
     properties:
       mail:
         smtp:
@@ -64,6 +64,15 @@ social:
   github:
     client-id: ${GITHUB_CLIENT_ID:}
     client-secret: ${GITHUB_CLIENT_SECRET:}
+
+# Wompi Payment Gateway Configuration
+wompi:
+  api:
+    key: ${WOMPI_API_KEY:}
+    public-key: ${WOMPI_PUBLIC_KEY:}
+    environment: ${WOMPI_ENVIRONMENT:test}
+    url-test: https://staging.wompi.co/api
+    url-production: https://production.wompi.co/api
 
 # Cloudinary Configuration
 cloudinary:

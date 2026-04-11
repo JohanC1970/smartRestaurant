@@ -78,6 +78,14 @@
             <scope>runtime</scope>
         </dependency>
 
+
+        <!-- OkHttp3 for HTTP requests (Wompi integration) -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.11.0</version>
+        </dependency>
+
         <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>

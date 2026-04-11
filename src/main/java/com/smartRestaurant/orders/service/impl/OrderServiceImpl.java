@@ -15,13 +15,17 @@ import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
+import com.smartRestaurant.orders.dto.invoice.CreateInvoiceDTO;
 import com.smartRestaurant.orders.dto.orderitem.CreateOrderItemDTO;
 import com.smartRestaurant.orders.mapper.OrderMapper;
 import com.smartRestaurant.orders.model.Order;
 import com.smartRestaurant.orders.model.OrderItem;
+import com.smartRestaurant.orders.model.enums.OrderChannel;
+import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.OrderItemRepository;
+import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,10 +53,11 @@ public class OrderServiceImpl implements OrderService {
     private final DishRepository dishRepository;
     private final DrinkRepository drinkRepository;
     private final AdditionRepository additionRepository;
+    private final InvoiceService invoiceService;
 
     @Override
     public String create(CreateOrderDto createOrderDto) {
-        log.info("Creando nueva orden. Canal: {}, Items: {}", 
+        log.info(" [ORDER] Creando nueva orden. Canal: {}, Items: {}",
                  createOrderDto.channel(), createOrderDto.items().size());
 
         validateCreateOrderDto(createOrderDto);
@@ -73,15 +79,34 @@ public class OrderServiceImpl implements OrderService {
         order.setWaiter(waiter);
         order.setTableNumber(createOrderDto.tableNumber());
 
-        List<OrderItem> items = createOrderDto.items().stream()
-                .map(itemDto -> createOrderItem(itemDto, order))
-                .toList();
+        // NUEVO: Establecer paymentStatus según channel
+        if (createOrderDto.channel().equals(OrderChannel.ONLINE)) {
+            order.setPaymentStatus(OrderPaymentStatus.PENDING);  // Necesita pago
+            log.info(" Orden ONLINE - Requiere pago previo");
+        } else {
+            order.setPaymentStatus(OrderPaymentStatus.NOT_REQUIRED);  // Sin pago previo
+            log.info(" Orden PRESENCIAL - Pago en el punto");
+        }
 
+        List<OrderItem> items = new ArrayList<>();
+
+        orderRepository.save(order);
+
+        log.info(" Intento de crear lista de items");
+
+        for(CreateOrderItemDTO itemDto : createOrderDto.items()) {
+            OrderItem orderItem = createOrderItem(itemDto, order);
+            items.add(orderItem);
+        }
+
+        log.info(" lista de items creados ");
         order.setItems(items);
 
         Order savedOrder = orderRepository.save(order);
+
         
-        log.info("Orden creada: {}, Total items: {}", savedOrder.getId(), items.size());
+        log.info(" [ORDER] Orden creada: {}, Total items: {}, Estado pago: {}",
+                 savedOrder.getId(), items.size(), savedOrder.getPaymentStatus());
 
         return savedOrder.getId();
     }
@@ -94,10 +119,15 @@ public class OrderServiceImpl implements OrderService {
         orderItem.setNotes(itemDto.notes());
         orderItem.setOrder(order);
 
+        log.info(" Intento de cargar producto: {}", itemDto.productId());
+
         Object producto = loadProductByType(itemDto.productType(), itemDto.productId());
         orderItem.setProducto(producto);
 
+        log.info(" Producto cargado: {}", producto.getClass().getSimpleName()+ "intento de guardar: {}"+ order.getId());
+
         orderItemRepository.save(orderItem);
+        log.info(" [ORDER] Item creado: {}", itemId);
         return orderItem;
     }
 
@@ -168,13 +198,65 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void update(String id, UpdateOrderDTO updateOrderDTO) {
-        log.info("Actualizando orden: {}", id);
+        log.info(" [ORDER] Actualizando orden: {}", id);
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
         orderMapper.updateOrder(updateOrderDTO, order);
+
+        // NUEVO: Si se marca como COMPLETED, crear factura automáticamente
+        if (updateOrderDTO.status().equals(OrderStatus.COMPLETED)) {
+            log.info(" [ORDER] Orden completada, generando factura automáticamente: {}", id);
+            
+            // Calcular totales de items
+            double subtotal = order.getItems().stream()
+                .mapToDouble(this::getPriceOfItem)
+                .sum();
+            
+            double tax = subtotal * 0.21;  // IVA 8%
+            
+            // Crear DTO
+            CreateInvoiceDTO invoiceDto = new CreateInvoiceDTO(
+                id,
+                subtotal,
+                tax
+            );
+            
+            try {
+                // Llamar a servicio para crear factura
+                invoiceService.createInvoice(invoiceDto);
+                log.info("[ORDER] Factura creada automáticamente para orden: {}", id);
+            } catch (Exception e) {
+                log.error(" [ORDER] Error creando factura: {}", e.getMessage());
+                // No fallar la actualización de orden si falla la factura
+            }
+        }
+        
         orderRepository.save(order);
+    }
+    
+    /**
+     * Obtiene el precio del producto en un OrderItem
+     */
+    private double getPriceOfItem(OrderItem item) {
+        Object producto = item.getProducto();
+        
+        if (producto instanceof Dish dish) {
+            try {
+                return dish.getPrice();
+            } catch (NumberFormatException e) {
+                log.warn(" Precio inválido para Dish {}: {}", dish.getId(), dish.getPrice());
+                return 0.0;
+            }
+        } else if (producto instanceof Addition addition) {
+            return addition.getPrice();
+
+        } else if (producto instanceof Drink drink) {
+            return drink.getPrice();
+        }
+
+        return 0.0;
     }
 
     @Override
