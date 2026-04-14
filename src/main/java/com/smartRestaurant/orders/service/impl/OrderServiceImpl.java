@@ -15,6 +15,7 @@ import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
+import com.smartRestaurant.orders.dto.orderitem.GetOrderItemDTO;
 import com.smartRestaurant.orders.dto.invoice.CreateInvoiceDTO;
 import com.smartRestaurant.orders.dto.orderitem.CreateOrderItemDTO;
 import com.smartRestaurant.orders.mapper.OrderMapper;
@@ -126,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
         // - Presencial: siempre (el mesero ya tomó el pedido)
         // - Online: solo si el pago ya está confirmado
         if (savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
-            sseService.notifyKitchen(orderMapper.toListDTO(savedOrder));
+            sseService.notifyKitchen(buildListDTO(savedOrder));
         }
 
         return savedOrder.getId();
@@ -213,7 +214,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orders.stream()
-                .map(orderMapper::toListDTO)
+                .map(this::buildListDTO)
                 .toList();
     }
 
@@ -225,7 +226,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada: " + id));
 
-        return orderMapper.toDetailDTO(order);
+        return buildDetailDTO(order);
     }
 
     @Override
@@ -265,11 +266,11 @@ public class OrderServiceImpl implements OrderService {
             }
 
             // Notificar al mesero que el pedido está listo para recoger
-            sseService.notifyWaiterOrderReady(orderMapper.toListDTO(order));
+            sseService.notifyWaiterOrderReady(buildListDTO(order));
 
             // Notificar al cliente si es ONLINE (ya pagó, está esperando)
             if (order.getChannel().equals(OrderChannel.ONLINE) && order.getCustomer() != null) {
-                sseService.notifyCustomerOrderReady(order.getCustomer().getId(), orderMapper.toListDTO(order));
+                sseService.notifyCustomerOrderReady(order.getCustomer().getId(), buildListDTO(order));
             }
         }
 
@@ -327,6 +328,98 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.deleteById(id);
     }
 
+    // =====================================================================
+    // BUILDERS DE RESPUESTA — construyen los DTOs con todos los campos
+    // =====================================================================
+
+    private GetOrdersDTO buildListDTO(Order order) {
+        int itemCount   = order.getItems() != null ? order.getItems().size() : 0;
+        double total    = order.getItems() != null
+                ? order.getItems().stream().mapToDouble(this::getPriceOfItem).sum() : 0.0;
+        String customer = order.getCustomer() != null
+                ? order.getCustomer().getFullName() : "Presencial";
+
+        return new GetOrdersDTO(
+                order.getId(),
+                order.getStatus(),
+                order.getChannel(),
+                customer,
+                order.getCreatedAt(),
+                itemCount,
+                total
+        );
+    }
+
+    private GetOrderDetailDTO buildDetailDTO(Order order) {
+        List<GetOrderItemDTO> items = order.getItems() != null
+                ? order.getItems().stream().map(this::buildItemDTO).toList()
+                : List.of();
+
+        double total    = items.stream().mapToDouble(GetOrderItemDTO::totalPrice).sum();
+        String customer = order.getCustomer() != null
+                ? order.getCustomer().getFullName() : "Presencial";
+        String waiter   = order.getWaiter() != null
+                ? order.getWaiter().getId().toString() : null;
+        String paymentStatus = order.getPaymentStatus() != null
+                ? order.getPaymentStatus().name() : null;
+
+        return new GetOrderDetailDTO(
+                order.getId(),
+                order.getStatus(),
+                order.getChannel(),
+                customer,
+                waiter,
+                order.getTableNumber(),
+                order.getCreatedAt(),
+                order.getUpdatedAt(),
+                items,
+                total,
+                paymentStatus
+        );
+    }
+
+    private GetOrderItemDTO buildItemDTO(OrderItem item) {
+        Object product = item.getProducto();
+
+        String productId;
+        String productName;
+        String productType;
+        double unitPrice;
+
+        if (product instanceof Dish dish) {
+            productId   = dish.getId();
+            productName = dish.getName();
+            productType = "DISH";
+            unitPrice   = dish.getPrice();
+        } else if (product instanceof Drink drink) {
+            productId   = drink.getId();
+            productName = drink.getName();
+            productType = "DRINK";
+            unitPrice   = drink.getPrice();
+        } else if (product instanceof Addition addition) {
+            productId   = addition.getId();
+            productName = addition.getName();
+            productType = "ADDITION";
+            unitPrice   = addition.getPrice();
+        } else {
+            productId   = "";
+            productName = "Desconocido";
+            productType = "UNKNOWN";
+            unitPrice   = 0.0;
+        }
+
+        return new GetOrderItemDTO(
+                item.getId(),
+                productId,
+                productName,
+                productType,
+                item.getQuantity(),
+                unitPrice,
+                unitPrice * item.getQuantity(),
+                item.getNotes()
+        );
+    }
+
     private void validateTransition(OrderStatus current, OrderStatus next) {
         Set<OrderStatus> allowed = VALID_TRANSITIONS.get(current);
         if (!allowed.contains(next)) {
@@ -356,7 +449,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orders.stream()
-                .map(orderMapper::toListDTO)
+                .map(this::buildListDTO)
                 .toList();
     }
 }

@@ -234,6 +234,18 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
     
     @Override
+    @Transactional(readOnly = true)
+    public GetInvoiceDTO getInvoiceByOrderId(String orderId) {
+        log.info(" [INVOICE] Obteniendo factura para orden: {}", orderId);
+        Invoice invoice = invoiceRepository.findByOrderId(orderId)
+            .orElseThrow(() -> {
+                log.error(" [INVOICE] No existe factura para la orden: {}", orderId);
+                return new ResourceNotFoundException("Factura no encontrada para la orden: " + orderId);
+            });
+        return invoiceMapper.toDTO(invoice);
+    }
+
+    @Override
     public void cancelInvoice(String invoiceId) {
         log.info(" [INVOICE] Cancelando factura: {}", invoiceId);
         Invoice invoice = invoiceRepository.findById(invoiceId)

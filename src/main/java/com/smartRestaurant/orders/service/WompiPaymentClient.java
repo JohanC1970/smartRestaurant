@@ -66,7 +66,7 @@ public class WompiPaymentClient {
             String description,
             Map<String, Object> metadata) throws IOException {
 
-        log.info("🔄 [WOMPI] Creando transacción: reference={}, monto={}", reference, amountInCents);
+        log.info(" [WOMPI] Creando transacción: reference={}, monto={}", reference, amountInCents);
 
         // Construir el payload
         Map<String, Object> payload = new HashMap<>();
@@ -84,7 +84,7 @@ public class WompiPaymentClient {
         }
 
         String jsonPayload = objectMapper.writeValueAsString(payload);
-        log.debug("📤 [WOMPI] Enviando payload: {}", jsonPayload);
+        log.debug(" [WOMPI] Enviando payload: {}", jsonPayload);
 
         // Construir la petición HTTP
         RequestBody body = RequestBody.create(
@@ -102,15 +102,15 @@ public class WompiPaymentClient {
 
         try (Response response = httpClient.newCall(request).execute()) {
             String responseBody = response.body().string();
-            log.debug("📥 [WOMPI] Respuesta status={}, body={}", response.code(), responseBody);
+            log.debug(" [WOMPI] Respuesta status={}, body={}", response.code(), responseBody);
 
             if (!response.isSuccessful()) {
-                log.error("❌ [WOMPI] Error en transacción: status={}, body={}", response.code(), responseBody);
+                log.error(" [WOMPI] Error en transacción: status={}, body={}", response.code(), responseBody);
                 throw new IOException("Wompi API error: " + response.code() + " - " + responseBody);
             }
 
             JsonNode jsonResponse = objectMapper.readTree(responseBody);
-            log.info("✅ [WOMPI] Transacción creada: status={}", jsonResponse.path("data").path("status").asText());
+            log.info(" [WOMPI] Transacción creada: status={}", jsonResponse.path("data").path("status").asText());
 
             return jsonResponse;
         }
@@ -120,7 +120,7 @@ public class WompiPaymentClient {
      * Obtiene el estado de una transacción existente
      */
     public JsonNode getTransaction(String transactionId) throws IOException {
-        log.info("📋 [WOMPI] Obteniendo transacción: {}", transactionId);
+        log.info(" [WOMPI] Obteniendo transacción: {}", transactionId);
 
         String url = getBaseUrl() + "/transactions/" + transactionId;
         Request request = new Request.Builder()
@@ -133,7 +133,7 @@ public class WompiPaymentClient {
             String responseBody = response.body().string();
 
             if (!response.isSuccessful()) {
-                log.error("❌ [WOMPI] Error obteniendo transacción: {}", response.code());
+                log.error(" [WOMPI] Error obteniendo transacción: {}", response.code());
                 throw new IOException("Wompi API error: " + response.code());
             }
 
@@ -145,7 +145,7 @@ public class WompiPaymentClient {
      * Crea un reembolso en Wompi
      */
     public JsonNode createRefund(String transactionId, long amountInCents) throws IOException {
-        log.info("💰 [WOMPI] Creando reembolso: transactionId={}, monto={}", transactionId, amountInCents);
+        log.info(" [WOMPI] Creando reembolso: transactionId={}, monto={}", transactionId, amountInCents);
 
         // Construir el payload
         Map<String, Object> payload = new HashMap<>();
@@ -168,10 +168,10 @@ public class WompiPaymentClient {
 
         try (Response response = httpClient.newCall(request).execute()) {
             String responseBody = response.body().string();
-            log.debug("📥 [WOMPI] Respuesta reembolso: status={}", response.code());
+            log.debug(" [WOMPI] Respuesta reembolso: status={}", response.code());
 
             if (!response.isSuccessful()) {
-                log.error("❌ [WOMPI] Error en reembolso: {}", response.code());
+                log.error(" [WOMPI] Error en reembolso: {}", response.code());
                 throw new IOException("Wompi API error: " + response.code());
             }
 

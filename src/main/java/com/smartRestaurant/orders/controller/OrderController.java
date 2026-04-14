@@ -5,8 +5,10 @@ import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
 import com.smartRestaurant.orders.dto.ResponseDTO;
+import com.smartRestaurant.orders.dto.invoice.GetInvoiceDTO;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
+import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final InvoiceService invoiceService;
 
     /**
      * POST /api/orders
@@ -127,5 +130,19 @@ public class OrderController {
         List<GetOrdersDTO> orders = orderService.getMyOrders(page);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(orders, false));
+    }
+
+    /**
+     * GET /api/orders/{id}/invoice
+     * Obtener la factura asociada a una orden
+     * Roles permitidos: WAITER, ADMIN, CUSTOMER
+     */
+    @GetMapping("/{id}/invoice")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+    public ResponseEntity<ResponseDTO<GetInvoiceDTO>> getInvoiceByOrder(@PathVariable String id) {
+
+        GetInvoiceDTO invoice = invoiceService.getInvoiceByOrderId(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(invoice, false));
     }
 }

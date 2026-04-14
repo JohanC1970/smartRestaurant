@@ -44,5 +44,10 @@ public interface InvoiceService {
      * Cancelar factura (solo si no está pagada)
      */
     void cancelInvoice(String invoiceId);
+
+    /**
+     * Obtener la factura asociada a una orden
+     */
+    GetInvoiceDTO getInvoiceByOrderId(String orderId);
 }
 
