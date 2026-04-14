@@ -83,7 +83,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     
     @Override
     public GetInvoiceDTO payPresentialInvoice(PayPresentialDTO dto) {
-        log.info("💰 [INVOICE-PRESENCIAL] Registrando pago para factura: {}", dto.invoiceId());
+        log.info(" [INVOICE-PRESENCIAL] Registrando pago para factura: {}", dto.invoiceId());
         
         // 1. Obtener factura
         Invoice invoice = invoiceRepository.findById(dto.invoiceId())
@@ -207,44 +207,44 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional(readOnly = true)
     public GetInvoiceDTO getInvoice(String invoiceId) {
-        log.info("📋 [INVOICE] Obteniendo factura: {}", invoiceId);
+        log.info(" [INVOICE] Obteniendo factura: {}", invoiceId);
         Invoice invoice = invoiceRepository.findById(invoiceId)
             .orElseThrow(() -> {
-                log.error("❌ [INVOICE] Factura no encontrada: {}", invoiceId);
+                log.error(" [INVOICE] Factura no encontrada: {}", invoiceId);
                 return new ResourceNotFoundException("Factura no encontrada");
             });
-        log.info("✅ [INVOICE] Factura encontrada: {}", invoiceId);
+        log.info(" [INVOICE] Factura encontrada: {}", invoiceId);
         return invoiceMapper.toDTO(invoice);
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<GetInvoiceDTO> getAllInvoices() {
-        log.info("📋 [INVOICE] Obteniendo todas las facturas");
+        log.info(" [INVOICE] Obteniendo todas las facturas");
         List<GetInvoiceDTO> invoices = invoiceRepository.findAll().stream()
             .map(invoiceMapper::toDTO)
             .collect(Collectors.toList());
-        log.info("✅ [INVOICE] Se obtuvieron {} facturas", invoices.size());
+        log.info(" [INVOICE] Se obtuvieron {} facturas", invoices.size());
         return invoices;
     }
     
     @Override
     public void cancelInvoice(String invoiceId) {
-        log.info("🚫 [INVOICE] Cancelando factura: {}", invoiceId);
+        log.info(" [INVOICE] Cancelando factura: {}", invoiceId);
         Invoice invoice = invoiceRepository.findById(invoiceId)
             .orElseThrow(() -> {
-                log.error("❌ [INVOICE] Factura no encontrada: {}", invoiceId);
+                log.error(" [INVOICE] Factura no encontrada: {}", invoiceId);
                 return new ResourceNotFoundException("Factura no encontrada");
             });
         
         if (invoice.getStatus().equals(InvoiceStatus.PAID)) {
-            log.warn("⚠️ [INVOICE] Intento de cancelar factura pagada: {}", invoiceId);
+            log.warn("️ [INVOICE] Intento de cancelar factura pagada: {}", invoiceId);
             throw new BadRequestException("No se puede cancelar factura pagada");
         }
         
         invoice.setStatus(InvoiceStatus.CANCELLED);
         invoiceRepository.save(invoice);
-        log.info("✅ [INVOICE] Factura cancelada: {}", invoiceId);
+        log.info(" [INVOICE] Factura cancelada: {}", invoiceId);
     }
 }
 

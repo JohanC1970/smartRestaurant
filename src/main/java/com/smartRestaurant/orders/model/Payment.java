@@ -30,6 +30,7 @@ public class Payment {
     private Invoice invoice;  // La factura que se paga
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
     @Column(nullable = false)

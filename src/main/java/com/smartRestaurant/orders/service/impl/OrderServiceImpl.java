@@ -118,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
         orderItem.setId(itemId);
         orderItem.setNotes(itemDto.notes());
         orderItem.setOrder(order);
+        orderItem.setQuantity(itemDto.quantity());
 
         log.info(" Intento de cargar producto: {}", itemDto.productId());
 
@@ -203,6 +204,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
+        if(order.getStatus().equals(OrderStatus.COMPLETED) || order.getStatus().equals(OrderStatus.DELIVERED)) {
+            throw new BadRequestException("No se puede actualizar una orden COMPLETED o DELIVERED");
+        }
+
         orderMapper.updateOrder(updateOrderDTO, order);
 
         // NUEVO: Si se marca como COMPLETED, crear factura automáticamente
@@ -214,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
                 .mapToDouble(this::getPriceOfItem)
                 .sum();
             
-            double tax = subtotal * 0.21;  // IVA 8%
+            double tax = subtotal * 0.21;  // IVA 21% colombia 2026
             
             // Crear DTO
             CreateInvoiceDTO invoiceDto = new CreateInvoiceDTO(
@@ -244,16 +249,16 @@ public class OrderServiceImpl implements OrderService {
         
         if (producto instanceof Dish dish) {
             try {
-                return dish.getPrice();
+                return dish.getPrice()*item.getQuantity();
             } catch (NumberFormatException e) {
                 log.warn(" Precio inválido para Dish {}: {}", dish.getId(), dish.getPrice());
                 return 0.0;
             }
         } else if (producto instanceof Addition addition) {
-            return addition.getPrice();
+            return addition.getPrice()*item.getQuantity();
 
         } else if (producto instanceof Drink drink) {
-            return drink.getPrice();
+            return drink.getPrice()*item.getQuantity();
         }
 
         return 0.0;
