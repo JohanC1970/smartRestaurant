@@ -226,6 +226,15 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada: " + id));
 
+        // Si es CUSTOMER, solo puede ver sus propias órdenes
+        User currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser != null && !currentUser.getRole().isStaff()) {
+            if (order.getCustomer() == null || !order.getCustomer().getId().equals(currentUser.getId())) {
+                // 404 en lugar de 403 para no revelar que la orden existe
+                throw new ResourceNotFoundException("Orden no encontrada: " + id);
+            }
+        }
+
         return buildDetailDTO(order);
     }
 

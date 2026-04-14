@@ -68,7 +68,7 @@ public class OrderController {
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetOrderDetailDTO>> getOrderById(@PathVariable String id) {
 
         GetOrderDetailDTO order = orderService.getById(id);
