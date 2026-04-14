@@ -28,6 +28,7 @@ import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.OrderService;
+import com.smartRestaurant.orders.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -66,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
     private final AdditionRepository additionRepository;
     private final InvoiceService invoiceService;
     private final CurrentUserProvider currentUserProvider;
+    private final SseService sseService;
 
     @Override
     public String create(CreateOrderDto createOrderDto) {
@@ -119,6 +121,13 @@ public class OrderServiceImpl implements OrderService {
         
         log.info(" [ORDER] Orden creada: {}, Total items: {}, Estado pago: {}",
                  savedOrder.getId(), items.size(), savedOrder.getPaymentStatus());
+
+        // Notificar cocina solo si la orden ya puede procesarse:
+        // - Presencial: siempre (el mesero ya tomó el pedido)
+        // - Online: solo si el pago ya está confirmado
+        if (savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
+            sseService.notifyKitchen(orderMapper.toListDTO(savedOrder));
+        }
 
         return savedOrder.getId();
     }
@@ -249,15 +258,21 @@ public class OrderServiceImpl implements OrderService {
             );
             
             try {
-                // Llamar a servicio para crear factura
                 invoiceService.createInvoice(invoiceDto);
                 log.info("[ORDER] Factura creada automáticamente para orden: {}", id);
             } catch (Exception e) {
                 log.error(" [ORDER] Error creando factura: {}", e.getMessage());
-                // No fallar la actualización de orden si falla la factura
+            }
+
+            // Notificar al mesero que el pedido está listo para recoger
+            sseService.notifyWaiterOrderReady(orderMapper.toListDTO(order));
+
+            // Notificar al cliente si es ONLINE (ya pagó, está esperando)
+            if (order.getChannel().equals(OrderChannel.ONLINE) && order.getCustomer() != null) {
+                sseService.notifyCustomerOrderReady(order.getCustomer().getId(), orderMapper.toListDTO(order));
             }
         }
-        
+
         orderRepository.save(order);
     }
     

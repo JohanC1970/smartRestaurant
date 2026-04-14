@@ -22,6 +22,7 @@ import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
+import com.smartRestaurant.orders.service.SseService;
 import com.smartRestaurant.orders.service.WompiPaymentClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final PaymentMapper paymentMapper;
     private final WompiPaymentClient wompiClient;
+    private final SseService sseService;
     
     @Override
     public String createInvoice(CreateInvoiceDTO dto) {
@@ -191,11 +193,14 @@ public class InvoiceServiceImpl implements InvoiceService {
             order.setPaymentStatus(OrderPaymentStatus.CONFIRMED);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepository.save(order);
-            
+
+            // 8. Notificar cocina — el pedido online ya está pagado y listo para preparar
+            sseService.notifyKitchen(order.getId());
+
             log.info(" [INVOICE-ONLINE] Pago confirmado: {} | Total: {} COP | Orden enviada a cocina",
                      savedPayment.getId(), invoice.getTotal());
-            
-            // 8. Retornar usando MAPPER
+
+            // 9. Retornar usando MAPPER
             return invoiceMapper.toDTO(invoice);
             
         } catch (IOException e) {
