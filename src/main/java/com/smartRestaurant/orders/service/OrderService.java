@@ -4,6 +4,8 @@ import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
+import com.smartRestaurant.orders.model.enums.OrderChannel;
+import com.smartRestaurant.orders.model.enums.OrderStatus;
 
 import java.util.List;
 
@@ -20,10 +22,12 @@ public interface OrderService {
     String create(CreateOrderDto orderDto);
     
     /**
-     * Obtener todas las órdenes con paginación
+     * Obtener órdenes con paginación y filtros opcionales
      * @param page número de página
+     * @param status filtrar por estado (null = todos)
+     * @param channel filtrar por canal (null = todos)
      */
-    List<GetOrdersDTO> getAll(int page);
+    List<GetOrdersDTO> getAll(int page, OrderStatus status, OrderChannel channel);
     
     /**
      * Obtener detalle completo de una orden
@@ -44,4 +48,10 @@ public interface OrderService {
      * Eliminar una orden
      */
     void delete(String id);
+
+    /**
+     * Obtener las órdenes del cliente autenticado
+     * @param page número de página
+     */
+    List<GetOrdersDTO> getMyOrders(int page);
 }

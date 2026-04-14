@@ -23,6 +23,7 @@ import com.smartRestaurant.orders.model.OrderItem;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
 import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
+import com.smartRestaurant.inventory.util.CurrentUserProvider;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
@@ -38,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -45,6 +48,14 @@ import java.util.UUID;
 @Slf4j
 @Transactional
 public class OrderServiceImpl implements OrderService {
+
+    private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
+        OrderStatus.PENDING,     Set.of(OrderStatus.IN_PROGRESS, OrderStatus.CANCELLED),
+        OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED,   OrderStatus.CANCELLED),
+        OrderStatus.COMPLETED,   Set.of(OrderStatus.DELIVERED),
+        OrderStatus.DELIVERED,   Set.of(),
+        OrderStatus.CANCELLED,   Set.of()
+    );
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -54,6 +65,7 @@ public class OrderServiceImpl implements OrderService {
     private final DrinkRepository drinkRepository;
     private final AdditionRepository additionRepository;
     private final InvoiceService invoiceService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     public String create(CreateOrderDto createOrderDto) {
@@ -171,11 +183,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GetOrdersDTO> getAll(int page) {
-        log.info("Obteniendo órdenes. Página: {}", page);
+    public List<GetOrdersDTO> getAll(int page, OrderStatus status, OrderChannel channel) {
+        log.info("Obteniendo órdenes. Página: {}, status: {}, channel: {}", page, status, channel);
 
         Pageable pageable = PageRequest.of(page, 10);
-        Page<Order> orders = orderRepository.findAll(pageable);
+
+        Page<Order> orders;
+        if (status != null && channel != null) {
+            orders = orderRepository.findByStatusAndChannel(status, channel, pageable);
+        } else if (status != null) {
+            orders = orderRepository.findByStatus(status, pageable);
+        } else if (channel != null) {
+            orders = orderRepository.findByChannel(channel, pageable);
+        } else {
+            orders = orderRepository.findAll(pageable);
+        }
 
         if (orders.isEmpty()) {
             throw new ResourceNotFoundException("No hay órdenes");
@@ -204,9 +226,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
-        if(order.getStatus().equals(OrderStatus.COMPLETED) || order.getStatus().equals(OrderStatus.DELIVERED)) {
-            throw new BadRequestException("No se puede actualizar una orden COMPLETED o DELIVERED");
-        }
+        validateTransition(order.getStatus(), updateOrderDTO.status());
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
@@ -290,5 +310,38 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.deleteById(id);
+    }
+
+    private void validateTransition(OrderStatus current, OrderStatus next) {
+        Set<OrderStatus> allowed = VALID_TRANSITIONS.get(current);
+        if (!allowed.contains(next)) {
+            throw new BadRequestException(
+                "Transición no permitida: " + current + " → " + next +
+                ". Desde " + current + " solo se puede ir a: " + allowed
+            );
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GetOrdersDTO> getMyOrders(int page) {
+        User currentUser = currentUserProvider.getCurrentUser();
+
+        if (currentUser == null) {
+            throw new BadRequestException("No hay usuario autenticado");
+        }
+
+        log.info("Obteniendo órdenes del cliente: {}", currentUser.getEmail());
+
+        Pageable pageable = PageRequest.of(page, 10);
+        Page<Order> orders = orderRepository.findByCustomer(currentUser, pageable);
+
+        if (orders.isEmpty()) {
+            throw new ResourceNotFoundException("No tienes órdenes registradas");
+        }
+
+        return orders.stream()
+                .map(orderMapper::toListDTO)
+                .toList();
     }
 }

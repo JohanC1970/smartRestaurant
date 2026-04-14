@@ -5,6 +5,8 @@ import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
 import com.smartRestaurant.orders.dto.ResponseDTO;
+import com.smartRestaurant.orders.model.enums.OrderChannel;
+import com.smartRestaurant.orders.model.enums.OrderStatus;
 import com.smartRestaurant.orders.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,15 +43,18 @@ public class OrderController {
     }
 
     /**
-     * GET /api/orders/{page}/page
-     * Obtener todas las órdenes con paginación
+     * GET /api/orders/{page}/page?status=PENDING&channel=ONLINE
+     * Obtener órdenes con paginación y filtros opcionales
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{page}/page")
     @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<List<GetOrdersDTO>>> getAllOrders(@PathVariable int page) {
+    public ResponseEntity<ResponseDTO<List<GetOrdersDTO>>> getAllOrders(
+            @PathVariable int page,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) OrderChannel channel) {
 
-        List<GetOrdersDTO> orders = orderService.getAll(page);
+        List<GetOrdersDTO> orders = orderService.getAll(page, status, channel);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(orders, false));
     }
@@ -108,5 +113,19 @@ public class OrderController {
         orderService.delete(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Orden eliminada", false));
+    }
+
+    /**
+     * GET /api/orders/me/{page}/page
+     * Obtener las órdenes del cliente autenticado
+     * Roles permitidos: CUSTOMER
+     */
+    @GetMapping("/me/{page}/page")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER')")
+    public ResponseEntity<ResponseDTO<List<GetOrdersDTO>>> getMyOrders(@PathVariable int page) {
+
+        List<GetOrdersDTO> orders = orderService.getMyOrders(page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(orders, false));
     }
 }
