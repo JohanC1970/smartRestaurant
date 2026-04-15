@@ -87,6 +87,12 @@ public class OrderServiceImpl implements OrderService {
         if (createOrderDto.waiterId() != null) {
             waiter = userRepository.findById(createOrderDto.waiterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Mesero no encontrado"));
+        } else {
+            // Si el usuario autenticado es mesero o admin creando presencial, asignarlo automáticamente
+            User currentUser = currentUserProvider.getCurrentUser();
+            if (currentUser != null && currentUser.getRole().isStaff()) {
+                waiter = currentUser;
+            }
         }
 
         Order order = orderMapper.toEntity(createOrderDto);
@@ -207,10 +213,6 @@ public class OrderServiceImpl implements OrderService {
             orders = orderRepository.findByChannel(channel, pageable);
         } else {
             orders = orderRepository.findAll(pageable);
-        }
-
-        if (orders.isEmpty()) {
-            throw new ResourceNotFoundException("No hay órdenes");
         }
 
         return orders.stream()
@@ -452,10 +454,6 @@ public class OrderServiceImpl implements OrderService {
 
         Pageable pageable = PageRequest.of(page, 10);
         Page<Order> orders = orderRepository.findByCustomer(currentUser, pageable);
-
-        if (orders.isEmpty()) {
-            throw new ResourceNotFoundException("No tienes órdenes registradas");
-        }
 
         return orders.stream()
                 .map(this::buildListDTO)
