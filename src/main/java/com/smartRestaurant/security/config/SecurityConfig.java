@@ -61,8 +61,14 @@ public class SecurityConfig {
                                                                          // autenticación
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
-                       // .anyRequest().authenticated())
-                .anyRequest().permitAll())
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").access(
+                            new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
+                                "hasIpAddress('127.0.0.1') or hasIpAddress('::1')"
+                            )
+                        )
+                        .anyRequest().authenticated())
+                //.anyRequest().permitAll())
 
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
