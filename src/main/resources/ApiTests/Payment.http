@@ -1,0 +1,173 @@
+### Set environment variables
+@host = http://localhost:8080/api/payments
+@wompiHost = http://localhost:8080/api/payments/wompi
+@authToken = Bearer tu_token_aqui
+@paymentId = id_de_tu_pago_aqui
+@orderId = id_de_tu_orden_aqui
+@customerId = 1
+
+### ============================================
+### 1. CREAR PAGO (MÉTODOS TRADICIONALES)
+### ============================================
+
+### 1.1 Crear pago en efectivo
+POST {{host}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": {{customerId}},
+  "amount": 25000.0,
+  "paymentMethod": "EFECTIVO",
+  "notes": "Pago en efectivo del pedido"
+}
+
+### 1.2 Crear pago con tarjeta física (sin Stripe)
+POST {{host}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": {{customerId}},
+  "amount": 35000.0,
+  "paymentMethod": "TARJETA_FISICA",
+  "transactionId": "TXN123456789",
+  "notes": "Pago con tarjeta física"
+}
+
+### ============================================
+### 2. CONSULTAR PAGOS
+### ============================================
+
+### 2.1 Obtener todos los pagos
+GET {{host}}
+Authorization: {{authToken}}
+
+### 2.2 Obtener detalle de un pago específico
+GET {{host}}/{{paymentId}}
+Authorization: {{authToken}}
+
+### ============================================
+### 3. PAGOS CON WOMPI (PASARELA COLOMBIANA)
+### ============================================
+### ⚠️ IMPORTANTE: Para usar Wompi necesitas:
+### 1. Obtener token de Wompi desde el cliente (Wompi.js)
+### 2. Reemplazar "reference_token" con tu token real de Wompi
+### 3. Usar el ORDEN_ID y CLIENTE_ID reales
+### 4. Los montos están en CENTAVOS COP
+### 5. Wompi solo funciona con COP (pesos colombianos)
+
+### 3.1 Confirmar pago con Wompi (Monto 50,000 COP = $500 COP)
+### Este endpoint procesa un pago con tarjeta de crédito via Wompi
+POST {{wompiHost}}/confirm
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": {{customerId}},
+  "wompiToken": "eJydUsFuwjAM_RWLT",
+  "amount": 5000000,
+  "description": "Pago de orden de comida en Smart Restaurant",
+  "customerEmail": "cliente@example.com",
+  "customerPhone": "+573001234567",
+  "notes": "Cliente premium - descuento aplicado"
+}
+
+### 3.2 Confirmar pago con Wompi (Monto menor - 25,000 COP = $250 COP)
+POST {{wompiHost}}/confirm
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": {{customerId}},
+  "wompiToken": "eJydUsFuwjAM_ZWLT",
+  "amount": 2500000,
+  "description": "Pago parcial de orden",
+  "customerEmail": "cliente@example.com",
+  "customerPhone": "+573001234567",
+  "notes": "Pago a plazos"
+}
+
+### 3.3 Confirmar pago con Wompi (Monto pequeño - 100 COP)
+### Monto mínimo típico en Wompi
+POST {{wompiHost}}/confirm
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "orderId": "{{orderId}}",
+  "customerId": {{customerId}},
+  "wompiToken": "eJydUsFuwjAM_ZWLT",
+  "amount": 10000,
+  "description": "Bebida pequeña",
+  "customerEmail": "cliente@example.com",
+  "customerPhone": "+573001234567",
+  "notes": "Adicional a la orden principal"
+}
+
+### ============================================
+### 5. REEMBOLSOS
+### ============================================
+
+### 5.1 Reembolsar un pago de Stripe
+POST {{host}}/{{paymentId}}/refund
+Authorization: {{authToken}}
+
+### 5.2 Reembolsar un pago de Wompi
+POST {{host}}/{{paymentId}}/wompi/refund
+Authorization: {{authToken}}
+
+### ============================================
+### TOKENS DE STRIPE PARA PRUEBAS
+### ============================================
+###
+### ✅ Pagos exitosos:
+### - tok_visa: Tarjeta Visa válida
+### - tok_mastercard: Tarjeta Mastercard válida
+### - tok_amex: Tarjeta American Express válida
+###
+### ❌ Pagos fallidos:
+### - tok_chargeDeclined: Declinado
+### - tok_chargeDeclinedFraudulent: Fraude
+### - tok_raiseAlert: Alerta
+###
+### NOTA: Estos tokens solo funcionan en TEST MODE
+### En producción usarás tokens reales de Stripe.js
+###
+### ============================================
+### INFORMACIÓN SOBRE WOMPI
+### ============================================
+###
+### 🇨🇴 Wompi es la pasarela de pagos para Colombia
+###
+### Endpoints:
+### - Test: https://staging.wompi.co/api
+### - Producción: https://production.wompi.co/api
+###
+### Tokens de prueba (Test Mode):
+### - eJydUsFuwjAM_ZWLT: Token de prueba válido
+### - eJydUsFuwjAM_WJLT: Otro token de prueba
+###
+### Moneda: COP (pesos colombianos)
+### - Los montos se envían en CENTAVOS
+### - 100 = $1.00 COP
+### - 5,000,000 = $50,000 COP
+###
+### Información requerida:
+### - Token de Wompi (generado en cliente con Wompi.js)
+### - Email del cliente
+### - Teléfono del cliente (formato: +57XXXXXXXXXX)
+### - Descripción del pago
+### - ID único de referencia (orderId)
+###
+### Respuesta exitosa (status):
+### - APPROVED: Pago aprobado
+### - PENDING: Pago pendiente
+### - DECLINED: Pago rechazado
+###
+### ============================================
+

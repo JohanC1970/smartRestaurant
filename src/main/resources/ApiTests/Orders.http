@@ -1,0 +1,118 @@
+### Set environment variables
+@host = http://localhost:8080/api/orders
+@paymentHost = http://localhost:8080/api/payments
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiV0FJVEVSIiwidXNlcklkIjo3LCJzdWIiOiJlbGRlcmx5LnNraW5rLnplbGZAaGlkaW5nbWFpbC5jb20iLCJpYXQiOjE3NzU4ODYzODYsImV4cCI6MTc3NTg4OTk4Nn0.JHWUF9IvEN34lb-kfl84_Kh7DUeupqocLKA184i5dYE
+@orderId = 892a39d1-bac3-42b9-9f4f-8301f63f1a36
+@customerId = 1
+@waiterId = 7
+@page = 0
+
+### ============================================
+### 1. CREAR ÓRDENES
+### ============================================
+
+### 1.1 Crear orden PRESENCIAL (En restaurante)
+POST {{host}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "channel": "PRESENTIAL",
+  "waiterId": {{waiterId}},
+  "tableNumber": "Mesa 5",
+  "items": [
+    {
+      "productId": "5b377969-a21b-4bd5-a5fd-28736c5bf3bb",
+      "productType": "DISH",
+      "quantity": 1,
+      "notes": "Sin cebolla, extra picante"
+    }
+  ]
+}
+
+### 1.2 Crear orden ONLINE (Domicilio/Takeout)
+POST {{host}}
+//Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "channel": "ONLINE",
+  "customerId": {{customerId}},
+  "tableNumber": null,
+  "items": [
+    {
+      "productId": "dish_id_example_2",
+      "productType": "DISH",
+      "notes": "Bien caliente"
+    },
+    {
+      "productId": "addition_id_example_2",
+      "productType": "ADDITION",
+      "notes": null
+    }
+  ]
+}
+
+### ============================================
+### 2. CONSULTAR ÓRDENES
+### ============================================
+
+### 2.1 Obtener todas las órdenes (con paginación)
+GET {{host}}/{{page}}/page
+Authorization: Bearer {{authToken}}
+
+### 2.2 Obtener detalle de una orden específica
+GET {{host}}/{{orderId}}
+Authorization: {{authToken}}
+
+### ============================================
+### 3. ACTUALIZAR ÓRDENES
+### ============================================
+
+### 3.1 Cambiar estado a IN_PROGRESS
+PUT {{host}}/{{orderId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### 3.2 Cambiar a COMPLETED
+PUT {{host}}/{{orderId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### 3.3 Cambiar a DELIVERED
+PUT {{host}}/{{orderId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "DELIVERED"
+}
+
+### ============================================
+### 4. CANCELAR Y ELIMINAR ÓRDENES
+### ============================================
+
+### 4.1 Cancelar una orden
+PATCH {{host}}/{{orderId}}/cancel
+Authorization: {{authToken}}
+
+### 4.2 Eliminar una orden
+DELETE {{host}}/{{orderId}}
+Authorization: {{authToken}}
+
+### ============================================
+### FLUJO COMPLETO: ORDEN -> PAGO CON STRIPE
+### ============================================
+### 1️⃣  Crear orden (usar 1.1 o 1.2)
+### 2️⃣  Copiar orderId de la respuesta
+### 3️⃣  Ir a Payment.http
+### 4️⃣  Usar orderId para crear pago con Stripe
+### 5️⃣  Validar que el pago aparece con status CONFIRMED

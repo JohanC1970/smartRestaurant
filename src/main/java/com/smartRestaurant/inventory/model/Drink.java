@@ -29,6 +29,10 @@ public class Drink extends BaseEntity{
     private State state;
 
     @Column(nullable = false)
+    @Positive
+    private double price;
+
+    @Column(nullable = false)
     private boolean alcohol;
 
     @ManyToOne(cascade = CascadeType.ALL)
