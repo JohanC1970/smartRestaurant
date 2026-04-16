@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").access(
                             new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
-                                "hasIpAddress('127.0.0.1') or hasIpAddress('::1')"
+                                "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or hasIpAddress('172.18.0.0/16')"
                             )
                         )
                         .anyRequest().authenticated())
