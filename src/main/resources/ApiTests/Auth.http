@@ -1,0 +1,177 @@
+### ========================================
+### VARIABLES GLOBALES
+### ========================================
+@host = http://localhost:8080/api
+@authToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6InNhbXVlbGFuZHJlc2NtQGdtYWlsLmNvbSIsImlhdCI6MTc3NTgyOTgyMywiZXhwIjoxNzc1ODMzNDIzfQ.3hwtEvVsYjSiOFmCq15GApIcb3KFFDQBuhvrZ__EP0o
+@passwordTest = Smart1234!
+
+### Correos de prueba
+@adminEmail = samuelandrescm@gmail.com
+@waiterEmail = elderly.skink.zelf@hidingmail.com
+@waiterPassword = FNN*4iis8dPF
+@kitchenEmail = cocina@smart.com
+@customerEmail = samuela.castanom@uqvirtual.edu.co
+@userId = 1
+
+### ========================================
+### 1. ENDPOINTS PÚBLICOS (AUTENTICACIÓN)
+### ========================================
+
+### 1.1 Registrar un cliente (Cualquier persona desde la app)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "email": "{{customerEmail}}",
+  "password": "{{passwordTest}}"
+}
+
+### 1.2 Login (Aplicable para cualquier rol)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{waiterEmail}}",
+  "password": "{{waiterPassword}}"
+}
+
+### 1.2b Verificar 2FA (con el código OTP recibido en el email después de login)
+POST {{host}}/auth/verify-2fa
+Content-Type: application/json
+
+{
+  "email": "{{waiterEmail}}",
+  "code": "461469"
+}
+
+### 1.3 Verificar Email por OTP
+POST {{host}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "code": "527006"
+}
+
+### 1.4 Reenviar Verificación
+POST {{host}}/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "{{customerEmail}}"
+}
+
+### 1.5 Olvidé mi Contraseña
+POST {{host}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "{{customerEmail}}"
+}
+
+### 1.6 Restablecer Contraseña (con OTP)
+POST {{host}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "{{customerEmail}}",
+  "otp": "123456",
+  "newPassword": "NewPassword123@"
+}
+
+### 1.7 Cerrar Sesión
+POST {{host}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "tu_refresh_token_aqui"
+}
+
+### 1.8 Obtener Usuario Actual (Token)
+GET {{host}}/auth/me
+Authorization: Bearer {{authToken}}
+
+### ========================================
+### 2. ENDPOINTS DE ADMINISTRADOR (Requieren authToken ADMIN)
+### ========================================
+
+### 2.1 Registrar Empleado: ADMIN
+POST {{host}}/admin/register-employee
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Admin",
+  "lastName": "General",
+  "email": "{{adminEmail}}",
+  "role": "ADMIN"
+}
+
+### 2.2 Registrar Empleado: MESERO
+POST {{host}}/admin/register-employee
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "samuelo",
+  "lastName": "Mesero",
+  "email": "{{waiterEmail}}",
+  "role": "WAITER"
+}
+
+### 2.3 Registrar Empleado: COCINA
+POST {{host}}/admin/register-employee
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "María",
+  "lastName": "Cocinera",
+  "email": "{{kitchenEmail}}",
+  "role": "KITCHEN"
+}
+
+### 2.4 Obtener todos los usuarios
+GET {{host}}/admin/users
+Authorization: {{authToken}}
+
+### 2.5 Obtener solo los MESEROS
+GET {{host}}/admin/users?role=WAITER
+Authorization: {{authToken}}
+
+### 2.6 Obtener usuarios ACTIVOS
+GET {{host}}/admin/users?status=ACTIVE
+Authorization: {{authToken}}
+
+### 2.7 Obtener usuario por ID
+GET {{host}}/admin/users/{{userId}}
+Authorization: {{authToken}}
+
+### 2.8 Actualizar Nombre/Apellido del usuario
+PUT {{host}}/admin/users/{{userId}}
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Carlos Actualizado",
+  "lastName": "Mesero Actualizado"
+}
+
+### 2.9 Cambiar el Rol de un usuario
+PATCH {{host}}/admin/users/{{userId}}/role
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "role": "KITCHEN"
+}
+
+### 2.10 Desactivar una cuenta (Pasar a INACTIVE)
+PATCH {{host}}/admin/users/{{userId}}/deactivate
+Authorization: {{authToken}}
+
+### 2.11 Activar una cuenta (Pasar a ACTIVE)
+PATCH {{host}}/admin/users/{{userId}}/activate
+Authorization: {{authToken}}

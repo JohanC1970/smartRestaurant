@@ -2,10 +2,9 @@ package com.smartRestaurant;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.sendgrid.SendGridAutoConfiguration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication(exclude = { SendGridAutoConfiguration.class })
+@SpringBootApplication
 @EnableAsync
 public class SmartRestaurantApplication {
 

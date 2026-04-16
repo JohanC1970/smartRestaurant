@@ -1,5 +1,6 @@
 package com.smartRestaurant.security.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,7 +32,7 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://localhost:4200}")
+    @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -51,14 +52,23 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/unlock-account",
-                                "/api/auth/refresh-token")
+                                "/api/auth/refresh-token",
+                                "/api/images/**",
+                                "/")
                         .permitAll() // Public endpoints
                         .requestMatchers("/api/chatbot/**").permitAll() // Chatbot endpoints (public)
                         .requestMatchers("/api/auth/**").authenticated() // Otros endpoints de auth requieren
                                                                          // autenticación
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").access(
+                            new org.springframework.security.web.access.expression.WebExpressionAuthorizationManager(
+                                "hasIpAddress('127.0.0.1') or hasIpAddress('::1') or hasIpAddress('172.18.0.0/16')"
+                            )
+                        )
                         .anyRequest().authenticated())
+                //.anyRequest().permitAll())
 
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
