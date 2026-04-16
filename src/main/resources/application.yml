@@ -80,6 +80,15 @@ social:
     client-id: ${GITHUB_CLIENT_ID:}
     client-secret: ${GITHUB_CLIENT_SECRET:}
 
+# Wompi Payment Gateway Configuration
+wompi:
+  api:
+    key: ${WOMPI_API_KEY}
+    public-key: ${WOMPI_PUBLIC_KEY}
+    environment: ${WOMPI_ENVIRONMENT:test}
+    url-test: https://staging.wompi.co/api
+    url-production: https://production.wompi.co/api
+
 # Cloudinary Configuration
 cloudinary:
 
