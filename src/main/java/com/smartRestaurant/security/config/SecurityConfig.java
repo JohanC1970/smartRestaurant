@@ -49,6 +49,8 @@ public class SecurityConfig {
                                 "/api/auth/social-login",
                                 "/api/auth/verify-2fa",
                                 "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
+                                "/api/auth/resend-2fa",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/api/auth/unlock-account",
@@ -61,6 +63,8 @@ public class SecurityConfig {
                                                                          // autenticación
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin endpoints
+                        .requestMatchers("/api/dashboard/**").hasRole("ADMIN") // Dashboard endpoints
+                        .requestMatchers("/api/tables/**").hasAnyRole("ADMIN", "WAITER") // Tables endpoints
                        // .anyRequest().authenticated())
                 .anyRequest().permitAll())
 

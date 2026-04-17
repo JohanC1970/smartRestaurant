@@ -55,6 +55,12 @@ public class AuthenticationController {
         return ResponseEntity.ok(java.util.Map.of("message", "Nuevo código de verificación enviado a su correo."));
     }
 
+    @PostMapping("/resend-2fa")
+    public ResponseEntity<?> resend2FA(@RequestBody VerifyRequest request) {
+        authenticationService.resend2FA(request.getEmail());
+        return ResponseEntity.ok(java.util.Map.of("message", "Nuevo código 2FA enviado a su correo."));
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody VerifyRequest request) {
         authenticationService.forgotPassword(request.getEmail());
@@ -77,6 +83,22 @@ public class AuthenticationController {
     @PostMapping("/refresh-token")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody AuthResponse request) {
         return ResponseEntity.ok(authenticationService.refreshToken(request.getRefreshToken()));
+    }
+
+    /**
+     * Cambia la contraseña cuando el usuario ya está autenticado (sin OTP).
+     * Requiere autenticación JWT activa.
+     */
+    @PostMapping("/change-password-authenticated")
+    public ResponseEntity<String> changePasswordAuthenticated(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.ChangePasswordAuthenticatedRequest request,
+            org.springframework.security.core.Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+        String email = authentication.getName();
+        authenticationService.changePasswordAuthenticated(email, request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok("Contraseña cambiada exitosamente.");
     }
 
     /**
@@ -126,6 +148,20 @@ public class AuthenticationController {
     public ResponseEntity<String> logout(@RequestBody AuthResponse request) {
         authenticationService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Sesión cerrada exitosamente.");
+    }
+
+    /**
+     * Actualiza el perfil del usuario autenticado (nombre y apellido)
+     */
+    @org.springframework.web.bind.annotation.PutMapping("/profile")
+    public ResponseEntity<com.smartRestaurant.auth.dto.response.UserResponse> updateProfile(
+            @RequestBody @Valid com.smartRestaurant.auth.dto.request.UpdateProfileRequest request,
+            org.springframework.security.core.Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String email = authentication.getName();
+        return ResponseEntity.ok(authenticationService.updateProfile(email, request.getFirstName(), request.getLastName()));
     }
 
     /**

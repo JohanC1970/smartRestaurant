@@ -451,6 +451,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         @Override
         @Transactional
+        public void changePasswordAuthenticated(String email, String currentPassword, String newPassword) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+                // Validar contraseña actual
+                if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                        throw new RuntimeException("La contraseña actual es incorrecta");
+                }
+
+                // RF-08: Validar que no reutilice la contraseña anterior
+                if (user.getPreviousPasswordHash() != null &&
+                                passwordEncoder.matches(newPassword, user.getPreviousPasswordHash())) {
+                        throw new RuntimeException("No puede reutilizar su contraseña anterior");
+                }
+
+                user.setPreviousPasswordHash(user.getPassword());
+                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setRequiresPasswordChange(false);
+                userRepository.save(user);
+
+                auditService.logEvent(user, AuditEventType.PASSWORD_CHANGED,
+                                "Contraseña cambiada (usuario autenticado)", null, null);
+        }
+
+        @Override
+        @Transactional
         public AuthResponse changePasswordFirstLogin(String email, String newPassword) {
                 User user = userRepository.findByEmail(email)
                                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -526,9 +552,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         throw new RuntimeException("El email ya está verificado");
                 }
 
-                // Generar nuevo OTP de verificación
                 String otp = otpService.generateOtp(user, OtpTokenType.VERIFICACION_EMAIL);
                 emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), otp);
+        }
+
+        @Override
+        @Transactional
+        public void resend2FA(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+                String otp = otpService.generateOtp(user, OtpTokenType.LOGIN_2FA);
+                emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), otp);
+        }
+
+        @Override
+        @Transactional
+        public com.smartRestaurant.auth.dto.response.UserResponse updateProfile(String email, String firstName, String lastName) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+                user.setFirstName(firstName.trim());
+                user.setLastName(lastName.trim());
+                userRepository.save(user);
+
+                return com.smartRestaurant.auth.dto.response.UserResponse.builder()
+                                .id(user.getId())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .email(user.getEmail())
+                                .role(user.getRole())
+                                .roleDisplayName(user.getRole().getDisplayName())
+                                .status(user.getStatus())
+                                .statusDisplayName(user.getStatus().getDisplayName())
+                                .isEmailVerified(user.isEmailVerified())
+                                .requiresPasswordChange(user.isRequiresPasswordChange())
+                                .failedLoginAttempts(user.getFailedLoginAttempts())
+                                .lockReason(user.getLockReason())
+                                .lockedAt(user.getLockedAt())
+                                .createdAt(user.getCreatedAt())
+                                .updatedAt(user.getUpdatedAt())
+                                .build();
         }
 
         @Override

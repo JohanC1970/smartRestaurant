@@ -119,6 +119,20 @@ public class OrderController {
     }
 
     /**
+     * DELETE /api/orders/{id}/abandon
+     * Elimina una orden online pendiente de pago cuando el cliente abandona la pasarela.
+     * Roles permitidos: CUSTOMER (solo sus propias órdenes)
+     */
+    @DeleteMapping("/{id}/abandon")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER')")
+    public ResponseEntity<ResponseDTO<String>> abandonOrder(@PathVariable String id) {
+
+        orderService.abandonOrder(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Orden eliminada", false));
+    }
+
+    /**
      * GET /api/orders/me/{page}/page
      * Obtener las órdenes del cliente autenticado
      * Roles permitidos: CUSTOMER

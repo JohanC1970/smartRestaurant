@@ -30,6 +30,9 @@ import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.OrderService;
 import com.smartRestaurant.orders.service.SseService;
+import com.smartRestaurant.restaurant.model.RestaurantTable;
+import com.smartRestaurant.restaurant.model.enums.TableStatus;
+import com.smartRestaurant.restaurant.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -69,6 +72,7 @@ public class OrderServiceImpl implements OrderService {
     private final InvoiceService invoiceService;
     private final CurrentUserProvider currentUserProvider;
     private final SseService sseService;
+    private final TableRepository tableRepository;
 
     @Override
     public String create(CreateOrderDto createOrderDto) {
@@ -98,9 +102,23 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderMapper.toEntity(createOrderDto);
         order.setCustomer(customer);
         order.setWaiter(waiter);
-        order.setTableNumber(createOrderDto.tableNumber());
 
-        // NUEVO: Establecer paymentStatus según channel
+        // Asignar y ocupar mesa solo en órdenes presenciales
+        if (createOrderDto.channel() == OrderChannel.PRESENTIAL && createOrderDto.tableId() != null) {
+            RestaurantTable table = tableRepository.findById(createOrderDto.tableId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+            if (!table.isActive()) {
+                throw new BadRequestException("La mesa " + table.getNumber() + " está inactiva");
+            }
+            if (table.getStatus() != TableStatus.FREE) {
+                throw new BadRequestException("La mesa " + table.getNumber() + " no está disponible (estado: " + table.getStatus() + ")");
+            }
+            table.setStatus(TableStatus.OCCUPIED);
+            tableRepository.save(table);
+            order.setTable(table);
+        }
+
+        // Establecer paymentStatus según channel
         if (createOrderDto.channel().equals(OrderChannel.ONLINE)) {
             order.setPaymentStatus(OrderPaymentStatus.PENDING);  // Necesita pago
             log.info(" Orden ONLINE - Requiere pago previo");
@@ -251,7 +269,15 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
-        // NUEVO: Si se marca como COMPLETED, crear factura automáticamente
+        // Liberar mesa cuando la orden es entregada
+        if (updateOrderDTO.status().equals(OrderStatus.DELIVERED) && order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+            tableRepository.save(order.getTable());
+            log.info("[ORDER] Mesa {} liberada al marcar orden {} como DELIVERED",
+                    order.getTable().getNumber(), id);
+        }
+
+        // Si se marca como COMPLETED, crear factura automáticamente
         if (updateOrderDTO.status().equals(OrderStatus.COMPLETED)) {
             log.info(" [ORDER] Orden completada, generando factura automáticamente: {}", id);
             
@@ -318,9 +344,16 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
-        if (order.getStatus().equals(OrderStatus.COMPLETED) || 
+        if (order.getStatus().equals(OrderStatus.COMPLETED) ||
             order.getStatus().equals(OrderStatus.DELIVERED)) {
             throw new BadRequestException("No se puede cancelar");
+        }
+
+        // Liberar mesa al cancelar
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+            tableRepository.save(order.getTable());
+            log.info("[ORDER] Mesa {} liberada al cancelar orden {}", order.getTable().getNumber(), id);
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -337,6 +370,33 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    public void abandonOrder(String orderId) {
+        log.info("[ORDER] Cliente abandona pasarela de pago. Eliminando orden: {}", orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+
+        // Solo se puede abandonar una orden online que aún no fue pagada
+        if (!order.getChannel().equals(OrderChannel.ONLINE)) {
+            throw new BadRequestException("Solo se pueden abandonar órdenes en línea");
+        }
+        if (!order.getStatus().equals(OrderStatus.PENDING) ||
+            !order.getPaymentStatus().equals(OrderPaymentStatus.PENDING)) {
+            throw new BadRequestException("La orden ya fue procesada y no puede eliminarse");
+        }
+
+        // Verificar que el cliente autenticado es el dueño de la orden
+        User currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser != null && order.getCustomer() != null &&
+            !order.getCustomer().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("No tienes permiso para abandonar esta orden");
+        }
+
+        orderRepository.deleteById(orderId);
+        log.info("[ORDER] Orden {} eliminada por abandono de pasarela de pago", orderId);
     }
 
     // =====================================================================
@@ -374,13 +434,20 @@ public class OrderServiceImpl implements OrderService {
         String paymentStatus = order.getPaymentStatus() != null
                 ? order.getPaymentStatus().name() : null;
 
+        GetOrderDetailDTO.TableInfo tableInfo = null;
+        if (order.getTable() != null) {
+            RestaurantTable t = order.getTable();
+            tableInfo = new GetOrderDetailDTO.TableInfo(
+                    t.getId(), t.getNumber(), t.getCapacity(), t.getLocation(), t.getStatus());
+        }
+
         return new GetOrderDetailDTO(
                 order.getId(),
                 order.getStatus(),
                 order.getChannel(),
                 customer,
                 waiter,
-                order.getTableNumber(),
+                tableInfo,
                 order.getCreatedAt(),
                 order.getUpdatedAt(),
                 items,

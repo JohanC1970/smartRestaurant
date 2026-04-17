@@ -26,6 +26,9 @@ public interface OrderMapper {
     @Mapping(target = "waiter", ignore = true)
     @Mapping(target = "payment", ignore = true)
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "table", ignore = true)
+    @Mapping(target = "invoice", ignore = true)
+    @Mapping(target = "paymentStatus", ignore = true)
     Order toEntity(CreateOrderDto createOrderDto);
 
     /**
@@ -39,6 +42,9 @@ public interface OrderMapper {
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "payment", ignore = true)
     @Mapping(target = "channel", ignore = true)
+    @Mapping(target = "table", ignore = true)
+    @Mapping(target = "invoice", ignore = true)
+    @Mapping(target = "paymentStatus", ignore = true)
     void updateOrder(UpdateOrderDTO updateOrderDTO, @MappingTarget Order order);
 
 }

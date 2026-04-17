@@ -4,6 +4,7 @@ import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
 import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
+import com.smartRestaurant.restaurant.model.RestaurantTable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,7 +39,9 @@ public class Order {
     @ManyToOne
     private User waiter; //  null if was online
 
-    private String tableNumber; // null if was online
+    @ManyToOne
+    @JoinColumn(name = "table_id")
+    private RestaurantTable table; // null if was online
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -1,5 +1,7 @@
 package com.smartRestaurant.auth.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,8 +12,6 @@ import org.springframework.stereotype.Repository;
 import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.auth.model.enums.UserRole;
 import com.smartRestaurant.auth.model.enums.UserStatus;
-
-import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -109,9 +109,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Cuenta usuarios por estado
-     * 
+     *
      * @param status Estado a contar
      * @return Número de usuarios con ese estado
      */
     long countByStatus(UserStatus status);
+
+    // ── Dashboard ────────────────────────────────────────────────────────────
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND u.createdAt >= :start")
+    long countNewByRoleSince(@Param("role") UserRole role, @Param("start") LocalDateTime start);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role AND (SELECT COUNT(o) FROM Order o WHERE o.customer = u) > 1")
+    long countReturningCustomers(@Param("role") UserRole role);
 }

@@ -12,15 +12,18 @@ import com.smartRestaurant.orders.dto.WompiPaymentResponseDTO;
 import com.smartRestaurant.orders.mapper.PaymentMapper;
 import com.smartRestaurant.orders.model.Order;
 import com.smartRestaurant.orders.model.Payment;
+import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.PaymentMethodType;
 import com.smartRestaurant.orders.model.enums.PaymentStatus;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.PaymentService;
+import com.smartRestaurant.orders.service.SseService;
 import com.smartRestaurant.orders.service.WompiPaymentClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,10 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserRepository userRepository;
     private final PaymentMapper paymentMapper;
     private final WompiPaymentClient wompiPaymentClient;
+    private final SseService sseService;
+
+    @Value("${wompi.api.environment:test}")
+    private String wompiEnvironment;
 
     // ==================== MÉTODOS BÁSICOS ====================
 
@@ -149,26 +156,35 @@ public class PaymentServiceImpl implements PaymentService {
                         return new ResourceNotFoundException("Cliente no encontrado");
                     });
 
-            // 4. Crear transacción en Wompi
-            log.info(" [WOMPI] Creando transacción en Wompi...");
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("orderId", dto.orderId());
-            metadata.put("customerId", dto.customerId());
+            // 4. En modo test con token de prueba, simular respuesta de Wompi
+            boolean isTestToken = dto.wompiToken().startsWith("test_token_");
+            String wompiTransactionId;
+            String wompiStatus;
 
-            JsonNode wompiResponse = wompiPaymentClient.createTransaction(
-                    dto.wompiToken(),
-                    dto.amount(),
-                    dto.orderId(),
-                    dto.customerEmail(),
-                    dto.customerPhone(),
-                    dto.description(),
-                    metadata
-            );
+            if ("test".equalsIgnoreCase(wompiEnvironment) && isTestToken) {
+                log.info(" [WOMPI] Modo TEST — simulando transacción aprobada");
+                wompiTransactionId = "test_txn_" + UUID.randomUUID().toString().substring(0, 8);
+                wompiStatus = "APPROVED";
+            } else {
+                // 4b. Crear transacción real en Wompi
+                log.info(" [WOMPI] Creando transacción en Wompi...");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("orderId", dto.orderId());
+                metadata.put("customerId", dto.customerId());
 
-            String wompiTransactionId = wompiResponse.path("data").path("id").asText();
-            String wompiStatus = wompiResponse.path("data").path("status").asText();
-            log.info(" [WOMPI] Transacción creada en Wompi: transactionId={}, status={}",
-                     wompiTransactionId, wompiStatus);
+                JsonNode wompiResponse = wompiPaymentClient.createTransaction(
+                        dto.wompiToken(),
+                        dto.amount(),
+                        dto.orderId(),
+                        dto.customerEmail(),
+                        dto.customerPhone(),
+                        dto.description(),
+                        metadata
+                );
+                wompiTransactionId = wompiResponse.path("data").path("id").asText();
+                wompiStatus = wompiResponse.path("data").path("status").asText();
+                log.info(" [WOMPI] Transacción creada: transactionId={}, status={}", wompiTransactionId, wompiStatus);
+            }
 
             // 5. Guardar pago en la base de datos
             Payment payment = new Payment();
@@ -186,7 +202,16 @@ public class PaymentServiceImpl implements PaymentService {
             Payment savedPayment = paymentRepository.save(payment);
             log.info(" [WOMPI] Pago guardado en BD: paymentId={}", savedPayment.getId());
 
-            // 6. Retornar respuesta
+            // 6. Actualizar paymentStatus de la orden y notificar a cocina
+            order.setPaymentStatus(OrderPaymentStatus.CONFIRMED);
+            orderRepository.save(order);
+            log.info(" [WOMPI] Orden {} actualizada a paymentStatus=CONFIRMED", dto.orderId());
+
+            // Notificar a cocina para que procese la orden
+            sseService.notifyKitchen(order);
+            log.info(" [WOMPI] Cocina notificada de nueva orden: {}", dto.orderId());
+
+            // 7. Retornar respuesta
             return new WompiPaymentResponseDTO(
                     savedPayment.getId(),
                     dto.orderId(),
@@ -196,7 +221,7 @@ public class PaymentServiceImpl implements PaymentService {
                     "COP",
                     LocalDateTime.now(),
                     "Pago procesado exitosamente con Wompi",
-                    wompiResponse.path("data").path("payment_method").path("type").asText("CARD"),
+                    "CARD",
                     dto.customerEmail()
             );
 

@@ -29,7 +29,7 @@ public class AdditionController {
 
     // pagination
     @GetMapping("/{page}/page")
-    @PreAuthorize("hasAnyAuthority('addition:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('addition:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<List<GetAdditionDTO>>> getAll(@PathVariable int page){
         List<GetAdditionDTO> list = additionService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
@@ -57,7 +57,7 @@ public class AdditionController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('addition:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('addition:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetAdditionDetailDTO>> getById(@PathVariable String id){
         GetAdditionDetailDTO additionDTO = additionService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(additionDTO, false));
