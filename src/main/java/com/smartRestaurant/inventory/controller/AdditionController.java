@@ -11,6 +11,7 @@ import com.smartRestaurant.inventory.dto.Category.GetCategoriesDTO;
 import com.smartRestaurant.inventory.dto.Category.UpdateCategoryDTO;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
 import com.smartRestaurant.inventory.dto.Suplier.GetSuplierDTO;
+import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -61,5 +62,19 @@ public class AdditionController {
     public ResponseEntity<ResponseDTO<GetAdditionDetailDTO>> getById(@PathVariable String id){
         GetAdditionDetailDTO additionDTO = additionService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(additionDTO, false));
+    }
+
+    @PatchMapping("/{id}/add")
+    @PreAuthorize("hasAnyAuthority('addition:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
+    public ResponseEntity<ResponseDTO<String>> addStock(@PathVariable String id, @Valid @RequestBody DrinkMovement movement) {
+        additionService.addStock(id, movement);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock de adición añadido", false));
+    }
+
+    @PatchMapping("/{id}/discount")
+    @PreAuthorize("hasAnyAuthority('addition:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
+    public ResponseEntity<ResponseDTO<String>> discountStock(@PathVariable String id, @Valid @RequestBody DrinkMovement movement) {
+        additionService.discountStock(id, movement);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock de adición descontado", false));
     }
 }

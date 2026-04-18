@@ -11,15 +11,8 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface InventoryMovementMapper {
 
-    @Mapping(source = "productId", target = "productId")
-    @Mapping(source = "type", target = "type")
-    @Mapping(source = "weight", target = "weight")
-    @Mapping(source = "timeAt", target = "timeAt")
-    @Mapping(source = "reason", target = "reason")
-
-    InventoryMovement toEntity(GetInventoryMovementDTO dto);
-    @Mapping(source = "productId", target = "productId")
-
+    @Mapping(source = "product.id",   target = "productId")
+    @Mapping(source = "product.name", target = "productName")
     GetInventoryMovementDTO toDTO(InventoryMovement inventoryMovement);
 
 }

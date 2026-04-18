@@ -54,8 +54,10 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(product);
 
-        // registramos el movimiento (aun no porque no he podido hacer uso de la auth para sacar el current user)
-        inventoryMovementService.registerMovementEntry(product, createProductDTO.weight());
+        inventoryMovementService.registerMovementEntry(
+                product,
+                createProductDTO.weight(),
+                "Ingreso inicial de: " + product.getName() + " — " + createProductDTO.weight() + "g");
 
     }
 
@@ -121,7 +123,7 @@ public class ProductServiceImpl implements ProductService {
         if(product.get().getWeight() < product.get().getMinimumStock()){
 
             Notification notification = Notification.builder()
-                    .id("java.util.uuid.randomUUID().toString()")
+                    .id(java.util.UUID.randomUUID().toString())
                     .type("Bajo nivel de stock de: "+ product.get().getName())
                     .createdAt(LocalDateTime.now())
                     .description("Revisa el inventario "+ "el producto: "+product.get().getName()+ "ha llegado al stock minimo: "+product.get().getMinimumStock())
@@ -130,7 +132,10 @@ public class ProductServiceImpl implements ProductService {
             notificationRepository.save(notification);
         }
 
-        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight());
+        String entryReason = (stockMovementDTO.reason() != null && !stockMovementDTO.reason().isBlank())
+                ? stockMovementDTO.reason()
+                : "Entrada manual de: " + product.get().getName() + " — " + stockMovementDTO.weight() + "g";
+        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight(), entryReason);
     }
 
     @Transactional
@@ -154,7 +159,7 @@ public class ProductServiceImpl implements ProductService {
         if(product.get().getWeight() < product.get().getMinimumStock()){
 
             Notification notification = Notification.builder()
-                    .id("java.util.uuid.randomUUID().toString()")
+                    .id(java.util.UUID.randomUUID().toString())
                     .type("Bajo nivel de stock de: "+ product.get().getName())
                     .createdAt(LocalDateTime.now())
                     .description("Revisa el inventario "+ "el producto: "+product.get().getName()+ "ha llegado al stock minimo: "+product.get().getMinimumStock())
@@ -164,7 +169,10 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
-        inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight());
+        String exitReason = (stockMovementDTO.reason() != null && !stockMovementDTO.reason().isBlank())
+                ? stockMovementDTO.reason()
+                : "Salida manual de: " + product.get().getName() + " — " + stockMovementDTO.weight() + "g";
+        inventoryMovementService.registerMovementExit(product.get(), stockMovementDTO.weight(), exitReason);
 
     }
 
