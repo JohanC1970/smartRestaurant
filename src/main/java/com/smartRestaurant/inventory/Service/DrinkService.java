@@ -1,6 +1,7 @@
 package com.smartRestaurant.inventory.Service;
 
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
+import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDetailDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
@@ -14,4 +15,6 @@ public interface DrinkService {
     void update(String id, UpdateDrinkDTO updateDrinkDTO);
     void delete(String id);
     GetDrinkDetailDTO getDrinkById(String id);
+    void addStock(String id, DrinkMovement drinkMovement);
+    void discountStock(String id, DrinkMovement drinkMovement);
 }

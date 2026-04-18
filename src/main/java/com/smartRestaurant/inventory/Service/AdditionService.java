@@ -4,6 +4,7 @@ import com.smartRestaurant.inventory.dto.Addition.CreateAdditionDTO;
 import com.smartRestaurant.inventory.dto.Addition.GetAdditionDTO;
 import com.smartRestaurant.inventory.dto.Addition.GetAdditionDetailDTO;
 import com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO;
+import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import com.smartRestaurant.inventory.model.Addition;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface AdditionService {
     void update(String id, UpdateAdditionDTO updateAdditionDTO);
     void delete(String id);
     GetAdditionDetailDTO getById(String id);
+    void addStock(String id, DrinkMovement movement);
+    void discountStock(String id, DrinkMovement movement);
 }

@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 @Builder
 public record GetInventoryMovementDTO(
         String productId,
+        String productName,
         Type type,
         double weight,
         LocalDateTime timeAt,
-       // String userName,
         String reason) {
 }

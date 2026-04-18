@@ -47,5 +47,7 @@ public class Drink extends BaseEntity{
     @Column(nullable = false) @Positive
     private int units;
 
+    @Column(nullable = false)
+    private int minimumStock;
 
 }

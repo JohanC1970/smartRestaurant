@@ -1,5 +1,6 @@
 package com.smartRestaurant.inventory.dto.Addition;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -10,5 +11,9 @@ public record UpdateAdditionDTO(@Length(min = 1, max = 100) @NotBlank(message = 
                                 @Length(max = 500) @NotBlank(message = "La descripción no puede estar vacía")
                                 String description,
                                 @NotNull @Positive
-                                double price) {
+                                double price,
+                                @NotNull @Positive
+                                int units,
+                                @NotNull @Min(0)
+                                int minimumStock) {
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface InventoryMovementService {
 
-    void registerMovementEntry(Product product, double weight);
-    void registerMovementExit(Product product, double weight);
+    void registerMovementEntry(Product product, double weight, String reason);
+    void registerMovementExit(Product product, double weight, String reason);
     List<GetInventoryMovementDTO> getAllMovements();
 }

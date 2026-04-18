@@ -1,8 +1,8 @@
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: 3600000  # 1 hora en milisegundos
-  refresh-token-expiration: 604800000  # 7 días en milisegundos
+  access-token-expiration: 3600000
+  refresh-token-expiration: 604800000
   issuer: smartRestaurant
 
 # Spring Configuration
@@ -10,14 +10,12 @@ spring:
   application:
     name: smartRestaurant
 
-  # Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/smart_restaurant
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-  # JPA Configuration
   jpa:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -28,7 +26,6 @@ spring:
       hibernate:
         format_sql: true
 
-  # Mail Configuration (SMTP)
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -43,15 +40,12 @@ spring:
             required: true
         debug: false
 
-# Server Configuration
 server:
   port: ${SERVER_PORT:8080}
 
-# CORS Configuration
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000}
 
-# Social Login Configuration
 social:
   google:
     client-id: ${GOOGLE_CLIENT_ID}
@@ -62,31 +56,26 @@ social:
     client-id: ${GITHUB_CLIENT_ID:}
     client-secret: ${GITHUB_CLIENT_SECRET:}
 
-# Cloudinary Configuration
 cloudinary:
   cloud_name: ${CLOUDINARY_NAME}
   api_key: ${CLOUDINARY_KEY}
   api_secret: ${CLOUDINARY_SECRET}
 
-# Multipart Configuration (para subida de imágenes)
 spring.servlet.multipart:
   enabled: true
   max-file-size: 10MB
   max-request-size: 10MB
 
-# Application Specific Configuration
 app:
   init:
     admin:
       email: ${ADMIN_EMAIL}
       password: ${ADMIN_PASSWORD}
 
-# Chatbot Configuration
 chatbot:
   api:
     key: ${CHATBOT_API_KEY:default_chatbot_key_12345}
 
-# Wompi Payment Gateway Configuration
 wompi:
   api:
     key: ${WOMPI_API_KEY}

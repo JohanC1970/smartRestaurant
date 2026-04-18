@@ -2,6 +2,7 @@ package com.smartRestaurant.inventory.dto.drink;
 
 import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.State;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -22,5 +23,7 @@ public record CreateDrinkDTO(
          @NotNull @Size(min = 1, max = 3)
          List<String> photos,
          @NotNull @Positive
-         int units) {
+         int units,
+         @NotNull @Min(0)
+         int minimumStock) {
 }

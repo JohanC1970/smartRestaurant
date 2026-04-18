@@ -9,6 +9,7 @@ public record GetDrinkDetailDTO(String id,
                                 boolean alcohol,
                                 String photo,
                                 int units,
+                                int minimumStock,
                                 String state,
                                 String categoryName) {
 }

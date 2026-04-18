@@ -28,6 +28,12 @@ public class Addition extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private int units;
+
+    @Column(nullable = false)
+    private int minimumStock;
+
     @Column(length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private State state;
