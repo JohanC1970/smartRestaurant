@@ -31,7 +31,7 @@ public class RestaurantInfoController {
 
     /** Solo ADMIN puede actualizar la información */
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO<RestaurantInfoDTO>> update(@RequestBody @Valid UpdateRestaurantInfoDTO dto) {
         return ResponseEntity.ok(new ResponseDTO<>(service.update(dto), false));
     }

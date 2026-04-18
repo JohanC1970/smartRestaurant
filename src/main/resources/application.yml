@@ -12,8 +12,8 @@ spring:
 
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5432/smart_restaurant
-    username: ${DB_USERNAME:postgres}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
@@ -32,8 +32,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:garciacamilo1970@gmail.com}
+    password: ${MAIL_PASSWORD:lulf fxpj ancz ayie}
     properties:
       mail:
         smtp:
@@ -54,8 +54,8 @@ cors:
 # Social Login Configuration
 social:
   google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
+    client-id: ${GOOGLE_CLIENT_ID:512756127640-hm9hitju6rp7d749v8v9tiifqj19b3ko.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET: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}
   facebook:
     app-id: ${FACEBOOK_APP_ID:}
   github:
@@ -78,8 +78,8 @@ spring.servlet.multipart:
 app:
   init:
     admin:
-      email: ${ADMIN_EMAIL}
-      password: ${ADMIN_PASSWORD}
+      email: ${ADMIN_EMAIL:samuelandrescm@gmail.com}
+      password: ${ADMIN_PASSWORD:Smart1234!}
 
 # Chatbot Configuration
 chatbot:

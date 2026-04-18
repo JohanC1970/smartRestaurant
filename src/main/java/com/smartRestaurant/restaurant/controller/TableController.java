@@ -51,7 +51,7 @@ public class TableController {
      * Roles: ADMIN
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GetTableDTO> create(@RequestBody @Valid CreateTableDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tableService.create(dto));
     }
@@ -62,7 +62,7 @@ public class TableController {
      * Roles: ADMIN
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GetTableDTO> update(
             @PathVariable String id,
             @RequestBody @Valid UpdateTableDTO dto) {
@@ -75,7 +75,7 @@ public class TableController {
      * Roles: WAITER, ADMIN
      */
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('WAITER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_WAITER', 'ROLE_ADMIN')")
     public ResponseEntity<GetTableDTO> changeStatus(
             @PathVariable String id,
             @RequestBody @Valid ChangeTableStatusDTO dto) {
@@ -88,7 +88,7 @@ public class TableController {
      * Roles: ADMIN
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deactivate(@PathVariable String id) {
         tableService.deactivate(id);
         return ResponseEntity.noContent().build();

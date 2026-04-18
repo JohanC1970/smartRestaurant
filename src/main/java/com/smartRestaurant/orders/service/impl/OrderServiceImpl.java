@@ -151,7 +151,9 @@ public class OrderServiceImpl implements OrderService {
         // - Presencial: siempre (el mesero ya tomó el pedido)
         // - Online: solo si el pago ya está confirmado
         if (savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
+            log.info(" [ORDER] Notificando cocina de la orden: {}", savedOrder.getId());
             sseService.notifyKitchen(buildListDTO(savedOrder));
+            log.info("notificación enviada a cocina");
         }
 
         return savedOrder.getId();
