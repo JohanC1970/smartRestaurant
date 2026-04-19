@@ -21,9 +21,9 @@ import com.smartRestaurant.orders.model.enums.PaymentStatus;
 import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
+import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.restaurant.model.enums.TableStatus;
 import com.smartRestaurant.restaurant.repository.TableRepository;
-import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.SseService;
 import com.smartRestaurant.orders.service.WompiPaymentClient;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final WompiPaymentClient wompiClient;
     private final SseService sseService;
     private final TableRepository tableRepository;
-    
+
     @Override
     public String createInvoice(CreateInvoiceDTO dto) {
         log.info(" [INVOICE] Creando factura para orden: {}", dto.orderId());
@@ -73,8 +73,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         // 3. Usar MAPPER para convertir DTO a Entity
         Invoice invoice = invoiceMapper.toEntity(dto);
+        invoice.setTotal(dto.subtotal() + dto.tax());
         invoice.setOrder(order);
-        
+
         // 4. Guardar en BD
         Invoice saved = invoiceRepository.save(invoice);
         
@@ -130,7 +131,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
 
-        // 7. Liberar mesa — el pago confirma que los clientes terminaron
+        // 7. Liberar mesa — pago confirma que los clientes terminaron
         if (order.getTable() != null) {
             order.getTable().setStatus(TableStatus.FREE);
             tableRepository.save(order.getTable());
