@@ -9,12 +9,16 @@ import com.smartRestaurant.orders.dto.ResponseDTO;
 import com.smartRestaurant.orders.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -22,6 +26,12 @@ import java.util.List;
 public class PaymentController {
 
     private final PaymentService paymentService;
+
+    @Value("${wompi.api.public-key}")
+    private String wompiPublicKey;
+
+    @Value("${wompi.api.integrity-secret}")
+    private String wompiIntegritySecret;
 
     /**
      * POST /api/payments
@@ -87,6 +97,39 @@ public class PaymentController {
         String result = paymentService.refundWompiPayment(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ResponseDTO<>(result, false));
+    }
+
+    /**
+     * GET /api/payments/wompi/checkout-params?reference=&amountInCents=
+     * Devuelve la llave pública y la firma de integridad para el widget de Wompi.
+     * El frontend usa estos datos para renderizar el formulario de pago.
+     */
+    @GetMapping("/wompi/checkout-params")
+    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_CUSTOMER')")
+    public ResponseEntity<ResponseDTO<Map<String, String>>> getWompiCheckoutParams(
+            @RequestParam String reference,
+            @RequestParam long amountInCents,
+            @RequestParam(defaultValue = "COP") String currency) {
+
+        try {
+            // Firma: SHA256(reference + amountInCents + currency + integritySecret)
+            String raw = reference + amountInCents + currency + wompiIntegritySecret;
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(raw.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (byte b : hash) { hex.append(String.format("%02x", b)); }
+
+            Map<String, String> params = Map.of(
+                "publicKey",  wompiPublicKey,
+                "signature",  hex.toString(),
+                "reference",  reference,
+                "currency",   currency
+            );
+            return ResponseEntity.ok(new ResponseDTO<>(params, false));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDTO<>(null, true));
+        }
     }
 }
 

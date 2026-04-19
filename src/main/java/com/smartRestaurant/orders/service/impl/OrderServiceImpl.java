@@ -4,13 +4,20 @@ import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.auth.repository.UserRepository;
 import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
+import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.model.Addition;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.Drink;
+import com.smartRestaurant.inventory.model.Recipe;
 import com.smartRestaurant.inventory.model.State;
 import com.smartRestaurant.inventory.Repository.AdditionRepository;
 import com.smartRestaurant.inventory.Repository.DishRepository;
 import com.smartRestaurant.inventory.Repository.DrinkRepository;
+import com.smartRestaurant.inventory.Service.AdditionService;
+import com.smartRestaurant.inventory.Service.DrinkService;
+import com.smartRestaurant.inventory.Service.ProductService;
+import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
+import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
@@ -30,6 +37,9 @@ import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
 import com.smartRestaurant.orders.service.OrderService;
 import com.smartRestaurant.orders.service.SseService;
+import com.smartRestaurant.restaurant.model.RestaurantTable;
+import com.smartRestaurant.restaurant.model.enums.TableStatus;
+import com.smartRestaurant.restaurant.repository.TableRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -38,8 +48,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.smartRestaurant.inventory.model.Product;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +82,10 @@ public class OrderServiceImpl implements OrderService {
     private final InvoiceService invoiceService;
     private final CurrentUserProvider currentUserProvider;
     private final SseService sseService;
+    private final TableRepository tableRepository;
+    private final ProductService productService;
+    private final DrinkService drinkService;
+    private final AdditionService additionService;
 
     @Override
     public String create(CreateOrderDto createOrderDto) {
@@ -98,9 +115,23 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderMapper.toEntity(createOrderDto);
         order.setCustomer(customer);
         order.setWaiter(waiter);
-        order.setTableNumber(createOrderDto.tableNumber());
 
-        // NUEVO: Establecer paymentStatus según channel
+        // Asignar y ocupar mesa solo en órdenes presenciales
+        if (createOrderDto.channel() == OrderChannel.PRESENTIAL && createOrderDto.tableId() != null) {
+            RestaurantTable table = tableRepository.findById(createOrderDto.tableId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
+            if (!table.isActive()) {
+                throw new BadRequestException("La mesa " + table.getNumber() + " está inactiva");
+            }
+            if (table.getStatus() != TableStatus.FREE) {
+                throw new BadRequestException("La mesa " + table.getNumber() + " no está disponible (estado: " + table.getStatus() + ")");
+            }
+            table.setStatus(TableStatus.OCCUPIED);
+            tableRepository.save(table);
+            order.setTable(table);
+        }
+
+        // Establecer paymentStatus según channel
         if (createOrderDto.channel().equals(OrderChannel.ONLINE)) {
             order.setPaymentStatus(OrderPaymentStatus.PENDING);  // Necesita pago
             log.info(" Orden ONLINE - Requiere pago previo");
@@ -108,6 +139,9 @@ public class OrderServiceImpl implements OrderService {
             order.setPaymentStatus(OrderPaymentStatus.NOT_REQUIRED);  // Sin pago previo
             log.info(" Orden PRESENCIAL - Pago en el punto");
         }
+
+        // Validar stock de ingredientes antes de persistir nada
+        validateStockForOrderItems(createOrderDto.items());
 
         List<OrderItem> items = new ArrayList<>();
 
@@ -133,7 +167,9 @@ public class OrderServiceImpl implements OrderService {
         // - Presencial: siempre (el mesero ya tomó el pedido)
         // - Online: solo si el pago ya está confirmado
         if (savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
+            log.info(" [ORDER] Notificando cocina de la orden: {}", savedOrder.getId());
             sseService.notifyKitchen(buildListDTO(savedOrder));
+            log.info("notificación enviada a cocina");
         }
 
         return savedOrder.getId();
@@ -176,6 +212,94 @@ public class OrderServiceImpl implements OrderService {
             
             default -> throw new BadRequestException("Tipo no válido: " + productType);
         };
+    }
+
+    /**
+     * Valida que haya stock suficiente de ingredientes para todos los platos del pedido
+     * antes de persistir cualquier dato. Acumula el total requerido por ingrediente
+     * considerando todos los items juntos, luego compara contra el stock actual.
+     * Lanza ValueConflictException (HTTP 409) listando todos los ingredientes faltantes.
+     */
+    private void validateStockForOrderItems(List<CreateOrderItemDTO> items) {
+        // Acumular requerimientos por ingrediente (platos), bebida y adición
+        Map<String, Double> ingredientsRequired = new HashMap<>();
+        Map<String, Product> ingredientsById = new HashMap<>();
+
+        Map<String, Integer> drinksRequired = new HashMap<>();
+        Map<String, Drink> drinksById = new HashMap<>();
+
+        Map<String, Integer> additionsRequired = new HashMap<>();
+        Map<String, Addition> additionsById = new HashMap<>();
+
+        for (CreateOrderItemDTO itemDto : items) {
+            switch (itemDto.productType()) {
+                case "DISH" -> {
+                    Dish dish = dishRepository.findById(itemDto.productId())
+                            .filter(d -> !d.getState().equals(State.INACTIVE))
+                            .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado: " + itemDto.productId()));
+
+                    if (dish.getRecipes() == null || dish.getRecipes().isEmpty()) break;
+
+                    for (Recipe recipe : dish.getRecipes()) {
+                        if (!State.ACTIVE.equals(recipe.getState())) continue;
+                        Product ingredient = recipe.getProduct();
+                        double required = recipe.getWeight() * itemDto.quantity();
+                        ingredientsRequired.merge(ingredient.getId(), required, Double::sum);
+                        ingredientsById.putIfAbsent(ingredient.getId(), ingredient);
+                    }
+                }
+                case "DRINK" -> {
+                    Drink drink = drinkRepository.findById(itemDto.productId())
+                            .filter(d -> !d.getState().equals(State.INACTIVE))
+                            .orElseThrow(() -> new ResourceNotFoundException("Bebida no encontrada: " + itemDto.productId()));
+                    drinksRequired.merge(drink.getId(), itemDto.quantity(), Integer::sum);
+                    drinksById.putIfAbsent(drink.getId(), drink);
+                }
+                case "ADDITION" -> {
+                    Addition addition = additionRepository.findById(itemDto.productId())
+                            .filter(a -> !a.getState().equals(State.INACTIVE))
+                            .orElseThrow(() -> new ResourceNotFoundException("Adición no encontrada: " + itemDto.productId()));
+                    additionsRequired.merge(addition.getId(), itemDto.quantity(), Integer::sum);
+                    additionsById.putIfAbsent(addition.getId(), addition);
+                }
+            }
+        }
+
+        List<String> errors = new ArrayList<>();
+
+        // Validar ingredientes de platos
+        for (Map.Entry<String, Double> entry : ingredientsRequired.entrySet()) {
+            Product ingredient = ingredientsById.get(entry.getKey());
+            if (ingredient.getWeight() < entry.getValue()) {
+                errors.add(String.format("ingrediente '%s' (disponible: %.1fg, requerido: %.1fg)",
+                        ingredient.getName(), ingredient.getWeight(), entry.getValue()));
+            }
+        }
+
+        // Validar bebidas
+        for (Map.Entry<String, Integer> entry : drinksRequired.entrySet()) {
+            Drink drink = drinksById.get(entry.getKey());
+            if (drink.getUnits() < entry.getValue()) {
+                errors.add(String.format("bebida '%s' (disponible: %d uds, requerido: %d uds)",
+                        drink.getName(), drink.getUnits(), entry.getValue()));
+            }
+        }
+
+        // Validar adiciones
+        for (Map.Entry<String, Integer> entry : additionsRequired.entrySet()) {
+            Addition addition = additionsById.get(entry.getKey());
+            if (addition.getUnits() < entry.getValue()) {
+                errors.add(String.format("adición '%s' (disponible: %d uds, requerido: %d uds)",
+                        addition.getName(), addition.getUnits(), entry.getValue()));
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new ValueConflictException(
+                    "Stock insuficiente para completar el pedido. Faltantes: " +
+                    String.join(", ", errors)
+            );
+        }
     }
 
     private void validateCreateOrderDto(CreateOrderDto orderDto) {
@@ -251,24 +375,32 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
-        // NUEVO: Si se marca como COMPLETED, crear factura automáticamente
+        // Liberar mesa cuando la orden es entregada
+        if (updateOrderDTO.status().equals(OrderStatus.DELIVERED) && order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+            tableRepository.save(order.getTable());
+            log.info("[ORDER] Mesa {} liberada al marcar orden {} como DELIVERED",
+                    order.getTable().getNumber(), id);
+        }
+
+        // Si se marca como COMPLETED, crear factura y descontar inventario
         if (updateOrderDTO.status().equals(OrderStatus.COMPLETED)) {
             log.info(" [ORDER] Orden completada, generando factura automáticamente: {}", id);
-            
+
             // Calcular totales de items
             double subtotal = order.getItems().stream()
                 .mapToDouble(this::getPriceOfItem)
                 .sum();
-            
+
             double tax = subtotal * 0.21;  // IVA 21% colombia 2026
-            
+
             // Crear DTO
             CreateInvoiceDTO invoiceDto = new CreateInvoiceDTO(
                 id,
                 subtotal,
                 tax
             );
-            
+
             try {
                 invoiceService.createInvoice(invoiceDto);
                 log.info("[ORDER] Factura creada automáticamente para orden: {}", id);
@@ -276,16 +408,28 @@ public class OrderServiceImpl implements OrderService {
                 log.error(" [ORDER] Error creando factura: {}", e.getMessage());
             }
 
+            // Descontar inventario de ingredientes por cada plato de la orden
+            discountInventoryForOrder(order);
+
             // Notificar al mesero que el pedido está listo para recoger
             sseService.notifyWaiterOrderReady(buildListDTO(order));
 
-            // Notificar al cliente si es ONLINE (ya pagó, está esperando)
-            if (order.getChannel().equals(OrderChannel.ONLINE) && order.getCustomer() != null) {
+            // Notificar al cliente (ONLINE u ONLINE con customer asignado)
+            if (order.getCustomer() != null) {
                 sseService.notifyCustomerOrderReady(order.getCustomer().getId(), buildListDTO(order));
             }
         }
 
         orderRepository.save(order);
+
+        // Notificar al cliente cualquier cambio de estado (excepto COMPLETED, ya notificado arriba)
+        if (!updateOrderDTO.status().equals(OrderStatus.COMPLETED) && order.getCustomer() != null) {
+            sseService.notifyCustomerOrderStatusChanged(
+                order.getCustomer().getId(),
+                updateOrderDTO.status().name(),
+                buildListDTO(order)
+            );
+        }
     }
     
     /**
@@ -311,6 +455,73 @@ public class OrderServiceImpl implements OrderService {
         return 0.0;
     }
 
+    /**
+     * Descuenta del inventario los ingredientes consumidos por cada item de la orden.
+     * Solo procesa Dish (platos): cada receta activa define el ingrediente y el peso por porción.
+     * Los errores por stock insuficiente se registran en el log sin bloquear la transición,
+     * ya que el plato ya fue preparado por cocina.
+     */
+    private void discountInventoryForOrder(Order order) {
+        log.info("[INVENTORY] Iniciando descuento de inventario para orden: {}", order.getId());
+
+        for (OrderItem item : order.getItems()) {
+            Object producto = item.getProducto();
+
+            if (producto instanceof Dish dish) {
+                List<Recipe> recipes = dish.getRecipes();
+
+                if (recipes == null || recipes.isEmpty()) {
+                    log.warn("[INVENTORY] El plato '{}' no tiene recetas definidas — sin descuento de ingredientes",
+                            dish.getName());
+                    continue;
+                }
+
+                for (Recipe recipe : recipes) {
+                    if (!State.ACTIVE.equals(recipe.getState())) {
+                        continue;
+                    }
+
+                    double totalWeight = recipe.getWeight() * item.getQuantity();
+                    String productId = recipe.getProduct().getId();
+                    String productName = recipe.getProduct().getName();
+                    String reason = String.format("Orden #%s — plato '%s' x%d — ingrediente '%s' (%.1fg/ud)",
+                            order.getId(), dish.getName(), item.getQuantity(),
+                            productName, recipe.getWeight());
+
+                    try {
+                        productService.discountStock(productId, new StockMovementDTO(totalWeight, reason));
+                        log.info("[INVENTORY] Descontado: {}g de '{}' (plato: '{}', cantidad: {})",
+                                totalWeight, productName, dish.getName(), item.getQuantity());
+                    } catch (Exception e) {
+                        log.error("[INVENTORY] No se pudo descontar {}g de '{}' para orden {}: {}",
+                                totalWeight, productName, order.getId(), e.getMessage());
+                    }
+                }
+            } else if (producto instanceof Drink drink) {
+                try {
+                    drinkService.discountStock(drink.getId(), new DrinkMovement(item.getQuantity()));
+                    log.info("[INVENTORY] Descontado: {} unidad(es) de bebida '{}' (cantidad: {})",
+                            item.getQuantity(), drink.getName(), item.getQuantity());
+                } catch (Exception e) {
+                    log.error("[INVENTORY] No se pudo descontar {} unidad(es) de bebida '{}' para orden {}: {}",
+                            item.getQuantity(), drink.getName(), order.getId(), e.getMessage());
+                }
+
+            } else if (producto instanceof Addition addition) {
+                try {
+                    additionService.discountStock(addition.getId(), new DrinkMovement(item.getQuantity()));
+                    log.info("[INVENTORY] Descontado: {} unidad(es) de adición '{}' (cantidad: {})",
+                            item.getQuantity(), addition.getName(), item.getQuantity());
+                } catch (Exception e) {
+                    log.error("[INVENTORY] No se pudo descontar {} unidad(es) de adición '{}' para orden {}: {}",
+                            item.getQuantity(), addition.getName(), order.getId(), e.getMessage());
+                }
+            }
+        }
+
+        log.info("[INVENTORY] Descuento de inventario finalizado para orden: {}", order.getId());
+    }
+
     @Override
     public void cancel(String id) {
         log.info("Cancelando orden: {}", id);
@@ -318,9 +529,16 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
 
-        if (order.getStatus().equals(OrderStatus.COMPLETED) || 
+        if (order.getStatus().equals(OrderStatus.COMPLETED) ||
             order.getStatus().equals(OrderStatus.DELIVERED)) {
             throw new BadRequestException("No se puede cancelar");
+        }
+
+        // Liberar mesa al cancelar
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+            tableRepository.save(order.getTable());
+            log.info("[ORDER] Mesa {} liberada al cancelar orden {}", order.getTable().getNumber(), id);
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -337,6 +555,33 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    public void abandonOrder(String orderId) {
+        log.info("[ORDER] Cliente abandona pasarela de pago. Eliminando orden: {}", orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+
+        // Solo se puede abandonar una orden online que aún no fue pagada
+        if (!order.getChannel().equals(OrderChannel.ONLINE)) {
+            throw new BadRequestException("Solo se pueden abandonar órdenes en línea");
+        }
+        if (!order.getStatus().equals(OrderStatus.PENDING) ||
+            !order.getPaymentStatus().equals(OrderPaymentStatus.PENDING)) {
+            throw new BadRequestException("La orden ya fue procesada y no puede eliminarse");
+        }
+
+        // Verificar que el cliente autenticado es el dueño de la orden
+        User currentUser = currentUserProvider.getCurrentUser();
+        if (currentUser != null && order.getCustomer() != null &&
+            !order.getCustomer().getId().equals(currentUser.getId())) {
+            throw new BadRequestException("No tienes permiso para abandonar esta orden");
+        }
+
+        orderRepository.deleteById(orderId);
+        log.info("[ORDER] Orden {} eliminada por abandono de pasarela de pago", orderId);
     }
 
     // =====================================================================
@@ -374,18 +619,26 @@ public class OrderServiceImpl implements OrderService {
         String paymentStatus = order.getPaymentStatus() != null
                 ? order.getPaymentStatus().name() : null;
 
+        GetOrderDetailDTO.TableInfo tableInfo = null;
+        if (order.getTable() != null) {
+            RestaurantTable t = order.getTable();
+            tableInfo = new GetOrderDetailDTO.TableInfo(
+                    t.getId(), t.getNumber(), t.getCapacity(), t.getLocation(), t.getStatus());
+        }
+
         return new GetOrderDetailDTO(
                 order.getId(),
                 order.getStatus(),
                 order.getChannel(),
                 customer,
                 waiter,
-                order.getTableNumber(),
+                tableInfo,
                 order.getCreatedAt(),
                 order.getUpdatedAt(),
                 items,
                 total,
-                paymentStatus
+                paymentStatus,
+                order.getNotes()
         );
     }
 

@@ -14,7 +14,9 @@ public interface ShowAdditionDetailMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "photos", source = "photos")
     @Mapping(target = "price", source = "price")
-    
+    @Mapping(target = "units", source = "units")
+    @Mapping(target = "minimumStock", source = "minimumStock")
+
     GetAdditionDetailDTO toDTO(Addition addition);
 
 

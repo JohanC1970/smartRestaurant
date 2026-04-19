@@ -25,16 +25,15 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
 
     @Transactional
     @Override
-    public void registerMovementEntry(Product product, double weight) {
-
+    public void registerMovementEntry(Product product, double weight, String reason) {
         InventoryMovement movement = InventoryMovement.builder()
                 .id(java.util.UUID.randomUUID().toString())
-                .productId(product.getId())
+                .product(product)
                 .user(currentUserProvider.getCurrentUser())
                 .type(Type.ENTRY)
                 .timeAt(LocalDateTime.now())
-                .weight(product.getWeight())
-                .reason("Entrada de producto por un total de: "+ weight + " gramos.")
+                .weight(weight)
+                .reason(reason)
                 .build();
 
         inventoryMovementRepository.save(movement);
@@ -42,16 +41,15 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
 
     @Transactional
     @Override
-    public void registerMovementExit(Product product, double weight) {
-
+    public void registerMovementExit(Product product, double weight, String reason) {
         InventoryMovement movement = InventoryMovement.builder()
                 .id(java.util.UUID.randomUUID().toString())
-                .productId(product.getId())
+                .product(product)
                 .user(currentUserProvider.getCurrentUser())
                 .type(Type.EXIT)
                 .timeAt(LocalDateTime.now())
-                .weight(product.getWeight())
-                .reason("Salida de producto por un total de: "+ weight + " gramos.")
+                .weight(weight)
+                .reason(reason)
                 .build();
 
         inventoryMovementRepository.save(movement);

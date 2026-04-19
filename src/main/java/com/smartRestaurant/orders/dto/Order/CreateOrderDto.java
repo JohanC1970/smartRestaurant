@@ -18,7 +18,7 @@ public record CreateOrderDto(
         
         Long customerId,           // null si es presencial
         Long waiterId,             // null si es online
-        String tableNumber,        // null si es online
+        String tableId,            // null si es online — ID de RestaurantTable
         
         @NotEmpty(message = "La orden debe tener al menos un item")
         @Valid

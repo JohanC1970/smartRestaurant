@@ -14,6 +14,8 @@ public interface AuthenticationService {
 
     void resendVerification(String email);
 
+    void resend2FA(String email);
+
     AuthResponse login(LoginRequest request);
 
     AuthResponse verify2fa(VerifyRequest request);
@@ -46,6 +48,12 @@ public interface AuthenticationService {
     void changePassword(String email, String currentPassword, String newPassword, String otp);
 
     /**
+     * Cambia la contraseña cuando el usuario ya está autenticado (sin OTP).
+     * El JWT activo es suficiente verificación de identidad.
+     */
+    void changePasswordAuthenticated(String email, String currentPassword, String newPassword);
+
+    /**
      * Cambia la contraseña en el primer login (sin OTP ni contraseña actual)
      * Solo para usuarios con requiresPasswordChange = true
      * 
@@ -61,6 +69,11 @@ public interface AuthenticationService {
      * @param refreshToken Token de refresco a invalidar
      */
     void logout(String refreshToken);
+
+    /**
+     * Actualiza el perfil del usuario autenticado (nombre y apellido)
+     */
+    com.smartRestaurant.auth.dto.response.UserResponse updateProfile(String email, String firstName, String lastName);
 
     /**
      * Obtiene la información del usuario actualmente autenticado

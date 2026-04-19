@@ -97,6 +97,18 @@ public class SseServiceImpl implements SseService {
             () -> customerEmitters.remove(customerId));
     }
 
+    @Override
+    public void notifyCustomerOrderStatusChanged(Long customerId, String newStatus, Object orderData) {
+        SseEmitter emitter = customerEmitters.get(customerId);
+        if (emitter == null) {
+            log.info("[SSE] Cliente {} no conectado, se omite notificación de estado {}.", customerId, newStatus);
+            return;
+        }
+        sendToEmitter(emitter,
+            new SseNotificationDTO("ORDER_STATUS_CHANGED", "Tu pedido cambió a " + newStatus, orderData),
+            () -> customerEmitters.remove(customerId));
+    }
+
     // =====================================================================
     // PRIVADOS
     // =====================================================================

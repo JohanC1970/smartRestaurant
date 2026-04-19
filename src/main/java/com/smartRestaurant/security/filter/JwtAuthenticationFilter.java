@@ -29,16 +29,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        // Solo excluir endpoints públicos específicos
         return path.equals("/api/auth/register") ||
                 path.equals("/api/auth/login") ||
                 path.equals("/api/auth/social-login") ||
                 path.equals("/api/auth/verify-2fa") ||
                 path.equals("/api/auth/verify-email") ||
+                path.equals("/api/auth/resend-verification") ||
+                path.equals("/api/auth/resend-2fa") ||
                 path.equals("/api/auth/forgot-password") ||
                 path.equals("/api/auth/reset-password") ||
                 path.equals("/api/auth/unlock-account") ||
-                path.equals("/api/auth/refresh-token");
+                path.equals("/api/auth/refresh-token") ||
+                path.startsWith("/api/chatbot/") ||
+                path.startsWith("/api/images/") ||
+                path.equals("/api/restaurant") ||
+                path.equals("/api/restaurant/is-open") ||
+                path.startsWith("/api/dailyMenus/") ||
+                path.equals("/actuator/health") ||
+                path.equals("/actuator/info");
     }
 
     @Override

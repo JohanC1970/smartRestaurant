@@ -6,5 +6,7 @@ public record GetAdditionDetailDTO(String id,
                                    String name,
                                    String description,
                                    List<String> photos,
-                                   double price) {
+                                   double price,
+                                   int units,
+                                   int minimumStock) {
 }

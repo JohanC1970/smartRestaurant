@@ -27,7 +27,6 @@ public class DailyMenuController {
     }
 
     @GetMapping("/{page}/page")
-    @PreAuthorize("hasAnyAuthority('daily_menu:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER')")
     public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAllDishes(@PathVariable int page){
         List<GetDishDTO> list = dailyMenuService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));

@@ -23,7 +23,7 @@ public class DishController {
     private final DishService dishService;
 
     @GetMapping("/{page}/page")
-    @PreAuthorize("hasAnyAuthority('dish:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('dish:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(@PathVariable int page){
         List<GetDishDTO> list = dishService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
@@ -51,7 +51,7 @@ public class DishController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('dish:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('dish:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetDishDetailDTO>> getById(@PathVariable String id){
         GetDishDetailDTO dishDTO = dishService.getById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(dishDTO, false));

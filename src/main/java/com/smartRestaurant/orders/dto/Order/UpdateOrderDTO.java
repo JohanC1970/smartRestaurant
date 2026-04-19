@@ -9,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 public record UpdateOrderDTO(
         @NotNull(message = "El estado de la orden es obligatorio")
         OrderStatus status,
-        
-        String tableNumber,
+
         String notes
 ) {}

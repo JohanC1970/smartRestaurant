@@ -50,6 +50,13 @@ public interface OrderService {
     void delete(String id);
 
     /**
+     * Abandona una orden online pendiente de pago (el cliente salió de la pasarela).
+     * Valida que la orden sea ONLINE, PENDING y pertenezca al cliente autenticado,
+     * luego la elimina para evitar acumulación de pedidos huérfanos.
+     */
+    void abandonOrder(String orderId);
+
+    /**
      * Obtener las órdenes del cliente autenticado
      * @param page número de página
      */
