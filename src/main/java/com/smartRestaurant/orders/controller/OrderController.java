@@ -1,6 +1,7 @@
 package com.smartRestaurant.orders.controller;
 
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
+import com.smartRestaurant.orders.dto.Order.EditOrderItemsDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
@@ -116,6 +117,22 @@ public class OrderController {
         orderService.delete(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Orden eliminada", false));
+    }
+
+    /**
+     * PATCH /api/orders/{id}/items
+     * Reemplaza los items de una orden PENDIENTE
+     * Roles permitidos: WAITER, ADMIN
+     */
+    @PatchMapping("/{id}/items")
+    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_WAITER')")
+    public ResponseEntity<ResponseDTO<String>> editOrderItems(
+            @PathVariable String id,
+            @RequestBody @Valid EditOrderItemsDTO editOrderItemsDTO) {
+
+        orderService.editItems(id, editOrderItemsDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Items actualizados", false));
     }
 
     /**

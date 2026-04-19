@@ -19,6 +19,7 @@ import com.smartRestaurant.inventory.Service.ProductService;
 import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
+import com.smartRestaurant.orders.dto.Order.EditOrderItemsDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
@@ -375,12 +376,13 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
-        // Liberar mesa cuando la orden es entregada
-        if (updateOrderDTO.status().equals(OrderStatus.DELIVERED) && order.getTable() != null) {
+        // Liberar mesa cuando la orden está lista (COMPLETED) o entregada (DELIVERED)
+        if ((updateOrderDTO.status().equals(OrderStatus.COMPLETED) ||
+             updateOrderDTO.status().equals(OrderStatus.DELIVERED)) && order.getTable() != null) {
             order.getTable().setStatus(TableStatus.FREE);
             tableRepository.save(order.getTable());
-            log.info("[ORDER] Mesa {} liberada al marcar orden {} como DELIVERED",
-                    order.getTable().getNumber(), id);
+            log.info("[ORDER] Mesa {} liberada al marcar orden {} como {}",
+                    order.getTable().getNumber(), id, updateOrderDTO.status());
         }
 
         // Si se marca como COMPLETED, crear factura y descontar inventario
@@ -692,6 +694,40 @@ public class OrderServiceImpl implements OrderService {
                 ". Desde " + current + " solo se puede ir a: " + allowed
             );
         }
+    }
+
+    @Override
+    public void editItems(String id, EditOrderItemsDTO dto) {
+        log.info("[ORDER] Editando items de orden: {}", id);
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+
+        if (!order.getStatus().equals(OrderStatus.PENDING)) {
+            throw new BadRequestException("Solo se pueden editar items de órdenes PENDIENTES");
+        }
+
+        validateStockForOrderItems(dto.items());
+
+        // Reemplazar items — orphanRemoval elimina los anteriores al guardar
+        order.getItems().clear();
+
+        List<OrderItem> newItems = new ArrayList<>();
+        for (CreateOrderItemDTO itemDto : dto.items()) {
+            OrderItem item = new OrderItem();
+            item.setId(UUID.randomUUID().toString());
+            item.setNotes(itemDto.notes());
+            item.setOrder(order);
+            item.setQuantity(itemDto.quantity());
+            item.setProducto(loadProductByType(itemDto.productType(), itemDto.productId()));
+            newItems.add(item);
+        }
+
+        order.getItems().addAll(newItems);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        log.info("[ORDER] Items actualizados para orden {}: {} items", id, newItems.size());
     }
 
     @Override
