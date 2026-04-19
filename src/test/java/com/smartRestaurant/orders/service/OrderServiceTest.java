@@ -74,7 +74,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null))
         );
     }
 
@@ -85,7 +85,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.CANCELLED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.CANCELLED, null))
         );
     }
 
@@ -96,7 +96,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.COMPLETED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.COMPLETED, null))
         );
     }
 
@@ -107,7 +107,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null))
         );
     }
 
@@ -118,7 +118,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -130,7 +130,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -142,7 +142,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -154,7 +154,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null))
         );
         verify(orderRepository, never()).save(any());
     }

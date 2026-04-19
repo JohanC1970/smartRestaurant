@@ -50,7 +50,7 @@ class AdditionServiceTest {
     @Test
     void create_WithValidData_CreatesAddition() {
         // Arrange
-        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0);
+        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0, 0, 0);
         
         when(additionRepository.findByName("Queso Extra")).thenReturn(Optional.empty());
         when(additionMapper.toEntity(createDTO)).thenReturn(testAddition);
@@ -66,7 +66,7 @@ class AdditionServiceTest {
     @Test
     void create_WithExistingAddition_ThrowsException() {
         // Arrange
-        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0);
+        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0, 0, 0);
         
         when(additionRepository.findByName("Queso Extra")).thenReturn(Optional.of(testAddition));
 
