@@ -376,13 +376,13 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
-        // Liberar mesa cuando la orden está lista (COMPLETED) o entregada (DELIVERED)
-        if ((updateOrderDTO.status().equals(OrderStatus.COMPLETED) ||
-             updateOrderDTO.status().equals(OrderStatus.DELIVERED)) && order.getTable() != null) {
+        // Liberar mesa cuando la orden es entregada manualmente (sin pago — edge case)
+        // El caso principal de liberación es en payPresentialInvoice() cuando se confirma el pago
+        if (updateOrderDTO.status().equals(OrderStatus.DELIVERED) && order.getTable() != null) {
             order.getTable().setStatus(TableStatus.FREE);
             tableRepository.save(order.getTable());
-            log.info("[ORDER] Mesa {} liberada al marcar orden {} como {}",
-                    order.getTable().getNumber(), id, updateOrderDTO.status());
+            log.info("[ORDER] Mesa {} liberada al marcar orden {} como DELIVERED",
+                    order.getTable().getNumber(), id);
         }
 
         // Si se marca como COMPLETED, crear factura y descontar inventario
