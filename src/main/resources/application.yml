@@ -72,8 +72,8 @@ cors:
 # Social Login Configuration
 social:
   google:
-    client-id: ${GOOGLE_CLIENT_ID:}
-    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
   facebook:
     app-id: ${FACEBOOK_APP_ID:}
   github:
