@@ -29,6 +29,7 @@ public interface OrderMapper {
     @Mapping(target = "table", ignore = true)
     @Mapping(target = "invoice", ignore = true)
     @Mapping(target = "paymentStatus", ignore = true)
+    @Mapping(target = "notes", ignore = true)
     Order toEntity(CreateOrderDto createOrderDto);
 
     /**

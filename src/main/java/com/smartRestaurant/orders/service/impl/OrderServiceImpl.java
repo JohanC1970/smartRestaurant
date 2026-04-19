@@ -414,13 +414,22 @@ public class OrderServiceImpl implements OrderService {
             // Notificar al mesero que el pedido está listo para recoger
             sseService.notifyWaiterOrderReady(buildListDTO(order));
 
-            // Notificar al cliente si es ONLINE (ya pagó, está esperando)
-            if (order.getChannel().equals(OrderChannel.ONLINE) && order.getCustomer() != null) {
+            // Notificar al cliente (ONLINE u ONLINE con customer asignado)
+            if (order.getCustomer() != null) {
                 sseService.notifyCustomerOrderReady(order.getCustomer().getId(), buildListDTO(order));
             }
         }
 
         orderRepository.save(order);
+
+        // Notificar al cliente cualquier cambio de estado (excepto COMPLETED, ya notificado arriba)
+        if (!updateOrderDTO.status().equals(OrderStatus.COMPLETED) && order.getCustomer() != null) {
+            sseService.notifyCustomerOrderStatusChanged(
+                order.getCustomer().getId(),
+                updateOrderDTO.status().name(),
+                buildListDTO(order)
+            );
+        }
     }
     
     /**
@@ -628,7 +637,8 @@ public class OrderServiceImpl implements OrderService {
                 order.getUpdatedAt(),
                 items,
                 total,
-                paymentStatus
+                paymentStatus,
+                order.getNotes()
         );
     }
 

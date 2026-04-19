@@ -22,7 +22,8 @@ public record GetOrderDetailDTO(
         LocalDateTime updatedAt,
         List<GetOrderItemDTO> items,
         double totalAmount,
-        String paymentStatus
+        String paymentStatus,
+        String notes
 ) {
     /** Información resumida de la mesa asignada a la orden. Null si la orden es online. */
     public record TableInfo(String id, int number, int capacity, String location, TableStatus status) {}

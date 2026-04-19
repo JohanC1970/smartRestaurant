@@ -61,4 +61,7 @@ public class Order {
     @Column(nullable = false)
     @Builder.Default
     private OrderPaymentStatus paymentStatus = OrderPaymentStatus.NOT_REQUIRED;  // Estado de pago
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 }
