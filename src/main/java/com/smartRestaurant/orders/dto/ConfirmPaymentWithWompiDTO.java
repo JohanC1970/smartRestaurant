@@ -1,6 +1,5 @@
 package com.smartRestaurant.orders.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -27,7 +26,6 @@ public record ConfirmPaymentWithWompiDTO(
         @NotBlank(message = "El token de Wompi es obligatorio")
         String wompiToken,
 
-        @Min(value = 100, message = "El monto mínimo es $100 COP")
         long amount,
 
         @NotBlank(message = "La descripción del pago es obligatoria")
