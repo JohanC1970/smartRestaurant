@@ -218,7 +218,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 emailService.sendVerificationEmail(user.getEmail(), user.getFirstName(), otp);
 
                 return AuthResponse.builder()
-                                .message("Codigo 2FA enviado a su correo")
+                                .message("Código 2FA enviado a su correo")
                                 .is2faRequired(true)
                                 .requiresPasswordChange(user.isRequiresPasswordChange()) // RF-02: Indicar si requiere
                                                                                          // cambio

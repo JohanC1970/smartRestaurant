@@ -136,7 +136,7 @@ class AuthenticationServiceTest {
 
         // Assert
         verify(userRepository).save(any(User.class));
-        verify(emailService).sendEmployeeCredentials(eq("maria@test.com"), eq("María"), anyString(), eq("123456"));
+        verify(emailService).sendEmployeeCredentials(eq("maria@test.com"), eq("María"), anyString(), isNull());
         verify(auditService).logEvent(any(User.class), eq(AuditEventType.EMPLOYEE_REGISTERED), anyString(), isNull(), isNull());
     }
 

@@ -7,6 +7,8 @@ import com.smartRestaurant.inventory.Repository.DishRepository;
 import com.smartRestaurant.inventory.Repository.DrinkRepository;
 import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.model.Dish;
+import com.smartRestaurant.inventory.model.Product;
+import com.smartRestaurant.inventory.model.Recipe;
 import com.smartRestaurant.inventory.model.State;
 import com.smartRestaurant.inventory.util.CurrentUserProvider;
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
@@ -47,6 +49,7 @@ class OrderServiceTest {
     @Mock private AdditionRepository additionRepository;
     @Mock private InvoiceService invoiceService;
     @Mock private CurrentUserProvider currentUserProvider;
+    @Mock private SseService sseService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -225,9 +228,20 @@ class OrderServiceTest {
         orderFromMapper.setId("order-1");
         orderFromMapper.setItems(new ArrayList<>());
 
+        Product ingredient = new Product();
+        ingredient.setId("product-1");
+        ingredient.setWeight(1000.0);
+
+        Recipe recipe = new Recipe();
+        recipe.setId("recipe-1");
+        recipe.setProduct(ingredient);
+        recipe.setWeight(10.0);
+        recipe.setState(State.ACTIVE);
+
         Dish dish = new Dish();
         dish.setId("dish-1");
         dish.setState(State.ACTIVE);
+        dish.setRecipes(List.of(recipe));
 
         CreateOrderDto dto = new CreateOrderDto(
             OrderChannel.ONLINE, 1L, null, null,
