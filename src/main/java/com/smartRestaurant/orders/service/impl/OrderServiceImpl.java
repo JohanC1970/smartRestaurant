@@ -239,7 +239,19 @@ public class OrderServiceImpl implements OrderService {
                             .filter(d -> !d.getState().equals(State.INACTIVE))
                             .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado: " + itemDto.productId()));
 
-                    if (dish.getRecipes() == null || dish.getRecipes().isEmpty()) break;
+                    if (dish.getRecipes() == null || dish.getRecipes().isEmpty()) {
+                        throw new ValueConflictException(
+                            "El plato '" + dish.getName() + "' no tiene recetas configuradas. " +
+                            "Contacte al administrador para configurar los ingredientes.");
+                    }
+
+                    boolean hasActiveRecipes = dish.getRecipes().stream()
+                            .anyMatch(r -> State.ACTIVE.equals(r.getState()));
+                    if (!hasActiveRecipes) {
+                        throw new ValueConflictException(
+                            "El plato '" + dish.getName() + "' no tiene recetas activas configuradas. " +
+                            "Contacte al administrador.");
+                    }
 
                     for (Recipe recipe : dish.getRecipes()) {
                         if (!State.ACTIVE.equals(recipe.getState())) continue;
