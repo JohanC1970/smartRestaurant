@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -156,34 +155,20 @@ public class PaymentServiceImpl implements PaymentService {
                         return new ResourceNotFoundException("Cliente no encontrado");
                     });
 
-            // 4. En modo test con token de prueba, simular respuesta de Wompi
-            boolean isTestToken = dto.wompiToken().startsWith("test_token_");
-            String wompiTransactionId;
+            // 4. Verificar la transacción existente en Wompi (checkout hosted ya la procesó)
+            String wompiTransactionId = dto.wompiToken();
             String wompiStatus;
+            long amountInCents;
 
-            if ("test".equalsIgnoreCase(wompiEnvironment) && isTestToken) {
-                log.info(" [WOMPI] Modo TEST — simulando transacción aprobada");
-                wompiTransactionId = "test_txn_" + UUID.randomUUID().toString().substring(0, 8);
-                wompiStatus = "APPROVED";
-            } else {
-                // 4b. Crear transacción real en Wompi
-                log.info(" [WOMPI] Creando transacción en Wompi...");
-                Map<String, Object> metadata = new HashMap<>();
-                metadata.put("orderId", dto.orderId());
-                metadata.put("customerId", dto.customerId());
+            log.info(" [WOMPI] Verificando transacción existente: {}", wompiTransactionId);
+            JsonNode wompiResponse = wompiPaymentClient.getTransaction(wompiTransactionId);
+            wompiStatus = wompiResponse.path("data").path("status").asText();
+            amountInCents = wompiResponse.path("data").path("amount_in_cents").asLong();
+            log.info(" [WOMPI] Transacción verificada: status={}, monto={} centavos", wompiStatus, amountInCents);
 
-                JsonNode wompiResponse = wompiPaymentClient.createTransaction(
-                        dto.wompiToken(),
-                        dto.amount(),
-                        dto.orderId(),
-                        dto.customerEmail(),
-                        dto.customerPhone(),
-                        dto.description(),
-                        metadata
-                );
-                wompiTransactionId = wompiResponse.path("data").path("id").asText();
-                wompiStatus = wompiResponse.path("data").path("status").asText();
-                log.info(" [WOMPI] Transacción creada: transactionId={}, status={}", wompiTransactionId, wompiStatus);
+            if (!"APPROVED".equalsIgnoreCase(wompiStatus)) {
+                log.warn(" [WOMPI] Transacción no aprobada: status={}", wompiStatus);
+                throw new BadRequestException("El pago no fue aprobado por Wompi. Estado: " + wompiStatus);
             }
 
             // 5. Guardar pago en la base de datos
@@ -191,7 +176,7 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setId(UUID.randomUUID().toString());
             payment.setOrder(order);
             payment.setCustomer(customer);
-            payment.setAmount(dto.amount() / 100.0); // Convertir de centavos a pesos
+            payment.setAmount(amountInCents / 100.0); // Convertir de centavos a pesos
             payment.setPaymentMethod(PaymentMethodType.WOMPI);
             payment.setStatus(PaymentStatus.CONFIRMED);
             payment.setTransactionId(wompiTransactionId);
@@ -217,7 +202,7 @@ public class PaymentServiceImpl implements PaymentService {
                     dto.orderId(),
                     wompiTransactionId,
                     wompiStatus,
-                    dto.amount(),
+                    amountInCents,
                     "COP",
                     LocalDateTime.now(),
                     "Pago procesado exitosamente con Wompi",

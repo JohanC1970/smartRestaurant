@@ -29,6 +29,7 @@ import com.smartRestaurant.orders.service.WompiPaymentClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -55,6 +56,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final TableRepository tableRepository;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String createInvoice(CreateInvoiceDTO dto) {
         log.info(" [INVOICE] Creando factura para orden: {}", dto.orderId());
         

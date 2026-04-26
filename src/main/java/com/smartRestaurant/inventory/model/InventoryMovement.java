@@ -38,6 +38,6 @@ public class InventoryMovement {
     @JoinColumn(nullable = false)
     private User user;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 255)
     private String reason;
 }

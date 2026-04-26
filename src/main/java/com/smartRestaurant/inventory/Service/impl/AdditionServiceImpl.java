@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -108,7 +109,7 @@ public class AdditionServiceImpl implements AdditionService {
         checkAndNotifyLowStock(addition);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void discountStock(String id, DrinkMovement movement) {
         Addition addition = additionRepository.findById(id)
