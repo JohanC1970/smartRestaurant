@@ -22,6 +22,10 @@ import com.smartRestaurant.orders.model.enums.OrderStatus;
 import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.service.impl.OrderServiceImpl;
+import com.smartRestaurant.restaurant.repository.TableRepository;
+import com.smartRestaurant.inventory.Service.ProductService;
+import com.smartRestaurant.inventory.Service.DrinkService;
+import com.smartRestaurant.inventory.Service.AdditionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +54,10 @@ class OrderServiceTest {
     @Mock private InvoiceService invoiceService;
     @Mock private CurrentUserProvider currentUserProvider;
     @Mock private SseService sseService;
+    @Mock private TableRepository tableRepository;
+    @Mock private ProductService productService;
+    @Mock private DrinkService drinkService;
+    @Mock private AdditionService additionService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
