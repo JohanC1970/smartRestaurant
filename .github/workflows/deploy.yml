@@ -37,4 +37,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: sudo systemctl restart smartrestaurant
+          script: |
+            grep '^export ' ~/.bashrc | sed 's/^export //' > ~/app/.env
+            sudo systemctl restart smartrestaurant
