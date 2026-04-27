@@ -126,7 +126,6 @@ class AuthenticationServiceTest {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedTempPassword");
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(otpService.generateOtp(any(User.class), eq(OtpTokenType.VERIFICACION_EMAIL))).thenReturn("123456");
 
         // Act
         try (MockedStatic<PasswordGenerator> mockedGenerator = mockStatic(PasswordGenerator.class)) {
