@@ -41,5 +41,6 @@ jobs:
             pkill -f java || true
             sleep 2
             nohup java -jar /home/${{ secrets.EC2_USER }}/app/smartRestaurant-0.0.1-SNAPSHOT.jar \
-              > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 &
+              </dev/null > /home/${{ secrets.EC2_USER }}/app/app.log 2>&1 &
+            disown $!
             echo "Aplicación iniciada con PID $!"
