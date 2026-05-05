@@ -41,4 +41,7 @@ public interface SseService {
 
     /** Notifica al cliente específico que su pedido está listo. */
     void notifyCustomerOrderReady(Long customerId, Object orderData);
+
+    /** Notifica al cliente específico de cualquier cambio de estado en su pedido. */
+    void notifyCustomerOrderStatusChanged(Long customerId, String status, Object orderData);
 }

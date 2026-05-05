@@ -1,6 +1,7 @@
 package com.smartRestaurant.orders.service;
 
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
+import com.smartRestaurant.orders.dto.Order.EditOrderItemsDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
@@ -55,6 +56,11 @@ public interface OrderService {
      * luego la elimina para evitar acumulación de pedidos huérfanos.
      */
     void abandonOrder(String orderId);
+
+    /**
+     * Editar los items de una orden PENDIENTE
+     */
+    void editItems(String id, EditOrderItemsDTO dto);
 
     /**
      * Obtener las órdenes del cliente autenticado

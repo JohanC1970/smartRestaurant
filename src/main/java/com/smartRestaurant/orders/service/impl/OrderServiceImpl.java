@@ -768,8 +768,7 @@ public class OrderServiceImpl implements OrderService {
                 order.getUpdatedAt(),
                 items,
                 total,
-                paymentStatus,
-                order.getNotes()
+                paymentStatus
         );
     }
 
