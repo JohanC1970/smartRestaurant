@@ -9,6 +9,7 @@ import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.model.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -73,11 +74,10 @@ public class MenuPublicationServiceImpl implements MenuPublicationService {
     }
 
     @Override
-    public List<MenuPublicationSummaryDTO> getAll(int page) {
+    public Page<MenuPublicationSummaryDTO> getAll(int page) {
         Pageable pageable = PageRequest.of(page, 10);
-        return publicationRepository.findAllByOrderByDateDesc(pageable).stream()
-                .map(this::toSummaryDTO)
-                .toList();
+        return publicationRepository.findAllByOrderByDateDesc(pageable)
+                .map(this::toSummaryDTO);
     }
 
     @Override
@@ -172,7 +172,7 @@ public class MenuPublicationServiceImpl implements MenuPublicationService {
                 publication.getTimeSlot(),
                 publication.getBasePrice(),
                 publication.getAvailablePortions(),
-                buildSectionDTOs(publication)
+                buildSectionDTOsForCustomer(publication)
         );
     }
 
@@ -445,13 +445,42 @@ public class MenuPublicationServiceImpl implements MenuPublicationService {
         return MenuTimeSlot.ALL_DAY;
     }
 
+    private boolean isOptionAvailable(SectionOption o) {
+        return o.isActive()
+                && (o.getAvailablePortions() == null || o.getAvailablePortions() > 0);
+    }
+
+    /** Vista administrador: muestra TODAS las secciones, incluso las vacías */
     private List<PublicationSectionDTO> buildSectionDTOs(MenuPublication publication) {
         return publication.getSections().stream()
-                .map(s -> new PublicationSectionDTO(
-                        s.getId(), s.getName(), s.getDescription(),
-                        s.isRequired(), s.getMaxSelections(), s.isIncludedInBasePrice(),
-                        s.getDisplayOrder(),
-                        s.getOptions().stream().map(this::toOptionDTO).toList()))
+                .map(s -> {
+                    List<SectionOptionDTO> options = s.getOptions().stream()
+                            .map(this::toOptionDTO)
+                            .toList();
+                    return new PublicationSectionDTO(
+                            s.getId(), s.getName(), s.getDescription(),
+                            s.isRequired(), s.getMaxSelections(), s.isIncludedInBasePrice(),
+                            s.getDisplayOrder(),
+                            options);
+                })
+                .toList();
+    }
+
+    /** Vista cliente: oculta secciones sin opciones disponibles */
+    private List<PublicationSectionDTO> buildSectionDTOsForCustomer(MenuPublication publication) {
+        return publication.getSections().stream()
+                .map(s -> {
+                    List<SectionOptionDTO> availableOptions = s.getOptions().stream()
+                            .filter(this::isOptionAvailable)
+                            .map(this::toOptionDTO)
+                            .toList();
+                    return new PublicationSectionDTO(
+                            s.getId(), s.getName(), s.getDescription(),
+                            s.isRequired(), s.getMaxSelections(), s.isIncludedInBasePrice(),
+                            s.getDisplayOrder(),
+                            availableOptions);
+                })
+                .filter(s -> !s.options().isEmpty())
                 .toList();
     }
 

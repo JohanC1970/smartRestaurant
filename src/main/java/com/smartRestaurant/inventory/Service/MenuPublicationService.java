@@ -4,14 +4,13 @@ import com.smartRestaurant.inventory.dto.menu.request.*;
 import com.smartRestaurant.inventory.dto.menu.response.ActiveMenuDTO;
 import com.smartRestaurant.inventory.dto.menu.response.MenuPublicationDTO;
 import com.smartRestaurant.inventory.dto.menu.response.MenuPublicationSummaryDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface MenuPublicationService {
 
     // ── Publicaciones ─────────────────────────────────────────────────────────
     void create(CreateMenuPublicationRequest request);
-    List<MenuPublicationSummaryDTO> getAll(int page);
+    Page<MenuPublicationSummaryDTO> getAll(int page);
     MenuPublicationDTO getById(String id);
     void update(String id, UpdateMenuPublicationRequest request);
     void delete(String id);

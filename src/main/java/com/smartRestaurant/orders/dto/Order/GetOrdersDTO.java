@@ -17,5 +17,6 @@ public record GetOrdersDTO(
         LocalDateTime createdAt,
         int itemCount,
         double totalAmount,
-        OrderPaymentStatus paymentStatus
+        OrderPaymentStatus paymentStatus,
+        int menuInstanceCount
 ) {}

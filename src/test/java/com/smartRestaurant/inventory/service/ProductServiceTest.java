@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,12 +66,20 @@ class ProductServiceTest {
 
     @Test
     void update_WithValidData_UpdatesProduct() {
-        // Arrange
+        // Arrange — pasar un DTO mínimo válido en lugar de null
+        com.smartRestaurant.inventory.dto.Product.UpdateProductDTO updateDTO =
+            new com.smartRestaurant.inventory.dto.Product.UpdateProductDTO(
+                "Arroz", "Arroz blanco de grano largo premium",
+                3500.0, 100.0, List.of("photo.jpg"),
+                20.0, 10.0, "suplier-1"
+            );
+
         when(productRepository.findById("product-1")).thenReturn(Optional.of(testProduct));
+        when(suplierRepository.findById("suplier-1")).thenReturn(Optional.of(testSuplier));
         when(productRepository.save(any(Product.class))).thenReturn(testProduct);
 
         // Act & Assert
-        assertDoesNotThrow(() -> productService.update("product-1", null));
+        assertDoesNotThrow(() -> productService.update("product-1", updateDTO));
         verify(productRepository).save(testProduct);
     }
 

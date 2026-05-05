@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/menu/publications")
@@ -34,7 +34,7 @@ public class MenuPublicationController {
 
     @GetMapping("/{page}/page")
     @PreAuthorize("hasAnyAuthority('daily_menu:read', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<List<MenuPublicationSummaryDTO>>> getAll(@PathVariable int page) {
+    public ResponseEntity<ResponseDTO<Page<MenuPublicationSummaryDTO>>> getAll(@PathVariable int page) {
         return ResponseEntity.ok(new ResponseDTO<>(menuPublicationService.getAll(page), false));
     }
 

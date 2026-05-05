@@ -1,9 +1,9 @@
 package com.smartRestaurant.orders.dto.Order;
 
+import com.smartRestaurant.orders.dto.menu.CreateMenuInstanceDTO;
 import com.smartRestaurant.orders.dto.orderitem.CreateOrderItemDTO;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
@@ -15,12 +15,14 @@ import java.util.List;
 public record CreateOrderDto(
         @NotNull(message = "El canal de la orden es obligatorio")
         OrderChannel channel,
-        
+
         Long customerId,           // null si es presencial
         Long waiterId,             // null si es online
         String tableId,            // null si es online — ID de RestaurantTable
-        
-        @NotEmpty(message = "La orden debe tener al menos un item")
+
         @Valid
-        List<CreateOrderItemDTO> items
+        List<CreateOrderItemDTO> items,
+
+        @Valid
+        List<CreateMenuInstanceDTO> menuInstances  // null o vacío si no se pide menú del día
 ) {}

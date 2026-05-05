@@ -14,7 +14,7 @@ public interface ShowDishesMappper {
     @Mapping(target = "name", source = "name")
     @Mapping(target = "price", source = "price")
     @Mapping(source = "id", target = "id")
-
+    @Mapping(source = "availability", target = "availability")
     GetDishDTO toDTO(Dish dish);
 
 }

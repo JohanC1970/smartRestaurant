@@ -16,6 +16,7 @@ public interface DishMapper {
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(target = "state", constant = "ACTIVE")
     @Mapping(target = "photos", source = "photos")
+    @Mapping(target = "availability", expression = "java(createDishDTO.availability() != null ? createDishDTO.availability() : com.smartRestaurant.inventory.model.DishAvailability.REGULAR)")
     Dish toEntity(CreateDishDTO createDishDTO);
 
     @Mapping(target = "categoryId", source = "dish.category.id")
@@ -25,6 +26,7 @@ public interface DishMapper {
     @Mapping(target = "margin", expression = "java(dish.getPrice() - calculateEstimatedCost(dish))")
     GetDishDetailDTO toDTO(Dish dish);
 
+    @Mapping(target = "availability", expression = "java(updateDishDTO.availability() != null ? updateDishDTO.availability() : dish.getAvailability())")
     void updateDish(UpdateDishDTO updateDishDTO, @MappingTarget Dish dish);
 
     default double calculateEstimatedCost(Dish dish) {

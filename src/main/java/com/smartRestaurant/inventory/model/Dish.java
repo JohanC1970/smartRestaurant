@@ -34,6 +34,10 @@ public class Dish extends BaseEntity {
     @Column(nullable = false)
     private State state;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DishAvailability availability = DishAvailability.REGULAR;
+
     @ManyToOne
     private Category category;
 

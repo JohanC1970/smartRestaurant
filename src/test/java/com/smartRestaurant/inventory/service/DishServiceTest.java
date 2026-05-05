@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,12 +69,21 @@ class DishServiceTest {
 
     @Test
     void update_WithValidData_UpdatesDish() {
-        // Arrange
+        // Arrange — pasar un DTO mínimo válido en lugar de null
+        com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO updateDTO =
+            new com.smartRestaurant.inventory.dto.Dish.UpdateDishDTO(
+                "Bandeja Paisa", "Plato tipico colombiano completo",
+                25000.0, List.of("photo.jpg"),
+                List.of(new com.smartRestaurant.inventory.dto.recipe.CreateRecipeDTO("product-1", 100.0, "g")),
+                "category-1"
+            );
+
         when(dishRepository.findById("dish-1")).thenReturn(Optional.of(testDish));
+        when(categoryRepository.findById("category-1")).thenReturn(Optional.of(testCategory));
         when(dishRepository.save(any(Dish.class))).thenReturn(testDish);
 
         // Act & Assert
-        assertDoesNotThrow(() -> dishService.update("dish-1", null));
+        assertDoesNotThrow(() -> dishService.update("dish-1", updateDTO));
         verify(dishRepository).save(testDish);
     }
 

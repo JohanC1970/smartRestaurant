@@ -68,9 +68,9 @@ class SuplierServiceTest {
 
     @Test
     void create_WithValidData_CreatesSuplier() {
-        // Arrange
-        CreateSuplierDTO createDTO = new CreateSuplierDTO("Nuevo Proveedor", "nuevo@test.com", "9876543210", "Calle Nueva 456");
-        
+        // Arrange — orden correcto: (name, address, phone, email)
+        CreateSuplierDTO createDTO = new CreateSuplierDTO("Nuevo Proveedor", "Calle Nueva 456", "9876543210", "nuevo@test.com");
+
         when(suplierRepository.findByEmail("nuevo@test.com")).thenReturn(Optional.empty());
         when(suplierMapper.toEntity(createDTO)).thenReturn(testSuplier);
         when(suplierRepository.save(any(Suplier.class))).thenReturn(testSuplier);
@@ -84,9 +84,9 @@ class SuplierServiceTest {
 
     @Test
     void create_WithExistingEmail_ThrowsException() {
-        // Arrange
-        CreateSuplierDTO createDTO = new CreateSuplierDTO("Proveedor Test", "proveedor@test.com", "1234567890", "Calle Test 123");
-        
+        // Arrange — orden correcto: (name, address, phone, email)
+        CreateSuplierDTO createDTO = new CreateSuplierDTO("Proveedor Test", "Calle Test 123", "1234567890", "proveedor@test.com");
+
         when(suplierRepository.findByEmail("proveedor@test.com")).thenReturn(Optional.of(testSuplier));
 
         // Act & Assert

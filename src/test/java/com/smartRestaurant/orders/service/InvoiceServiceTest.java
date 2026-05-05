@@ -19,6 +19,7 @@ import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.impl.InvoiceServiceImpl;
+import com.smartRestaurant.orders.model.enums.OrderChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,7 @@ class InvoiceServiceTest {
     @Mock private InvoiceMapper invoiceMapper;
     @Mock private PaymentMapper paymentMapper;
     @Mock private WompiPaymentClient wompiClient;
+    @Mock private SseService sseService;
 
     @InjectMocks
     private InvoiceServiceImpl invoiceService;
@@ -58,6 +60,7 @@ class InvoiceServiceTest {
         testOrder = new Order();
         testOrder.setId("order-1");
         testOrder.setCustomer(testCustomer);
+        testOrder.setChannel(OrderChannel.PRESENTIAL);
 
         testInvoice = new Invoice();
         testInvoice.setId("INV-20260414-ABCDE");

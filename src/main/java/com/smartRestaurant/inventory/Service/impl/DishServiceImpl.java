@@ -16,6 +16,7 @@ import com.smartRestaurant.inventory.mapper.DishMapper;
 import com.smartRestaurant.inventory.mapper.ShowDishesMappper;
 import com.smartRestaurant.inventory.model.Category;
 import com.smartRestaurant.inventory.model.Dish;
+import com.smartRestaurant.inventory.model.DishAvailability;
 import com.smartRestaurant.inventory.model.State;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,13 +41,28 @@ public class DishServiceImpl implements DishService {
 
 
     @Override
-    public List<GetDishDTO> getAll(int page) {
-
+    public List<GetDishDTO> getAll(int page, String categoryId, boolean customerView, boolean menuEligible) {
         Pageable pageable = PageRequest.of(page, 10);
-        Page<Dish> dishes = dishRepository.findAll(pageable);
+
+        // menuEligible: solo MENU_DEL_DIA + BOTH (para armar publicaciones del menú del día)
+        // customerView: solo REGULAR + BOTH (para el tab de Platos del cliente/mesero)
+        // ninguno:      todos (para el inventario del admin/cocina)
+        List<DishAvailability> allowedAvailabilities;
+        if (menuEligible) {
+            allowedAvailabilities = List.of(DishAvailability.MENU_DEL_DIA, DishAvailability.BOTH);
+        } else if (customerView) {
+            allowedAvailabilities = List.of(DishAvailability.REGULAR, DishAvailability.BOTH);
+        } else {
+            allowedAvailabilities = List.of(DishAvailability.values());
+        }
+
+        Page<Dish> dishes = categoryId != null && !categoryId.isBlank()
+                ? dishRepository.findByStateAndAvailabilityInAndCategoryId(
+                        State.ACTIVE, allowedAvailabilities, categoryId, pageable)
+                : dishRepository.findByStateAndAvailabilityIn(
+                        State.ACTIVE, allowedAvailabilities, pageable);
 
         return dishes.stream()
-                .filter(dish -> dish.getState().equals(State.ACTIVE))
                 .map(showDishesMappper::toDTO)
                 .toList();
     }

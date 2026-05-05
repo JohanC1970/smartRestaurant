@@ -235,7 +235,8 @@ class OrderServiceTest {
     void create_WithNullChannel_ThrowsBadRequest() {
         CreateOrderDto dto = new CreateOrderDto(
             null, null, null, null,
-            List.of(new CreateOrderItemDTO("dish-1", "DISH", 1, null))
+            List.of(new CreateOrderItemDTO("dish-1", "DISH", 1, null)),
+            null
         );
 
         assertThrows(BadRequestException.class, () -> orderService.create(dto));
@@ -245,7 +246,7 @@ class OrderServiceTest {
     @Test
     void create_WithEmptyItems_ThrowsBadRequest() {
         CreateOrderDto dto = new CreateOrderDto(
-            OrderChannel.ONLINE, null, null, null, List.of()
+            OrderChannel.ONLINE, null, null, null, List.of(), null
         );
 
         assertThrows(BadRequestException.class, () -> orderService.create(dto));
@@ -257,6 +258,7 @@ class OrderServiceTest {
         // El mapper retorna una orden sin paymentStatus seteado
         Order orderFromMapper = new Order();
         orderFromMapper.setId("order-1");
+        orderFromMapper.setChannel(OrderChannel.ONLINE);
         orderFromMapper.setItems(new ArrayList<>());
 
         Product ingredient = new Product();
@@ -276,7 +278,8 @@ class OrderServiceTest {
 
         CreateOrderDto dto = new CreateOrderDto(
             OrderChannel.ONLINE, 1L, null, null,
-            List.of(new CreateOrderItemDTO("dish-1", "DISH", 2, null))
+            List.of(new CreateOrderItemDTO("dish-1", "DISH", 2, null)),
+            null
         );
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));

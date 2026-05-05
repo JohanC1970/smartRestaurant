@@ -5,8 +5,8 @@ import com.smartRestaurant.inventory.Service.impl.AdditionServiceImpl;
 import com.smartRestaurant.inventory.dto.Addition.CreateAdditionDTO;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.mapper.AdditionMapper;
-import com.smartRestaurant.inventory.mapper.ShowAdditionDetailMapper;
 import com.smartRestaurant.inventory.model.Addition;
+import com.smartRestaurant.inventory.model.AdditionType;
 import com.smartRestaurant.inventory.model.State;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +30,6 @@ class AdditionServiceTest {
     @Mock
     private AdditionMapper additionMapper;
 
-    @Mock
-    private ShowAdditionDetailMapper showAdditionDetailMapper;
-
     @InjectMocks
     private AdditionServiceImpl additionService;
 
@@ -43,15 +40,19 @@ class AdditionServiceTest {
         testAddition = new Addition();
         testAddition.setId("addition-1");
         testAddition.setName("Queso Extra");
-        testAddition.setPrice(2000.0);
+        testAddition.setSalePrice(2000.0);
         testAddition.setState(State.ACTIVE);
     }
 
     @Test
     void create_WithValidData_CreatesAddition() {
-        // Arrange
-        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0);
-        
+        // Arrange — SIMPLE requiere purchasePrice no nulo
+        CreateAdditionDTO createDTO = new CreateAdditionDTO(
+            "Queso Extra", "Queso adicional",
+            AdditionType.SIMPLE,
+            1500.0, 2000.0, 10, 2, null, null
+        );
+
         when(additionRepository.findByName("Queso Extra")).thenReturn(Optional.empty());
         when(additionMapper.toEntity(createDTO)).thenReturn(testAddition);
         when(additionRepository.save(any(Addition.class))).thenReturn(testAddition);
@@ -66,8 +67,12 @@ class AdditionServiceTest {
     @Test
     void create_WithExistingAddition_ThrowsException() {
         // Arrange
-        CreateAdditionDTO createDTO = new CreateAdditionDTO("Queso Extra", "Queso adicional", 2000.0);
-        
+        CreateAdditionDTO createDTO = new CreateAdditionDTO(
+            "Queso Extra", "Queso adicional",
+            AdditionType.SIMPLE,
+            1500.0, 2000.0, 10, 2, null, null
+        );
+
         when(additionRepository.findByName("Queso Extra")).thenReturn(Optional.of(testAddition));
 
         // Act & Assert
@@ -76,12 +81,17 @@ class AdditionServiceTest {
 
     @Test
     void update_WithValidData_UpdatesAddition() {
-        // Arrange
+        // Arrange — pasar un DTO mínimo válido en lugar de null
+        com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO updateDTO =
+            new com.smartRestaurant.inventory.dto.Addition.UpdateAdditionDTO(
+                "Queso Extra", "Queso adicional", 2000.0, null, null, null, null
+            );
+
         when(additionRepository.findById("addition-1")).thenReturn(Optional.of(testAddition));
         when(additionRepository.save(any(Addition.class))).thenReturn(testAddition);
 
         // Act & Assert
-        assertDoesNotThrow(() -> additionService.update("addition-1", null));
+        assertDoesNotThrow(() -> additionService.update("addition-1", updateDTO));
         verify(additionRepository).save(testAddition);
     }
 
