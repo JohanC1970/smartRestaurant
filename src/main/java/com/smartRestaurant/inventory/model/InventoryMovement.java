@@ -27,6 +27,7 @@ public class InventoryMovement {
      * Categoría del ítem al que pertenece este movimiento.
      * PRODUCT → usa el FK product; DRINK / ADDITION → usa itemId e itemName.
      */
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ItemCategory itemCategory = ItemCategory.PRODUCT;
