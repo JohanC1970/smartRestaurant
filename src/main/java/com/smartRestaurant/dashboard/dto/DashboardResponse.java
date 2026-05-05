@@ -33,4 +33,13 @@ public class DashboardResponse {
 
     /** Clientes nuevos vs recurrentes */
     private CustomerMetricDTO customers;
+
+    /** Valor total del inventario activo (Σ product.weight × product.price) */
+    private double inventoryCapital;
+
+    /** Gastos en insumos en los últimos 30 días (Σ InventoryMovement ENTRY totalCost) */
+    private double monthlyExpenses;
+
+    /** Utilidad estimada del mes (ingresos del mes - gastos del mes) */
+    private double estimatedProfit;
 }

@@ -1,6 +1,7 @@
 package com.smartRestaurant.orders.dto.Order;
 
 import com.smartRestaurant.orders.model.enums.OrderChannel;
+import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
 
 import java.time.LocalDateTime;
@@ -15,5 +16,6 @@ public record GetOrdersDTO(
         String customerName,
         LocalDateTime createdAt,
         int itemCount,
-        double totalAmount
+        double totalAmount,
+        OrderPaymentStatus paymentStatus
 ) {}

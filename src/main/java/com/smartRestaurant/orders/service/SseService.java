@@ -19,6 +19,9 @@ public interface SseService {
     /** Abre una conexión SSE para la app del mesero. */
     SseEmitter subscribeWaiter();
 
+    /** Abre una conexión SSE para la vista del cajero. */
+    SseEmitter subscribeCashier();
+
     /** Abre una conexión SSE para un cliente específico (por su userId). */
     SseEmitter subscribeCustomer(Long customerId);
 
@@ -29,6 +32,12 @@ public interface SseService {
 
     /** Notifica a todos los meseros que un pedido está listo para recoger. */
     void notifyWaiterOrderReady(Object orderData);
+
+    /** Notifica al cajero que hay un pedido listo para cobrar. */
+    void notifyCashierOrderReadyToPay(Object orderData);
+
+    /** Notifica al cajero que un pago fue confirmado (para sacar la orden de su lista). */
+    void notifyCashierPaymentConfirmed(String orderId);
 
     /** Notifica al cliente específico que su pedido está listo. */
     void notifyCustomerOrderReady(Long customerId, Object orderData);

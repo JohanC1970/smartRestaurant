@@ -5,5 +5,6 @@ import jakarta.validation.constraints.Positive;
 
 public record StockMovementDTO(
         @Positive @NotNull double weight,
+        Double unitPrice,
         String reason) {
 }

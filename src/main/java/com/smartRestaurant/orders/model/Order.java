@@ -28,7 +28,7 @@ public class Order {
     private String id;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status; // pending, in_progress, completed, delivered, cancelled
+    private OrderStatus status; // PENDING → SENT → IN_PROGRESS → COMPLETED → DELIVERED | CANCELLED
 
     @Enumerated(EnumType.STRING)
     private OrderChannel channel; // online, presencial

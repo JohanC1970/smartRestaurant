@@ -16,5 +16,7 @@ public record UpdateDishDTO(@NotBlank @Length(min = 1, max = 100)
                             @NotEmpty @Size(min = 1, max = 10)
                             List<String> photos,
                             @NotEmpty
-                            List<CreateRecipeDTO> ingredients) {
+                            List<CreateRecipeDTO> ingredients,
+                            @NotBlank
+                            String categoryId) {
 }

@@ -15,6 +15,7 @@ public interface RecipeMapper {
     @Mapping(target = "id", expression = "java(java.util.UUID.randomUUID().toString())")
     @Mapping(target = "dish", source = "dish")
     @Mapping(target = "product", source = "product")
+    @Mapping(target = "weight", source = "dto.quantity")
     @Mapping(target = "state", ignore = true)
     Recipe toEntity(CreateRecipeDTO dto, Dish dish, Product product);
 

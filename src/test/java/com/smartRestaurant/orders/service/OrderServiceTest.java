@@ -7,6 +7,8 @@ import com.smartRestaurant.inventory.Repository.DishRepository;
 import com.smartRestaurant.inventory.Repository.DrinkRepository;
 import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.model.Dish;
+import com.smartRestaurant.inventory.model.Product;
+import com.smartRestaurant.inventory.model.Recipe;
 import com.smartRestaurant.inventory.model.State;
 import com.smartRestaurant.inventory.util.CurrentUserProvider;
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
@@ -20,6 +22,10 @@ import com.smartRestaurant.orders.model.enums.OrderStatus;
 import com.smartRestaurant.orders.repository.OrderItemRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.service.impl.OrderServiceImpl;
+import com.smartRestaurant.restaurant.repository.TableRepository;
+import com.smartRestaurant.inventory.Service.ProductService;
+import com.smartRestaurant.inventory.Service.DrinkService;
+import com.smartRestaurant.inventory.Service.AdditionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +53,11 @@ class OrderServiceTest {
     @Mock private AdditionRepository additionRepository;
     @Mock private InvoiceService invoiceService;
     @Mock private CurrentUserProvider currentUserProvider;
+    @Mock private SseService sseService;
+    @Mock private TableRepository tableRepository;
+    @Mock private ProductService productService;
+    @Mock private DrinkService drinkService;
+    @Mock private AdditionService additionService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -68,14 +79,37 @@ class OrderServiceTest {
     // =====================================================================
 
     @Test
-    void update_PendingToInProgress_Success() {
+    void update_PendingToSent_Success() {
         testOrder.setStatus(OrderStatus.PENDING);
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.SENT, null))
         );
+    }
+
+    @Test
+    void update_SentToInProgress_Success() {
+        testOrder.setStatus(OrderStatus.SENT);
+        when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
+        when(orderRepository.save(any())).thenReturn(testOrder);
+
+        assertDoesNotThrow(() ->
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null))
+        );
+    }
+
+    @Test
+    void update_PendingToInProgress_ThrowsBadRequest() {
+        // No se puede saltar el estado SENT
+        testOrder.setStatus(OrderStatus.PENDING);
+        when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
+
+        assertThrows(BadRequestException.class, () ->
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null))
+        );
+        verify(orderRepository, never()).save(any());
     }
 
     @Test
@@ -85,7 +119,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.CANCELLED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.CANCELLED, null))
         );
     }
 
@@ -96,7 +130,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.COMPLETED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.COMPLETED, null))
         );
     }
 
@@ -107,7 +141,7 @@ class OrderServiceTest {
         when(orderRepository.save(any())).thenReturn(testOrder);
 
         assertDoesNotThrow(() ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null))
         );
     }
 
@@ -118,7 +152,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.DELIVERED, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -130,7 +164,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.IN_PROGRESS, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -142,7 +176,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -154,7 +188,7 @@ class OrderServiceTest {
         when(orderRepository.findById("order-1")).thenReturn(Optional.of(testOrder));
 
         assertThrows(BadRequestException.class, () ->
-            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null, null))
+            orderService.update("order-1", new UpdateOrderDTO(OrderStatus.PENDING, null))
         );
         verify(orderRepository, never()).save(any());
     }
@@ -225,9 +259,20 @@ class OrderServiceTest {
         orderFromMapper.setId("order-1");
         orderFromMapper.setItems(new ArrayList<>());
 
+        Product ingredient = new Product();
+        ingredient.setId("product-1");
+        ingredient.setWeight(1000.0);
+
+        Recipe recipe = new Recipe();
+        recipe.setId("recipe-1");
+        recipe.setProduct(ingredient);
+        recipe.setWeight(10.0);
+        recipe.setState(State.ACTIVE);
+
         Dish dish = new Dish();
         dish.setId("dish-1");
         dish.setState(State.ACTIVE);
+        dish.setRecipes(List.of(recipe));
 
         CreateOrderDto dto = new CreateOrderDto(
             OrderChannel.ONLINE, 1L, null, null,

@@ -38,7 +38,7 @@ public class PaymentController {
      * Crear un nuevo pago (métodos tradicionales: EFECTIVO, TARJETA, etc.)
      */
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('payment:write', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<String>> createPayment(@RequestBody @Valid CreatePaymentDTO createPaymentDTO) {
         String paymentId = paymentService.createPayment(createPaymentDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -50,7 +50,7 @@ public class PaymentController {
      * Obtener todos los pagos registrados
      */
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<List<GetPaymentsDTO>>> getAllPayments() {
         List<GetPaymentsDTO> payments = paymentService.payments();
         return ResponseEntity.status(HttpStatus.OK)
@@ -62,7 +62,7 @@ public class PaymentController {
      * Obtener detalle de un pago específico
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<GetPaymentDetailDTO>> getPaymentById(@PathVariable String id) {
         GetPaymentDetailDTO payment = paymentService.paymentDetail(id);
         return ResponseEntity.status(HttpStatus.OK)
@@ -78,7 +78,7 @@ public class PaymentController {
      * El cliente envía el token de Wompi generado por Wompi.js
      */
     @PostMapping("/wompi/confirm")
-    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('payment:write', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<WompiPaymentResponseDTO>> confirmPaymentWithWompi(
             @RequestBody @Valid ConfirmPaymentWithWompiDTO dto) {
         

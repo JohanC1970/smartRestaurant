@@ -75,9 +75,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         // 4. Guardar en BD
         Invoice saved = invoiceRepository.save(invoice);
         
-        // 5. Actualizar orden con estado de pago
-        order.setPaymentStatus(OrderPaymentStatus.PENDING);
-        orderRepository.save(order);
+        // 5. Solo actualizar paymentStatus a PENDING para órdenes ONLINE.
+        //    Las presenciales mantienen NOT_REQUIRED hasta que el mesero registre el pago.
+        if (order.getChannel().equals(OrderChannel.ONLINE)) {
+            order.setPaymentStatus(OrderPaymentStatus.PENDING);
+            orderRepository.save(order);
+        }
         
         log.info(" [INVOICE] Factura creada: {} | Total: {} COP", saved.getId(), saved.getTotal());
         return saved.getId();
@@ -129,8 +132,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         log.info(" [INVOICE-PRESENCIAL] Pago registrado: {} | Método: {} | Total: {} COP",
                  savedPayment.getId(), dto.paymentMethod(), invoice.getTotal());
-        
-        // 7. Retornar usando MAPPER
+
+        // Notificar al cajero que el pago fue confirmado (para que la orden salga de su lista)
+        sseService.notifyCashierPaymentConfirmed(order.getId());
+
+        // 8. Retornar usando MAPPER
         return invoiceMapper.toDTO(invoice);
     }
     

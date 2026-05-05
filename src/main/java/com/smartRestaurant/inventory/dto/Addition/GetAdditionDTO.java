@@ -1,11 +1,13 @@
 package com.smartRestaurant.inventory.dto.Addition;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-
-public record GetAdditionDTO(String id,
-                             String name,
-                             String photo,
-                             double price) {
-
+public record GetAdditionDTO(
+        String id,
+        String name,
+        String photo,
+        String additionType,
+        double salePrice,
+        int units,
+        int availableUnits,
+        String state
+) {
 }

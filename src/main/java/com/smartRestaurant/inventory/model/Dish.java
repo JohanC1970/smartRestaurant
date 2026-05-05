@@ -38,6 +38,7 @@ public class Dish extends BaseEntity {
     private Category category;
 
     @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Where(clause = "state = 'ACTIVE'")
     private List<Recipe> recipes;
 
 

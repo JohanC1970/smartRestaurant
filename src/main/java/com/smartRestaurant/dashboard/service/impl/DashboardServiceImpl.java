@@ -4,7 +4,9 @@ import com.smartRestaurant.auth.model.enums.UserRole;
 import com.smartRestaurant.auth.repository.UserRepository;
 import com.smartRestaurant.dashboard.dto.*;
 import com.smartRestaurant.dashboard.service.DashboardService;
+import com.smartRestaurant.inventory.Repository.InventoryMovementRepository;
 import com.smartRestaurant.inventory.Repository.ProductRepository;
+import com.smartRestaurant.inventory.model.Type;
 import com.smartRestaurant.orders.model.enums.InvoiceStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
 import com.smartRestaurant.orders.repository.InvoiceRepository;
@@ -30,6 +32,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final InventoryMovementRepository inventoryMovementRepository;
 
     @Override
     public DashboardResponse getDashboard() {
@@ -38,14 +41,20 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDateTime startOfWeek = now.toLocalDate().with(DayOfWeek.MONDAY).atStartOfDay();
         LocalDateTime startOfMonth = now.minusDays(30);
 
+        RevenueMetricDTO revenue = buildRevenueMetric(now, startOfToday, startOfWeek, startOfMonth);
+        double monthlyExpenses = getMonthlyExpenses(startOfMonth, now);
+
         return DashboardResponse.builder()
-                .revenue(buildRevenueMetric(now, startOfToday, startOfWeek, startOfMonth))
+                .revenue(revenue)
                 .activeOrders(countActiveOrders())
                 .averageTicket(getAverageTicket(startOfMonth))
                 .topDishes(getTopDishes(startOfMonth))
                 .cancellation(getCancellationMetric(startOfMonth))
                 .lowStockProducts(getLowStockProducts())
                 .customers(getCustomerMetric(startOfMonth))
+                .inventoryCapital(getInventoryCapital())
+                .monthlyExpenses(monthlyExpenses)
+                .estimatedProfit(revenue.getThisMonth() - monthlyExpenses)
                 .build();
     }
 
@@ -67,7 +76,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     private long countActiveOrders() {
-        return orderRepository.countByStatusIn(List.of(OrderStatus.PENDING, OrderStatus.IN_PROGRESS));
+        return orderRepository.countByStatusIn(List.of(OrderStatus.PENDING, OrderStatus.SENT, OrderStatus.IN_PROGRESS));
     }
 
     private double getAverageTicket(LocalDateTime since) {
@@ -126,5 +135,15 @@ public class DashboardServiceImpl implements DashboardService {
                 .newCustomers(newCustomers)
                 .returningCustomers(returning)
                 .build();
+    }
+
+    private double getInventoryCapital() {
+        Double capital = productRepository.calculateInventoryCapital();
+        return capital != null ? capital : 0.0;
+    }
+
+    private double getMonthlyExpenses(LocalDateTime from, LocalDateTime to) {
+        Double expenses = inventoryMovementRepository.sumTotalCostByTypeAndPeriod(Type.ENTRY, from, to);
+        return expenses != null ? expenses : 0.0;
     }
 }

@@ -22,5 +22,7 @@ public record CreateProductDTO( @NotBlank @Length(min = 1, max = 50)
                                 @NotNull @Size(min = 1, max = 10)
                                 List<String> photos,
                                 @Positive @NotNull
-                                double minimumStock) {
+                                double minimumStock,
+                                @NotNull
+                                double criticalStock) {
 }

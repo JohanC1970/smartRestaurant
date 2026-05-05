@@ -81,14 +81,22 @@ public class DishServiceImpl implements DishService {
     @Override
     public void update(String id, UpdateDishDTO updateDishDTO) {
         Optional<Dish> dishOptional = dishRepository.findById(id);
-        if (dishOptional.isEmpty()) {
+        if (dishOptional.isEmpty() || dishOptional.get().getState().equals(State.INACTIVE)) {
             throw new RuntimeException("No se encuentra el plato");
         }
 
+        Optional<Category> category = categoryRepository.findById(updateDishDTO.categoryId());
+        if (category.isEmpty() || category.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("No existe esta categoría");
+        }
+
         dishMapper.updateDish(updateDishDTO, dishOptional.get());
+        dishOptional.get().setCategory(category.get());
+
+        recipeRepository.updateStateByDishId(id, State.INACTIVE);
+        recipeService.registerRecipe(updateDishDTO.ingredients(), dishOptional.get());
 
         dishRepository.save(dishOptional.get());
-
     }
 
     // validar que un plato no esté pendiente de pago o que no afecte borrarlo

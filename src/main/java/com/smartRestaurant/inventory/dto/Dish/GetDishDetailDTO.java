@@ -10,5 +10,8 @@ public record GetDishDetailDTO(String id,
                                double price,
                                List<String> photos,
                                List<GetRecipeDTO> ingredients,
-                               String categoryName) {
+                               String categoryId,
+                               String categoryName,
+                               double estimatedCost,
+                               double margin) {
 }

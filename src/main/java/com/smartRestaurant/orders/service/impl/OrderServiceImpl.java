@@ -6,8 +6,12 @@ import com.smartRestaurant.inventory.exceptions.BadRequestException;
 import com.smartRestaurant.inventory.exceptions.ResourceNotFoundException;
 import com.smartRestaurant.inventory.exceptions.ValueConflictException;
 import com.smartRestaurant.inventory.model.Addition;
+import com.smartRestaurant.inventory.model.AdditionRecipe;
+import com.smartRestaurant.inventory.model.AdditionType;
 import com.smartRestaurant.inventory.model.Dish;
 import com.smartRestaurant.inventory.model.Drink;
+import com.smartRestaurant.inventory.model.DrinkRecipe;
+import com.smartRestaurant.inventory.model.DrinkType;
 import com.smartRestaurant.inventory.model.Recipe;
 import com.smartRestaurant.inventory.model.State;
 import com.smartRestaurant.inventory.Repository.AdditionRepository;
@@ -19,6 +23,7 @@ import com.smartRestaurant.inventory.Service.ProductService;
 import com.smartRestaurant.inventory.dto.Product.StockMovementDTO;
 import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
+import com.smartRestaurant.orders.dto.Order.EditOrderItemsDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
@@ -65,7 +70,8 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
-        OrderStatus.PENDING,     Set.of(OrderStatus.IN_PROGRESS, OrderStatus.CANCELLED),
+        OrderStatus.PENDING,     Set.of(OrderStatus.SENT,        OrderStatus.CANCELLED),
+        OrderStatus.SENT,        Set.of(OrderStatus.IN_PROGRESS, OrderStatus.CANCELLED),
         OrderStatus.IN_PROGRESS, Set.of(OrderStatus.COMPLETED,   OrderStatus.CANCELLED),
         OrderStatus.COMPLETED,   Set.of(OrderStatus.DELIVERED),
         OrderStatus.DELIVERED,   Set.of(),
@@ -163,10 +169,12 @@ public class OrderServiceImpl implements OrderService {
         log.info(" [ORDER] Orden creada: {}, Total items: {}, Estado pago: {}",
                  savedOrder.getId(), items.size(), savedOrder.getPaymentStatus());
 
-        // Notificar cocina solo si la orden ya puede procesarse:
-        // - Presencial: siempre (el mesero ya tomó el pedido)
-        // - Online: solo si el pago ya está confirmado
-        if (savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
+        // Para órdenes ONLINE con pago ya confirmado, notificar cocina inmediatamente.
+        // Para órdenes PRESENCIALES, la notificación a cocina ocurre cuando el mesero
+        // cambia el estado a SENT (PENDING → SENT).
+        if (savedOrder.getChannel().equals(OrderChannel.ONLINE) &&
+            savedOrder.getPaymentStatus() != OrderPaymentStatus.PENDING) {
+            log.info(" [ORDER] Orden ONLINE con pago confirmado — notificando cocina: {}", savedOrder.getId());
             sseService.notifyKitchen(buildListDTO(savedOrder));
         }
 
@@ -186,6 +194,15 @@ public class OrderServiceImpl implements OrderService {
 
         Object producto = loadProductByType(itemDto.productType(), itemDto.productId());
         orderItem.setProducto(producto);
+
+        // Congelar precio al momento del pedido — no debe depender del precio actual del catálogo
+        double frozenPrice = switch (producto) {
+            case Dish dish       -> dish.getPrice();
+            case Drink drink     -> drink.getSalePrice();
+            case Addition add    -> add.getSalePrice();
+            default              -> 0.0;
+        };
+        orderItem.setUnitPrice(frozenPrice);
 
         log.info(" Producto cargado: {}", producto.getClass().getSimpleName()+ "intento de guardar: {}"+ order.getId());
 
@@ -236,7 +253,19 @@ public class OrderServiceImpl implements OrderService {
                             .filter(d -> !d.getState().equals(State.INACTIVE))
                             .orElseThrow(() -> new ResourceNotFoundException("Plato no encontrado: " + itemDto.productId()));
 
-                    if (dish.getRecipes() == null || dish.getRecipes().isEmpty()) break;
+                    if (dish.getRecipes() == null || dish.getRecipes().isEmpty()) {
+                        throw new ValueConflictException(
+                            "El plato '" + dish.getName() + "' no tiene recetas configuradas. " +
+                            "Contacte al administrador para configurar los ingredientes.");
+                    }
+
+                    boolean hasActiveRecipes = dish.getRecipes().stream()
+                            .anyMatch(r -> State.ACTIVE.equals(r.getState()));
+                    if (!hasActiveRecipes) {
+                        throw new ValueConflictException(
+                            "El plato '" + dish.getName() + "' no tiene recetas activas configuradas. " +
+                            "Contacte al administrador.");
+                    }
 
                     for (Recipe recipe : dish.getRecipes()) {
                         if (!State.ACTIVE.equals(recipe.getState())) continue;
@@ -250,15 +279,61 @@ public class OrderServiceImpl implements OrderService {
                     Drink drink = drinkRepository.findById(itemDto.productId())
                             .filter(d -> !d.getState().equals(State.INACTIVE))
                             .orElseThrow(() -> new ResourceNotFoundException("Bebida no encontrada: " + itemDto.productId()));
-                    drinksRequired.merge(drink.getId(), itemDto.quantity(), Integer::sum);
-                    drinksById.putIfAbsent(drink.getId(), drink);
+
+                    if (drink.getDrinkType() == DrinkType.SIMPLE) {
+                        drinksRequired.merge(drink.getId(), itemDto.quantity(), Integer::sum);
+                        drinksById.putIfAbsent(drink.getId(), drink);
+                    } else {
+                        // PREPARED: valida disponibilidad de ingredientes, igual que platos
+                        if (drink.getRecipes() == null || drink.getRecipes().isEmpty()) {
+                            throw new ValueConflictException(
+                                "La bebida preparada '" + drink.getName() + "' no tiene recetas configuradas. " +
+                                "Contacte al administrador para configurar los ingredientes.");
+                        }
+                        boolean hasActiveRecipes = drink.getRecipes().stream()
+                                .anyMatch(r -> State.ACTIVE.equals(r.getState()));
+                        if (!hasActiveRecipes) {
+                            throw new ValueConflictException(
+                                "La bebida preparada '" + drink.getName() + "' no tiene recetas activas.");
+                        }
+                        for (DrinkRecipe recipe : drink.getRecipes()) {
+                            if (!State.ACTIVE.equals(recipe.getState())) continue;
+                            Product ingredient = recipe.getProduct();
+                            double required = recipe.getWeight() * itemDto.quantity();
+                            ingredientsRequired.merge(ingredient.getId(), required, Double::sum);
+                            ingredientsById.putIfAbsent(ingredient.getId(), ingredient);
+                        }
+                    }
                 }
                 case "ADDITION" -> {
                     Addition addition = additionRepository.findById(itemDto.productId())
                             .filter(a -> !a.getState().equals(State.INACTIVE))
                             .orElseThrow(() -> new ResourceNotFoundException("Adición no encontrada: " + itemDto.productId()));
-                    additionsRequired.merge(addition.getId(), itemDto.quantity(), Integer::sum);
-                    additionsById.putIfAbsent(addition.getId(), addition);
+
+                    if (addition.getAdditionType() == AdditionType.SIMPLE) {
+                        additionsRequired.merge(addition.getId(), itemDto.quantity(), Integer::sum);
+                        additionsById.putIfAbsent(addition.getId(), addition);
+                    } else {
+                        // PREPARED: valida disponibilidad de ingredientes, igual que platos
+                        if (addition.getRecipes() == null || addition.getRecipes().isEmpty()) {
+                            throw new ValueConflictException(
+                                "La adición preparada '" + addition.getName() + "' no tiene recetas configuradas. " +
+                                "Contacte al administrador para configurar los ingredientes.");
+                        }
+                        boolean hasActiveRecipes = addition.getRecipes().stream()
+                                .anyMatch(r -> State.ACTIVE.equals(r.getState()));
+                        if (!hasActiveRecipes) {
+                            throw new ValueConflictException(
+                                "La adición preparada '" + addition.getName() + "' no tiene recetas activas.");
+                        }
+                        for (AdditionRecipe recipe : addition.getRecipes()) {
+                            if (!State.ACTIVE.equals(recipe.getState())) continue;
+                            Product ingredient = recipe.getProduct();
+                            double required = recipe.getWeight() * itemDto.quantity();
+                            ingredientsRequired.merge(ingredient.getId(), required, Double::sum);
+                            ingredientsById.putIfAbsent(ingredient.getId(), ingredient);
+                        }
+                    }
                 }
             }
         }
@@ -327,10 +402,16 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(page, 10);
 
         Page<Order> orders;
+        // Para el cajero: cuando se filtra por DELIVERED, excluir las ya cobradas (CONFIRMED)
+        boolean excludePaid = OrderStatus.DELIVERED.equals(status);
         if (status != null && channel != null) {
-            orders = orderRepository.findByStatusAndChannel(status, channel, pageable);
+            orders = excludePaid
+                ? orderRepository.findByStatusAndChannelAndPaymentStatusNot(status, channel, OrderPaymentStatus.CONFIRMED, pageable)
+                : orderRepository.findByStatusAndChannel(status, channel, pageable);
         } else if (status != null) {
-            orders = orderRepository.findByStatus(status, pageable);
+            orders = excludePaid
+                ? orderRepository.findByStatusAndPaymentStatusNot(status, OrderPaymentStatus.CONFIRMED, pageable)
+                : orderRepository.findByStatus(status, pageable);
         } else if (channel != null) {
             orders = orderRepository.findByChannel(channel, pageable);
         } else {
@@ -373,7 +454,8 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.updateOrder(updateOrderDTO, order);
 
-        // Liberar mesa cuando la orden es entregada
+        // Liberar mesa cuando la orden es entregada manualmente (sin pago — edge case)
+        // El caso principal de liberación es en payPresentialInvoice() cuando se confirma el pago
         if (updateOrderDTO.status().equals(OrderStatus.DELIVERED) && order.getTable() != null) {
             order.getTable().setStatus(TableStatus.FREE);
             tableRepository.save(order.getTable());
@@ -381,7 +463,19 @@ public class OrderServiceImpl implements OrderService {
                     order.getTable().getNumber(), id);
         }
 
-        // Si se marca como COMPLETED, crear factura y descontar inventario
+        // Al enviar a cocina (PENDING → SENT): notificar a la estación de cocina
+        if (updateOrderDTO.status().equals(OrderStatus.SENT)) {
+            log.info(" [ORDER] Orden enviada a cocina: {}", id);
+            sseService.notifyKitchen(buildListDTO(order));
+        }
+
+        // Cuando el mesero entrega el pedido (COMPLETED → DELIVERED): notificar al cajero
+        if (updateOrderDTO.status().equals(OrderStatus.DELIVERED)) {
+            log.info(" [ORDER] Orden entregada, notificando cajero: {}", id);
+            sseService.notifyCashierOrderReadyToPay(buildListDTO(order));
+        }
+
+        // Si se marca como COMPLETED (cocina terminó), crear factura y descontar inventario
         if (updateOrderDTO.status().equals(OrderStatus.COMPLETED)) {
             log.info(" [ORDER] Orden completada, generando factura automáticamente: {}", id);
 
@@ -412,36 +506,30 @@ public class OrderServiceImpl implements OrderService {
             // Notificar al mesero que el pedido está listo para recoger
             sseService.notifyWaiterOrderReady(buildListDTO(order));
 
-            // Notificar al cliente si es ONLINE (ya pagó, está esperando)
-            if (order.getChannel().equals(OrderChannel.ONLINE) && order.getCustomer() != null) {
+            // Notificar al cliente (ONLINE u ONLINE con customer asignado)
+            if (order.getCustomer() != null) {
                 sseService.notifyCustomerOrderReady(order.getCustomer().getId(), buildListDTO(order));
             }
         }
 
         orderRepository.save(order);
+
+        // Notificar al cliente cualquier cambio de estado (excepto COMPLETED, ya notificado arriba)
+        if (!updateOrderDTO.status().equals(OrderStatus.COMPLETED) && order.getCustomer() != null) {
+            sseService.notifyCustomerOrderStatusChanged(
+                order.getCustomer().getId(),
+                updateOrderDTO.status().name(),
+                buildListDTO(order)
+            );
+        }
     }
     
     /**
-     * Obtiene el precio del producto en un OrderItem
+     * Obtiene el precio del producto en un OrderItem usando el precio congelado al momento del pedido.
+     * Nunca debe leer el precio actual del catálogo para evitar inconsistencias retroactivas.
      */
     private double getPriceOfItem(OrderItem item) {
-        Object producto = item.getProducto();
-        
-        if (producto instanceof Dish dish) {
-            try {
-                return dish.getPrice()*item.getQuantity();
-            } catch (NumberFormatException e) {
-                log.warn(" Precio inválido para Dish {}: {}", dish.getId(), dish.getPrice());
-                return 0.0;
-            }
-        } else if (producto instanceof Addition addition) {
-            return addition.getPrice()*item.getQuantity();
-
-        } else if (producto instanceof Drink drink) {
-            return drink.getPrice()*item.getQuantity();
-        }
-
-        return 0.0;
+        return item.getUnitPrice() * item.getQuantity();
     }
 
     /**
@@ -478,7 +566,7 @@ public class OrderServiceImpl implements OrderService {
                             productName, recipe.getWeight());
 
                     try {
-                        productService.discountStock(productId, new StockMovementDTO(totalWeight, reason));
+                        productService.discountStock(productId, new StockMovementDTO(totalWeight, null, reason));
                         log.info("[INVENTORY] Descontado: {}g de '{}' (plato: '{}', cantidad: {})",
                                 totalWeight, productName, dish.getName(), item.getQuantity());
                     } catch (Exception e) {
@@ -487,23 +575,71 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
             } else if (producto instanceof Drink drink) {
-                try {
-                    drinkService.discountStock(drink.getId(), new DrinkMovement(item.getQuantity()));
-                    log.info("[INVENTORY] Descontado: {} unidad(es) de bebida '{}' (cantidad: {})",
-                            item.getQuantity(), drink.getName(), item.getQuantity());
-                } catch (Exception e) {
-                    log.error("[INVENTORY] No se pudo descontar {} unidad(es) de bebida '{}' para orden {}: {}",
-                            item.getQuantity(), drink.getName(), order.getId(), e.getMessage());
+                if (drink.getDrinkType() == DrinkType.SIMPLE) {
+                    try {
+                        drinkService.discountStock(drink.getId(), new DrinkMovement(item.getQuantity()));
+                        log.info("[INVENTORY] Descontado: {} unidad(es) de bebida simple '{}' (cantidad: {})",
+                                item.getQuantity(), drink.getName(), item.getQuantity());
+                    } catch (Exception e) {
+                        log.error("[INVENTORY] No se pudo descontar {} unidad(es) de bebida '{}' para orden {}: {}",
+                                item.getQuantity(), drink.getName(), order.getId(), e.getMessage());
+                    }
+                } else {
+                    // PREPARED: descontar ingredientes del inventario, igual que platos
+                    if (drink.getRecipes() != null) {
+                        for (DrinkRecipe recipe : drink.getRecipes()) {
+                            if (!State.ACTIVE.equals(recipe.getState())) continue;
+                            double totalWeight = recipe.getWeight() * item.getQuantity();
+                            String productId = recipe.getProduct().getId();
+                            String productName = recipe.getProduct().getName();
+                            String reason = String.format(
+                                "Orden #%s — bebida preparada '%s' x%d — ingrediente '%s' (%.1fg/ud)",
+                                order.getId(), drink.getName(), item.getQuantity(),
+                                productName, recipe.getWeight());
+                            try {
+                                productService.discountStock(productId, new StockMovementDTO(totalWeight, null, reason));
+                                log.info("[INVENTORY] Descontado: {}g de '{}' para bebida preparada '{}' (x{})",
+                                        totalWeight, productName, drink.getName(), item.getQuantity());
+                            } catch (Exception e) {
+                                log.error("[INVENTORY] No se pudo descontar {}g de '{}' para bebida '{}' en orden {}: {}",
+                                        totalWeight, productName, drink.getName(), order.getId(), e.getMessage());
+                            }
+                        }
+                    }
                 }
 
             } else if (producto instanceof Addition addition) {
-                try {
-                    additionService.discountStock(addition.getId(), new DrinkMovement(item.getQuantity()));
-                    log.info("[INVENTORY] Descontado: {} unidad(es) de adición '{}' (cantidad: {})",
-                            item.getQuantity(), addition.getName(), item.getQuantity());
-                } catch (Exception e) {
-                    log.error("[INVENTORY] No se pudo descontar {} unidad(es) de adición '{}' para orden {}: {}",
-                            item.getQuantity(), addition.getName(), order.getId(), e.getMessage());
+                if (addition.getAdditionType() == AdditionType.SIMPLE) {
+                    try {
+                        additionService.discountStock(addition.getId(), new DrinkMovement(item.getQuantity()));
+                        log.info("[INVENTORY] Descontado: {} unidad(es) de adición simple '{}' (cantidad: {})",
+                                item.getQuantity(), addition.getName(), item.getQuantity());
+                    } catch (Exception e) {
+                        log.error("[INVENTORY] No se pudo descontar {} unidad(es) de adición '{}' para orden {}: {}",
+                                item.getQuantity(), addition.getName(), order.getId(), e.getMessage());
+                    }
+                } else {
+                    // PREPARED: descontar ingredientes del inventario, igual que platos
+                    if (addition.getRecipes() != null) {
+                        for (AdditionRecipe recipe : addition.getRecipes()) {
+                            if (!State.ACTIVE.equals(recipe.getState())) continue;
+                            double totalWeight = recipe.getWeight() * item.getQuantity();
+                            String productId = recipe.getProduct().getId();
+                            String productName = recipe.getProduct().getName();
+                            String reason = String.format(
+                                "Orden #%s — adición preparada '%s' x%d — ingrediente '%s' (%.1fg/ud)",
+                                order.getId(), addition.getName(), item.getQuantity(),
+                                productName, recipe.getWeight());
+                            try {
+                                productService.discountStock(productId, new StockMovementDTO(totalWeight, null, reason));
+                                log.info("[INVENTORY] Descontado: {}g de '{}' para adición preparada '{}' (x{})",
+                                        totalWeight, productName, addition.getName(), item.getQuantity());
+                            } catch (Exception e) {
+                                log.error("[INVENTORY] No se pudo descontar {}g de '{}' para adición '{}' en orden {}: {}",
+                                        totalWeight, productName, addition.getName(), order.getId(), e.getMessage());
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -520,7 +656,12 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.getStatus().equals(OrderStatus.COMPLETED) ||
             order.getStatus().equals(OrderStatus.DELIVERED)) {
-            throw new BadRequestException("No se puede cancelar");
+            throw new BadRequestException("No se puede cancelar una orden en estado " + order.getStatus());
+        }
+
+        // Cancelar desde IN_PROGRESS implica desperdicio — se registra en el log para auditoría
+        if (order.getStatus().equals(OrderStatus.IN_PROGRESS)) {
+            log.warn("[ORDER] Cancelación de orden en preparación: {} — posible desperdicio de ingredientes", id);
         }
 
         // Liberar mesa al cancelar
@@ -591,7 +732,8 @@ public class OrderServiceImpl implements OrderService {
                 customer,
                 order.getCreatedAt(),
                 itemCount,
-                total
+                total,
+                order.getPaymentStatus()
         );
     }
 
@@ -626,7 +768,8 @@ public class OrderServiceImpl implements OrderService {
                 order.getUpdatedAt(),
                 items,
                 total,
-                paymentStatus
+                paymentStatus,
+                order.getNotes()
         );
     }
 
@@ -636,29 +779,27 @@ public class OrderServiceImpl implements OrderService {
         String productId;
         String productName;
         String productType;
-        double unitPrice;
 
         if (product instanceof Dish dish) {
             productId   = dish.getId();
             productName = dish.getName();
             productType = "DISH";
-            unitPrice   = dish.getPrice();
         } else if (product instanceof Drink drink) {
             productId   = drink.getId();
             productName = drink.getName();
             productType = "DRINK";
-            unitPrice   = drink.getPrice();
         } else if (product instanceof Addition addition) {
             productId   = addition.getId();
             productName = addition.getName();
             productType = "ADDITION";
-            unitPrice   = addition.getPrice();
         } else {
             productId   = "";
             productName = "Desconocido";
             productType = "UNKNOWN";
-            unitPrice   = 0.0;
         }
+
+        // Usar precio congelado al momento del pedido
+        double unitPrice = item.getUnitPrice();
 
         return new GetOrderItemDTO(
                 item.getId(),
@@ -680,6 +821,40 @@ public class OrderServiceImpl implements OrderService {
                 ". Desde " + current + " solo se puede ir a: " + allowed
             );
         }
+    }
+
+    @Override
+    public void editItems(String id, EditOrderItemsDTO dto) {
+        log.info("[ORDER] Editando items de orden: {}", id);
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Orden no encontrada"));
+
+        if (!order.getStatus().equals(OrderStatus.PENDING)) {
+            throw new BadRequestException("Solo se pueden editar items de órdenes PENDIENTES");
+        }
+
+        validateStockForOrderItems(dto.items());
+
+        // Reemplazar items — orphanRemoval elimina los anteriores al guardar
+        order.getItems().clear();
+
+        List<OrderItem> newItems = new ArrayList<>();
+        for (CreateOrderItemDTO itemDto : dto.items()) {
+            OrderItem item = new OrderItem();
+            item.setId(UUID.randomUUID().toString());
+            item.setNotes(itemDto.notes());
+            item.setOrder(order);
+            item.setQuantity(itemDto.quantity());
+            item.setProducto(loadProductByType(itemDto.productType(), itemDto.productId()));
+            newItems.add(item);
+        }
+
+        order.getItems().addAll(newItems);
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        log.info("[ORDER] Items actualizados para orden {}: {} items", id, newItems.size());
     }
 
     @Override
