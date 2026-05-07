@@ -1,23 +1,9 @@
 package com.smartRestaurant.inventory.mapper;
 
-import com.smartRestaurant.inventory.dto.Addition.GetAdditionDetailDTO;
-import com.smartRestaurant.inventory.model.Addition;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+/**
+ * @deprecated Usar {@link AdditionMapper#toDetailDTO(com.smartRestaurant.inventory.model.Addition)} en su lugar.
+ * Esta interfaz se conserva para compatibilidad pero ya no se usa.
+ */
+@Deprecated
 public interface ShowAdditionDetailMapper {
-
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "photos", source = "photos")
-    @Mapping(target = "price", source = "price")
-    @Mapping(target = "units", source = "units")
-    @Mapping(target = "minimumStock", source = "minimumStock")
-
-    GetAdditionDetailDTO toDTO(Addition addition);
-
-
 }

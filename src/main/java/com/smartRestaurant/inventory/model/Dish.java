@@ -34,10 +34,15 @@ public class Dish extends BaseEntity {
     @Column(nullable = false)
     private State state;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DishAvailability availability = DishAvailability.REGULAR;
+
     @ManyToOne
     private Category category;
 
     @OneToMany(mappedBy = "dish", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Where(clause = "state = 'ACTIVE'")
     private List<Recipe> recipes;
 
 

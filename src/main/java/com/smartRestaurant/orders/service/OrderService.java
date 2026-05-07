@@ -58,7 +58,7 @@ public interface OrderService {
     void abandonOrder(String orderId);
 
     /**
-     * Editar los items de una orden PENDIENTE (reemplaza la lista completa).
+     * Editar los items de una orden PENDIENTE
      */
     void editItems(String id, EditOrderItemsDTO dto);
 

@@ -29,6 +29,7 @@ public interface InvoiceMapper {
     @Mapping(target = "id", expression = "java(generateInvoiceId())")
     @Mapping(target = "status", constant = "PENDING")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "total", expression = "java(dto.subtotal() + dto.tax())")
     @Mapping(target = "paidAt", ignore = true)
     @Mapping(target = "order", ignore = true)     // Se asigna en servicio
     @Mapping(target = "payment", ignore = true)   // Se asigna cuando se pague

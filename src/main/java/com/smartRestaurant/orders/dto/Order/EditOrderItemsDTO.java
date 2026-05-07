@@ -7,7 +7,8 @@ import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 public record EditOrderItemsDTO(
-    @NotEmpty(message = "Debe incluir al menos un item")
-    @Valid
-    List<CreateOrderItemDTO> items
-) {}
+        @NotEmpty(message = "La lista de items no puede estar vacía")
+        @Valid
+        List<CreateOrderItemDTO> items
+) {
+}

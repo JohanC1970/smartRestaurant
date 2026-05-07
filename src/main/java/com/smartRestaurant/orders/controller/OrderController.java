@@ -52,7 +52,7 @@ public class OrderController {
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{page}/page")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<List<GetOrdersDTO>>> getAllOrders(
             @PathVariable int page,
             @RequestParam(required = false) OrderStatus status,
@@ -69,7 +69,7 @@ public class OrderController {
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CASHIER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetOrderDetailDTO>> getOrderById(@PathVariable String id) {
 
         GetOrderDetailDTO order = orderService.getById(id);
@@ -169,7 +169,7 @@ public class OrderController {
      * Roles permitidos: WAITER, ADMIN, CUSTOMER
      */
     @GetMapping("/{id}/invoice")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetInvoiceDTO>> getInvoiceByOrder(@PathVariable String id) {
 
         GetInvoiceDTO invoice = invoiceService.getInvoiceByOrderId(id);

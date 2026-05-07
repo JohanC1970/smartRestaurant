@@ -88,9 +88,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/dailyMenus/**").permitAll()
                         .requestMatchers("/api/dailyMenus/**").hasAnyRole("ADMIN", "KITCHEN")
 
-                        // ── Admin y Dashboard ────────────────────────────────────────────────
+                        // ── Menú del día (nuevo sistema): GET active público; resto requiere auth ─
+                        .requestMatchers(HttpMethod.GET, "/api/menu/publications/active").permitAll()
+                        .requestMatchers("/api/menu/**").authenticated()
+
+                        // ── Admin, Dashboard y Contabilidad ──────────────────────────────────
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                        .requestMatchers("/api/accounting/**").hasRole("ADMIN")
 
                         // ── Mesas: GET y PATCH para ADMIN/WAITER; POST/PUT/DELETE solo ADMIN ─
                         .requestMatchers(HttpMethod.GET, "/api/tables/**").hasAnyRole("ADMIN", "WAITER")

@@ -21,14 +21,17 @@ public interface ProductMapper {
 
     @Mapping(target = "photo", expression = "java(product.getPhotos() != null && !product.getPhotos().isEmpty() ? product.getPhotos().get(0) : null)")
     @Mapping(target = "state", source = "product.state")
+    @Mapping(target = "totalInventoryValue", expression = "java(product.getPrice() * product.getWeight())")
     GetProductDTO toDTO(Product product);
 
     @Mapping(target = "photos", source = "photos")
     @Mapping(target = "state", source = "product.state")
     @Mapping(target = "suplier", source = "product.suplier")
+    @Mapping(target = "totalInventoryValue", expression = "java(product.getPrice() * product.getWeight())")
     GetProductDetailDTO toDetailDTO(Product product);
 
     // Demas atributos que se actualizarán
 
+    @Mapping(target = "suplier", ignore = true)
     void update(UpdateProductDTO updateProductDTO, @MappingTarget Product product);
 }

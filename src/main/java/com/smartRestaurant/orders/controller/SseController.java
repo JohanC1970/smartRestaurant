@@ -51,6 +51,17 @@ public class SseController {
     }
 
     /**
+     * GET /api/sse/cashier
+     * La vista del cajero se suscribe aquí.
+     * Recibirá eventos tipo "ORDER_READY" cuando un pedido está listo para cobrar.
+     */
+    @GetMapping(value = "/cashier", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("hasAnyAuthority('ROLE_CASHIER', 'ROLE_ADMIN')")
+    public SseEmitter cashierStream() {
+        return sseService.subscribeCashier();
+    }
+
+    /**
      * GET /api/sse/me
      * El cliente online se suscribe aquí tras hacer su pedido.
      * Recibirá el evento "YOUR_ORDER_READY" cuando su pedido esté listo.

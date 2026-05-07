@@ -20,8 +20,25 @@ public class InventoryMovement {
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
+
+    /**
+     * Categoría del ítem al que pertenece este movimiento.
+     * PRODUCT → usa el FK product; DRINK / ADDITION → usa itemId e itemName.
+     */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ItemCategory itemCategory = ItemCategory.PRODUCT;
+
+    /** ID de la bebida o adición (nulo para movimientos de producto). */
+    @Column(length = 255)
+    private String itemId;
+
+    /** Nombre del ítem para mostrar en listados sin JOIN adicional. */
+    @Column(length = 255)
+    private String itemName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -38,6 +55,12 @@ public class InventoryMovement {
     @JoinColumn(nullable = false)
     private User user;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 500)
     private String reason;
+
+    @Column(nullable = false)
+    private double unitPrice;
+
+    @Column(nullable = false)
+    private double totalCost;
 }

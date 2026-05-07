@@ -27,4 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             ORDER BY p.weight ASC
             """)
     List<Object[]> findProductsBelowMinimumStock();
+
+    @Query("SELECT COALESCE(SUM(p.weight * p.price), 0.0) FROM Product p WHERE p.state = 'ACTIVE'")
+    Double calculateInventoryCapital();
 }

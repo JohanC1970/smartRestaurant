@@ -11,8 +11,10 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface InventoryMovementMapper {
 
-    @Mapping(source = "product.id",   target = "productId")
-    @Mapping(source = "product.name", target = "productName")
+    @Mapping(target = "productId",   expression = "java(inventoryMovement.getProduct() != null ? inventoryMovement.getProduct().getId()   : inventoryMovement.getItemId())")
+    @Mapping(target = "productName", expression = "java(inventoryMovement.getProduct() != null ? inventoryMovement.getProduct().getName() : inventoryMovement.getItemName())")
+    @Mapping(target = "itemCategory", source = "itemCategory")
+    @Mapping(target = "userName", expression = "java(inventoryMovement.getUser() != null ? inventoryMovement.getUser().getEmail() : \"Sistema\")")
     GetInventoryMovementDTO toDTO(InventoryMovement inventoryMovement);
 
 }

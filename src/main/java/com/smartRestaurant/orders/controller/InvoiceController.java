@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+@PreAuthorize("hasAnyAuthority('order:read', 'payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
 public class InvoiceController {
     
     private final InvoiceService invoiceService;
@@ -40,7 +40,7 @@ public class InvoiceController {
      * Obtener todas las facturas
      */
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<List<GetInvoiceDTO>>> getAllInvoices() {
         List<GetInvoiceDTO> invoices = invoiceService.getAllInvoices();
         return ResponseEntity.ok(new ResponseDTO<>(invoices, false));
@@ -59,7 +59,7 @@ public class InvoiceController {
      * }
      */
     @PostMapping("/{id}/pay-presential")
-    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_WAITER')")
+    @PreAuthorize("hasAnyAuthority('payment:write', 'ROLE_ADMIN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<GetInvoiceDTO>> payPresential(
             @PathVariable String id,
             @RequestBody @Valid PayPresentialDTO dto) {
@@ -98,7 +98,7 @@ public class InvoiceController {
      * Cancelar factura (solo si no está pagada)
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('payment:write', 'ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO<String>> cancelInvoice(@PathVariable String id) {
         invoiceService.cancelInvoice(id);
         return ResponseEntity.ok(new ResponseDTO<>("Factura cancelada", false));

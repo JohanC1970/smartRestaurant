@@ -4,6 +4,7 @@ import com.smartRestaurant.inventory.Service.DrinkService;
 import com.smartRestaurant.inventory.dto.ResponseDTO;
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
+import com.smartRestaurant.inventory.dto.drink.DrinkRestockDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDetailDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
@@ -25,50 +26,63 @@ public class DrinkController {
 
     @GetMapping("/{page}/page")
     @PreAuthorize("hasAnyAuthority('drink:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
-    public ResponseEntity<ResponseDTO<List<GetDrinkDTO>>> getAll(@PathVariable int page){
+    public ResponseEntity<ResponseDTO<List<GetDrinkDTO>>> getAll(@PathVariable int page) {
         List<GetDrinkDTO> list = drinkService.getAll(page);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 
     @PostMapping("/{categorieId}/categories")
     @PreAuthorize("hasAnyAuthority('drink:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<String>> create(@PathVariable String categorieId, @Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
+    public ResponseEntity<ResponseDTO<String>> create(
+            @PathVariable String categorieId,
+            @Valid @RequestBody CreateDrinkDTO createDrinkDTO) {
         drinkService.create(categorieId, createDrinkDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Bebida creada", false));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('drink:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<String>> update(@PathVariable String id, @Valid @RequestBody UpdateDrinkDTO updateDrinkDTO) {
+    public ResponseEntity<ResponseDTO<String>> update(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateDrinkDTO updateDrinkDTO) {
         drinkService.update(id, updateDrinkDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Bebida actualizada", false));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('drink:delete', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id){
+    public ResponseEntity<ResponseDTO<String>> delete(@PathVariable String id) {
         drinkService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Bebida eliminada", false));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('drink:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
-    public ResponseEntity<ResponseDTO<GetDrinkDetailDTO>> getById(@PathVariable String id){
+    public ResponseEntity<ResponseDTO<GetDrinkDetailDTO>> getById(@PathVariable String id) {
         GetDrinkDetailDTO drink = drinkService.getDrinkById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(drink, false));
     }
 
+    /**
+     * Reabastecer bebida SIMPLE: requiere unidades + precio de compra.
+     * El precio de compra actualiza el valor de mercado del producto.
+     */
     @PatchMapping("/{id}/add")
     @PreAuthorize("hasAnyAuthority('drink:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<String>> addStock(@PathVariable String id, @Valid @RequestBody DrinkMovement drinkMovement) {
-        drinkService.addStock(id, drinkMovement);
+    public ResponseEntity<ResponseDTO<String>> addStock(
+            @PathVariable String id,
+            @Valid @RequestBody DrinkRestockDTO drinkRestockDTO) {
+        drinkService.addStock(id, drinkRestockDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock de bebida añadido", false));
     }
 
     @PatchMapping("/{id}/discount")
     @PreAuthorize("hasAnyAuthority('drink:write', 'ROLE_ADMIN', 'ROLE_KITCHEN')")
-    public ResponseEntity<ResponseDTO<String>> discountStock(@PathVariable String id, @Valid @RequestBody DrinkMovement drinkMovement) {
+    public ResponseEntity<ResponseDTO<String>> discountStock(
+            @PathVariable String id,
+            @Valid @RequestBody DrinkMovement drinkMovement) {
         drinkService.discountStock(id, drinkMovement);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Stock de bebida descontado", false));
     }
+
 }

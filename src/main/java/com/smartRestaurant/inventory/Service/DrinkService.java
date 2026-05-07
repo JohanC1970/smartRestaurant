@@ -2,6 +2,7 @@ package com.smartRestaurant.inventory.Service;
 
 import com.smartRestaurant.inventory.dto.drink.CreateDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.DrinkMovement;
+import com.smartRestaurant.inventory.dto.drink.DrinkRestockDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDTO;
 import com.smartRestaurant.inventory.dto.drink.GetDrinkDetailDTO;
 import com.smartRestaurant.inventory.dto.drink.UpdateDrinkDTO;
@@ -15,6 +16,17 @@ public interface DrinkService {
     void update(String id, UpdateDrinkDTO updateDrinkDTO);
     void delete(String id);
     GetDrinkDetailDTO getDrinkById(String id);
-    void addStock(String id, DrinkMovement drinkMovement);
+
+    /**
+     * Reabastecer una bebida SIMPLE: incrementa unidades y actualiza el precio de compra.
+     * No aplica para bebidas PREPARED.
+     */
+    void addStock(String id, DrinkRestockDTO drinkRestockDTO);
+
+    /**
+     * Descontar unidades de una bebida SIMPLE (consumo por orden).
+     * Para bebidas PREPARED el descuento de ingredientes lo gestiona OrderServiceImpl.
+     */
     void discountStock(String id, DrinkMovement drinkMovement);
+
 }
