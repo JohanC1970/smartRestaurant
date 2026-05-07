@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Cliente HTTP para comunicarse con la API de Wompi
@@ -30,13 +31,18 @@ public class WompiPaymentClient {
     @Value("${wompi.api.environment:test}")
     private String wompiEnvironment;
 
-    @Value("${wompi.api.url-test:https://staging.wompi.co/api}")
+    @Value("${wompi.api.url-test:https://sandbox.wompi.co/v1}")
     private String wompiUrlTest;
 
-    @Value("${wompi.api.url-production:https://production.wompi.co/api}")
+    @Value("${wompi.api.url-production:https://production.wompi.co/v1}")
     private String wompiUrlProduction;
 
-    private final OkHttpClient httpClient = new OkHttpClient();
+    private final OkHttpClient httpClient = new OkHttpClient.Builder()
+            .callTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -120,24 +126,44 @@ public class WompiPaymentClient {
      * Obtiene el estado de una transacción existente
      */
     public JsonNode getTransaction(String transactionId) throws IOException {
-        log.info(" [WOMPI] Obteniendo transacción: {}", transactionId);
-
         String url = getBaseUrl() + "/transactions/" + transactionId;
+        String keyPreview = (wompiApiKey != null && wompiApiKey.length() > 8)
+                ? wompiApiKey.substring(0, 8) + "..." : "(vacía)";
+
+        log.info("[WOMPI-HTTP] ▶ GET {}", url);
+        log.info("[WOMPI-HTTP]   env={}, apiKey empieza con: {}", wompiEnvironment, keyPreview);
+
         Request request = new Request.Builder()
                 .url(url)
                 .get()
                 .addHeader("Authorization", "Bearer " + wompiApiKey)
                 .build();
 
+        long start = System.currentTimeMillis();
         try (Response response = httpClient.newCall(request).execute()) {
-            String responseBody = response.body().string();
+            long elapsed = System.currentTimeMillis() - start;
+            String responseBody = response.body() != null ? response.body().string() : "(sin cuerpo)";
+
+            log.info("[WOMPI-HTTP] ◀ HTTP {} en {}ms", response.code(), elapsed);
+            log.info("[WOMPI-HTTP]   Respuesta: {}", responseBody);
 
             if (!response.isSuccessful()) {
-                log.error(" [WOMPI] Error obteniendo transacción: {}", response.code());
-                throw new IOException("Wompi API error: " + response.code());
+                log.error("[WOMPI-HTTP] ✗ Wompi rechazó la petición: HTTP {} — {}", response.code(), responseBody);
+                throw new IOException("Wompi API error HTTP " + response.code() + ": " + responseBody);
             }
 
             return objectMapper.readTree(responseBody);
+        } catch (java.net.SocketTimeoutException e) {
+            long elapsed = System.currentTimeMillis() - start;
+            log.error("[WOMPI-HTTP] ✗ Timeout después de {}ms — {}", elapsed, e.getMessage());
+            throw e;
+        } catch (java.net.UnknownHostException e) {
+            log.error("[WOMPI-HTTP] ✗ DNS no resuelve el host '{}' — verifica la URL: {}", e.getMessage(), url);
+            throw e;
+        } catch (IOException e) {
+            long elapsed = System.currentTimeMillis() - start;
+            log.error("[WOMPI-HTTP] ✗ Error de red después de {}ms — {}: {}", elapsed, e.getClass().getSimpleName(), e.getMessage());
+            throw e;
         }
     }
 

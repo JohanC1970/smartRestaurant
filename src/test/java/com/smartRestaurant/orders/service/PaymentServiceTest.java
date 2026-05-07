@@ -11,6 +11,7 @@ import com.smartRestaurant.orders.model.Order;
 import com.smartRestaurant.orders.model.Payment;
 import com.smartRestaurant.orders.model.enums.PaymentMethodType;
 import com.smartRestaurant.orders.model.enums.PaymentStatus;
+import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.impl.PaymentServiceImpl;
@@ -34,8 +35,10 @@ class PaymentServiceTest {
     @Mock private PaymentRepository paymentRepository;
     @Mock private OrderRepository orderRepository;
     @Mock private UserRepository userRepository;
+    @Mock private InvoiceRepository invoiceRepository;
     @Mock private PaymentMapper paymentMapper;
     @Mock private WompiPaymentClient wompiPaymentClient;
+    @Mock private SseService sseService;
 
     @InjectMocks
     private PaymentServiceImpl paymentService;
