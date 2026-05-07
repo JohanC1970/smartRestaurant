@@ -22,7 +22,7 @@ public class Payment {
     private Order order;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = true)
     private User customer;
 
     @OneToOne

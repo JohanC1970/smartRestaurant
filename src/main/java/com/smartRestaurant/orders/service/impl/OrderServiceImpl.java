@@ -9,6 +9,7 @@ import com.smartRestaurant.inventory.model.Addition;
 import com.smartRestaurant.inventory.model.AdditionRecipe;
 import com.smartRestaurant.inventory.model.AdditionType;
 import com.smartRestaurant.inventory.model.Dish;
+import com.smartRestaurant.inventory.model.DishAvailability;
 import com.smartRestaurant.inventory.model.Drink;
 import com.smartRestaurant.inventory.model.DrinkRecipe;
 import com.smartRestaurant.inventory.model.DrinkType;
@@ -248,7 +249,8 @@ public class OrderServiceImpl implements OrderService {
         return switch (productType) {
             case "DISH" -> dishRepository.findById(productId)
                     .filter(dish -> !dish.getState().equals(State.INACTIVE))
-                    .orElseThrow(() -> new ResourceNotFoundException("Dish no encontrado"));
+                    .filter(dish -> dish.getAvailability() != DishAvailability.MENU_DEL_DIA)
+                    .orElseThrow(() -> new ResourceNotFoundException("Plato no disponible en la carta"));
             
             case "DRINK" -> drinkRepository.findById(productId)
                     .filter(drink -> !drink.getState().equals(State.INACTIVE))
