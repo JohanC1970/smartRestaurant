@@ -32,7 +32,7 @@ jobs:
 
       # 4. Analizar con SonarQube
       - name: SonarQube Scan
-        run: |
+        run: | 
           mvn clean install sonar:sonar \
             -Dsonar.projectKey=smartRestaurant \
             -Dsonar.organization=Samuel Castaño \
