@@ -35,7 +35,7 @@ jobs:
         run: |
           mvn clean install sonar:sonar \
             -Dsonar.projectKey=smartRestaurant \
-            -Dsonar.organization=Samuel Castaño
+            -Dsonar.organization=Samuel Castaño \
             -Dsonar.sources=src/main \
             -Dsonar.tests=src/test \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
