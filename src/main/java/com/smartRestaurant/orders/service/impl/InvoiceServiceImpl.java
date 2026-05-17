@@ -22,11 +22,14 @@ import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.InvoiceService;
+import com.smartRestaurant.restaurant.model.enums.TableStatus;
+import com.smartRestaurant.restaurant.repository.TableRepository;
 import com.smartRestaurant.orders.service.SseService;
 import com.smartRestaurant.orders.service.WompiPaymentClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -50,8 +53,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final PaymentMapper paymentMapper;
     private final WompiPaymentClient wompiClient;
     private final SseService sseService;
-    
+    private final TableRepository tableRepository;
+
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String createInvoice(CreateInvoiceDTO dto) {
         log.info(" [INVOICE] Creando factura para orden: {}", dto.orderId());
         
@@ -70,14 +75,18 @@ public class InvoiceServiceImpl implements InvoiceService {
         
         // 3. Usar MAPPER para convertir DTO a Entity
         Invoice invoice = invoiceMapper.toEntity(dto);
+        invoice.setTotal(dto.subtotal() + dto.tax());
         invoice.setOrder(order);
-        
+
         // 4. Guardar en BD
         Invoice saved = invoiceRepository.save(invoice);
         
-        // 5. Actualizar orden con estado de pago
-        order.setPaymentStatus(OrderPaymentStatus.PENDING);
-        orderRepository.save(order);
+        // 5. Solo actualizar paymentStatus a PENDING para órdenes ONLINE.
+        //    Las presenciales mantienen NOT_REQUIRED hasta que el mesero registre el pago.
+        if (order.getChannel().equals(OrderChannel.ONLINE)) {
+            order.setPaymentStatus(OrderPaymentStatus.PENDING);
+            orderRepository.save(order);
+        }
         
         log.info(" [INVOICE] Factura creada: {} | Total: {} COP", saved.getId(), saved.getTotal());
         return saved.getId();
@@ -126,11 +135,22 @@ public class InvoiceServiceImpl implements InvoiceService {
         order.setPaymentStatus(OrderPaymentStatus.CONFIRMED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
-        
+
+        // 7. Liberar mesa — pago confirma que los clientes terminaron
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+            tableRepository.save(order.getTable());
+            log.info("[INVOICE-PRESENCIAL] Mesa {} liberada al confirmar pago de orden {}",
+                    order.getTable().getNumber(), order.getId());
+        }
+
         log.info(" [INVOICE-PRESENCIAL] Pago registrado: {} | Método: {} | Total: {} COP",
                  savedPayment.getId(), dto.paymentMethod(), invoice.getTotal());
-        
-        // 7. Retornar usando MAPPER
+
+        // Notificar al cajero que el pago fue confirmado (para que la orden salga de su lista)
+        sseService.notifyCashierPaymentConfirmed(order.getId());
+
+        // 8. Retornar usando MAPPER
         return invoiceMapper.toDTO(invoice);
     }
     

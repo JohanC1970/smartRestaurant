@@ -10,11 +10,14 @@ import com.smartRestaurant.orders.dto.GetPaymentsDTO;
 import com.smartRestaurant.orders.dto.ConfirmPaymentWithWompiDTO;
 import com.smartRestaurant.orders.dto.WompiPaymentResponseDTO;
 import com.smartRestaurant.orders.mapper.PaymentMapper;
+import com.smartRestaurant.orders.model.Invoice;
 import com.smartRestaurant.orders.model.Order;
 import com.smartRestaurant.orders.model.Payment;
+import com.smartRestaurant.orders.model.enums.InvoiceStatus;
 import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.PaymentMethodType;
 import com.smartRestaurant.orders.model.enums.PaymentStatus;
+import com.smartRestaurant.orders.repository.InvoiceRepository;
 import com.smartRestaurant.orders.repository.OrderRepository;
 import com.smartRestaurant.orders.repository.PaymentRepository;
 import com.smartRestaurant.orders.service.PaymentService;
@@ -29,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -44,6 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final InvoiceRepository invoiceRepository;
     private final PaymentMapper paymentMapper;
     private final WompiPaymentClient wompiPaymentClient;
     private final SseService sseService;
@@ -131,105 +135,147 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public WompiPaymentResponseDTO confirmPaymentWithWompi(ConfirmPaymentWithWompiDTO dto) {
-        log.info(" [WOMPI] Iniciando confirmación de pago con Wompi");
-        log.info(" [WOMPI] Orden: {}, Cliente: {}, Monto: {} centavos COP",
-                 dto.orderId(), dto.customerId(), dto.amount());
+        log.info("════════════════════════════════════════════════════");
+        log.info("[WOMPI-CONFIRM] INICIO — orderId={} customerId={} wompiToken={}",
+                dto.orderId(), dto.customerId(), dto.wompiToken());
+        log.info("════════════════════════════════════════════════════");
 
         try {
-            // 1. Validar que la orden existe
+            // PASO 1 — buscar la orden
+            log.info("[WOMPI-CONFIRM] PASO 1: Buscando orden en BD...");
             Order order = orderRepository.findById(dto.orderId())
                     .orElseThrow(() -> {
-                        log.error(" [WOMPI] Orden no encontrada: {}", dto.orderId());
+                        log.error("[WOMPI-CONFIRM] ✗ PASO 1 FALLO: Orden no encontrada en BD: {}", dto.orderId());
                         return new ResourceNotFoundException("Orden no encontrada");
                     });
+            log.info("[WOMPI-CONFIRM] ✓ PASO 1 OK: Orden encontrada — status={} paymentStatus={} canal={}",
+                    order.getStatus(), order.getPaymentStatus(), order.getChannel());
 
-            // 2. Validar que no hay pago anterior
+            // PASO 2 — idempotencia: ¿ya tiene pago?
+            log.info("[WOMPI-CONFIRM] PASO 2: Verificando si la orden ya tiene pago...");
             if (order.getPayment() != null) {
-                log.warn(" [WOMPI] Orden ya tiene pago: {}", dto.orderId());
+                Payment existing = order.getPayment();
+                log.warn("[WOMPI-CONFIRM]   Orden ya tiene pago — paymentId={} transactionId={}",
+                        existing.getId(), existing.getTransactionId());
+                if (dto.wompiToken().equals(existing.getTransactionId())) {
+                    log.info("[WOMPI-CONFIRM] ✓ PASO 2 IDEMPOTENTE: mismo transactionId, devolviendo éxito");
+                    return new WompiPaymentResponseDTO(
+                            existing.getId(), dto.orderId(),
+                            existing.getTransactionId(), "APPROVED",
+                            (long) (existing.getAmount() * 100), "COP",
+                            existing.getPaidAt(), "Pago ya confirmado", "CARD",
+                            dto.customerEmail());
+                }
+                log.error("[WOMPI-CONFIRM] ✗ PASO 2 FALLO: La orden ya tiene un pago con diferente transactionId");
                 throw new BadRequestException("La orden ya tiene un pago asociado");
             }
+            log.info("[WOMPI-CONFIRM] ✓ PASO 2 OK: La orden no tiene pago previo");
 
-            // 3. Validar que el cliente existe
+            // PASO 3 — buscar el cliente
+            log.info("[WOMPI-CONFIRM] PASO 3: Buscando cliente customerId={}...", dto.customerId());
             User customer = userRepository.findById(dto.customerId())
                     .orElseThrow(() -> {
-                        log.error(" [WOMPI] Cliente no encontrado: {}", dto.customerId());
+                        log.error("[WOMPI-CONFIRM] ✗ PASO 3 FALLO: Cliente no encontrado: {}", dto.customerId());
                         return new ResourceNotFoundException("Cliente no encontrado");
                     });
+            log.info("[WOMPI-CONFIRM] ✓ PASO 3 OK: Cliente encontrado — email={}", customer.getEmail());
 
-            // 4. En modo test con token de prueba, simular respuesta de Wompi
-            boolean isTestToken = dto.wompiToken().startsWith("test_token_");
-            String wompiTransactionId;
-            String wompiStatus;
+            // PASO 4 — verificar transacción en Wompi
+            String wompiTransactionId = dto.wompiToken();
+            log.info("[WOMPI-CONFIRM] PASO 4: Consultando Wompi — transactionId={}...", wompiTransactionId);
+            JsonNode wompiResponse = wompiPaymentClient.getTransaction(wompiTransactionId);
 
-            if ("test".equalsIgnoreCase(wompiEnvironment) && isTestToken) {
-                log.info(" [WOMPI] Modo TEST — simulando transacción aprobada");
-                wompiTransactionId = "test_txn_" + UUID.randomUUID().toString().substring(0, 8);
-                wompiStatus = "APPROVED";
-            } else {
-                // 4b. Crear transacción real en Wompi
-                log.info(" [WOMPI] Creando transacción en Wompi...");
-                Map<String, Object> metadata = new HashMap<>();
-                metadata.put("orderId", dto.orderId());
-                metadata.put("customerId", dto.customerId());
+            String wompiStatus = wompiResponse.path("data").path("status").asText();
+            long amountInCents = wompiResponse.path("data").path("amount_in_cents").asLong();
+            String wompiRef = wompiResponse.path("data").path("reference").asText();
+            String paymentMethod = wompiResponse.path("data").path("payment_method_type").asText();
 
-                JsonNode wompiResponse = wompiPaymentClient.createTransaction(
-                        dto.wompiToken(),
-                        dto.amount(),
-                        dto.orderId(),
-                        dto.customerEmail(),
-                        dto.customerPhone(),
-                        dto.description(),
-                        metadata
-                );
-                wompiTransactionId = wompiResponse.path("data").path("id").asText();
-                wompiStatus = wompiResponse.path("data").path("status").asText();
-                log.info(" [WOMPI] Transacción creada: transactionId={}, status={}", wompiTransactionId, wompiStatus);
+            log.info("[WOMPI-CONFIRM] ✓ PASO 4 OK: Wompi respondió — status={} monto={} centavos ref={} método={}",
+                    wompiStatus, amountInCents, wompiRef, paymentMethod);
+
+            if (!"APPROVED".equalsIgnoreCase(wompiStatus)) {
+                log.error("[WOMPI-CONFIRM] ✗ PASO 4 FALLO: Wompi no aprobó — status={}", wompiStatus);
+                throw new BadRequestException("El pago no fue aprobado por Wompi. Estado: " + wompiStatus);
             }
 
-            // 5. Guardar pago en la base de datos
+            // PASO 5 — crear o reutilizar factura
+            double totalAmount = amountInCents / 100.0;
+            log.info("[WOMPI-CONFIRM] PASO 5: Gestionando factura — total={} COP...", totalAmount);
+            Invoice savedInvoice;
+
+            if (order.getInvoice() != null) {
+                savedInvoice = order.getInvoice();
+                log.info("[WOMPI-CONFIRM] ✓ PASO 5 OK: Reutilizando factura existente — invoiceId={}", savedInvoice.getId());
+            } else {
+                double subtotal = Math.round((totalAmount / 1.08) * 100.0) / 100.0;
+                double tax      = Math.round((totalAmount - subtotal) * 100.0) / 100.0;
+                String invoiceId = "INV-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                        + "-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
+
+                log.info("[WOMPI-CONFIRM]   Creando factura — id={} subtotal={} tax={} total={}",
+                        invoiceId, subtotal, tax, totalAmount);
+
+                Invoice invoice = new Invoice();
+                invoice.setId(invoiceId);
+                invoice.setOrder(order);
+                invoice.setStatus(InvoiceStatus.PAID);
+                invoice.setSubtotal(subtotal);
+                invoice.setTax(tax);
+                invoice.setTotal(totalAmount);
+                invoice.setCreatedAt(LocalDateTime.now());
+                invoice.setPaidAt(LocalDateTime.now());
+                savedInvoice = invoiceRepository.save(invoice);
+                log.info("[WOMPI-CONFIRM] ✓ PASO 5 OK: Factura guardada en BD — invoiceId={}", savedInvoice.getId());
+            }
+
+            // PASO 6 — guardar pago
+            log.info("[WOMPI-CONFIRM] PASO 6: Guardando Payment en BD...");
             Payment payment = new Payment();
             payment.setId(UUID.randomUUID().toString());
             payment.setOrder(order);
             payment.setCustomer(customer);
-            payment.setAmount(dto.amount() / 100.0); // Convertir de centavos a pesos
+            payment.setAmount(totalAmount);
             payment.setPaymentMethod(PaymentMethodType.WOMPI);
             payment.setStatus(PaymentStatus.CONFIRMED);
             payment.setTransactionId(wompiTransactionId);
+            payment.setInvoice(savedInvoice);
             payment.setCreatedAt(LocalDateTime.now());
             payment.setPaidAt(LocalDateTime.now());
             payment.setNotes(dto.notes());
 
             Payment savedPayment = paymentRepository.save(payment);
-            log.info(" [WOMPI] Pago guardado en BD: paymentId={}", savedPayment.getId());
+            log.info("[WOMPI-CONFIRM] ✓ PASO 6 OK: Payment guardado — paymentId={}", savedPayment.getId());
 
-            // 6. Actualizar paymentStatus de la orden y notificar a cocina
+            // PASO 7 — actualizar orden y notificar cocina
+            log.info("[WOMPI-CONFIRM] PASO 7: Actualizando orden y notificando cocina...");
             order.setPaymentStatus(OrderPaymentStatus.CONFIRMED);
             orderRepository.save(order);
-            log.info(" [WOMPI] Orden {} actualizada a paymentStatus=CONFIRMED", dto.orderId());
-
-            // Notificar a cocina para que procese la orden
+            log.info("[WOMPI-CONFIRM]   Orden {} → paymentStatus=CONFIRMED", dto.orderId());
             sseService.notifyKitchen(order);
-            log.info(" [WOMPI] Cocina notificada de nueva orden: {}", dto.orderId());
+            log.info("[WOMPI-CONFIRM] ✓ PASO 7 OK: Cocina notificada");
 
-            // 7. Retornar respuesta
+            log.info("════════════════════════════════════════════════════");
+            log.info("[WOMPI-CONFIRM] ✓ ÉXITO — paymentId={}", savedPayment.getId());
+            log.info("════════════════════════════════════════════════════");
+
             return new WompiPaymentResponseDTO(
-                    savedPayment.getId(),
-                    dto.orderId(),
-                    wompiTransactionId,
-                    wompiStatus,
-                    dto.amount(),
-                    "COP",
-                    LocalDateTime.now(),
-                    "Pago procesado exitosamente con Wompi",
-                    "CARD",
-                    dto.customerEmail()
+                    savedPayment.getId(), dto.orderId(), wompiTransactionId,
+                    wompiStatus, amountInCents, "COP", LocalDateTime.now(),
+                    "Pago procesado exitosamente con Wompi", "CARD", dto.customerEmail()
             );
 
         } catch (IOException e) {
-            log.error(" [WOMPI] Error al procesar pago: {}", e.getMessage());
+            log.error("════════════════════════════════════════════════════");
+            log.error("[WOMPI-CONFIRM] ✗ ERROR DE RED — {}: {}", e.getClass().getSimpleName(), e.getMessage());
+            log.error("════════════════════════════════════════════════════");
             throw new BadRequestException("Error al procesar pago con Wompi: " + e.getMessage());
+        } catch (BadRequestException | ResourceNotFoundException e) {
+            // ya logueados arriba, solo re-lanzar
+            throw e;
         } catch (Exception e) {
-            log.error(" [WOMPI] Error inesperado: {}", e.getMessage());
+            log.error("════════════════════════════════════════════════════");
+            log.error("[WOMPI-CONFIRM] ✗ ERROR INESPERADO — {}: {}", e.getClass().getName(), e.getMessage(), e);
+            log.error("════════════════════════════════════════════════════");
             throw new BadRequestException("Error procesando pago: " + e.getMessage());
         }
     }

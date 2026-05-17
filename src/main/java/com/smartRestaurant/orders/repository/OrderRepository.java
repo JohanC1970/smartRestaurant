@@ -3,6 +3,7 @@ package com.smartRestaurant.orders.repository;
 import com.smartRestaurant.auth.model.entity.User;
 import com.smartRestaurant.orders.model.Order;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
+import com.smartRestaurant.orders.model.enums.OrderPaymentStatus;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,12 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     Page<Order> findByChannel(OrderChannel channel, Pageable pageable);
 
     Page<Order> findByStatusAndChannel(OrderStatus status, OrderChannel channel, Pageable pageable);
+
+    /** Para el cajero: órdenes DELIVERED que aún no han sido cobradas */
+    Page<Order> findByStatusAndPaymentStatusNot(OrderStatus status, OrderPaymentStatus paymentStatus, Pageable pageable);
+
+    /** Para el cajero: órdenes DELIVERED de un canal específico que aún no han sido cobradas */
+    Page<Order> findByStatusAndChannelAndPaymentStatusNot(OrderStatus status, OrderChannel channel, OrderPaymentStatus paymentStatus, Pageable pageable);
 
     Page<Order> findByCustomer(User customer, Pageable pageable);
 

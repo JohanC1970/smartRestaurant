@@ -30,6 +30,13 @@ public class OrderItem {
     @Column(nullable = false)
     private int quantity;
 
+    /**
+     * Precio unitario congelado al momento de crear el pedido.
+     * No debe depender del precio actual del catálogo.
+     */
+    @Column(nullable = false)
+    private double unitPrice;
+
     @ManyToOne
     @JoinColumn(nullable = false)
     private Order order;

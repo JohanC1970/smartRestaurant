@@ -12,6 +12,7 @@ public record GetProductDTO(String id,
                             String name,
                             double price,
                             double weight,
+                            double totalInventoryValue,
                             String photo,
                             double minimumStock,
                             String state) {

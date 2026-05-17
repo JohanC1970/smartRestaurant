@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +25,18 @@ public class DishController {
 
     @GetMapping("/{page}/page")
     @PreAuthorize("hasAnyAuthority('dish:read', 'ROLE_ADMIN', 'ROLE_KITCHEN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
-    public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(@PathVariable int page){
-        List<GetDishDTO> list = dishService.getAll(page);
+    public ResponseEntity<ResponseDTO<List<GetDishDTO>>> getAll(
+            @PathVariable int page,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false, defaultValue = "false") boolean menuEligible,
+            Authentication authentication) {
+        // Solo el admin y cocina ven todos los platos en la carta normal
+        // Mesero y cliente ven solo REGULAR + BOTH (customerView)
+        boolean customerView = authentication.getAuthorities().stream()
+                .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_KITCHEN")
+                        || a.getAuthority().equals("dish:read"));
+        List<GetDishDTO> list = dishService.getAll(page, categoryId, customerView, menuEligible);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>(list, false));
     }
 

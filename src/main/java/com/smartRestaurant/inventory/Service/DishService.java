@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface DishService {
 
-    List<GetDishDTO> getAll(int page);
+    List<GetDishDTO> getAll(int page, String categoryId, boolean customerView, boolean menuEligible);
     void create(String categoryId, CreateDishDTO dish);
     void update(String id, UpdateDishDTO dish);
     void delete(String id);

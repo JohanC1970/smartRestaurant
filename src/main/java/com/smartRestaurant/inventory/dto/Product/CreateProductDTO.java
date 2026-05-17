@@ -16,11 +16,13 @@ public record CreateProductDTO( @NotBlank @Length(min = 1, max = 50)
                                 @NotBlank @Length(min = 10, max = 500)
                                 String description,
                                 @Positive @NotNull
-                                double price,
+                                Double price,
                                 @Positive @NotNull
-                                double weight,
+                                Double weight,
                                 @NotNull @Size(min = 1, max = 10)
                                 List<String> photos,
                                 @Positive @NotNull
-                                double minimumStock) {
+                                Double minimumStock,
+                                @NotNull
+                                Double criticalStock) {
 }

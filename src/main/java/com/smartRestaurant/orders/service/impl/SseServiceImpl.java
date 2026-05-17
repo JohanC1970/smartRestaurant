@@ -26,6 +26,7 @@ public class SseServiceImpl implements SseService {
 
     private final CopyOnWriteArrayList<SseEmitter> kitchenEmitters  = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<SseEmitter> waiterEmitters   = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<SseEmitter> cashierEmitters  = new CopyOnWriteArrayList<>();
     private final ConcurrentHashMap<Long, SseEmitter> customerEmitters = new ConcurrentHashMap<>();
 
     // =====================================================================
@@ -59,6 +60,19 @@ public class SseServiceImpl implements SseService {
     }
 
     @Override
+    public SseEmitter subscribeCashier() {
+        SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT);
+        cashierEmitters.add(emitter);
+        log.info("[SSE] Cajero conectado. Total activos: {}", cashierEmitters.size());
+
+        emitter.onCompletion(() -> cashierEmitters.remove(emitter));
+        emitter.onTimeout(()    -> cashierEmitters.remove(emitter));
+        emitter.onError(e       -> cashierEmitters.remove(emitter));
+
+        return emitter;
+    }
+
+    @Override
     public SseEmitter subscribeCustomer(Long customerId) {
         SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT);
         customerEmitters.put(customerId, emitter);
@@ -83,6 +97,18 @@ public class SseServiceImpl implements SseService {
     @Override
     public void notifyWaiterOrderReady(Object orderData) {
         broadcast(waiterEmitters, new SseNotificationDTO("ORDER_READY", "Pedido listo para entregar", orderData));
+        // El cajero también recibe la notificación para saber que hay una mesa lista para cobrar
+        broadcast(cashierEmitters, new SseNotificationDTO("ORDER_READY_TO_PAY", "Pedido listo para cobrar", orderData));
+    }
+
+    @Override
+    public void notifyCashierOrderReadyToPay(Object orderData) {
+        broadcast(cashierEmitters, new SseNotificationDTO("ORDER_READY_TO_PAY", "Pedido listo para cobrar", orderData));
+    }
+
+    @Override
+    public void notifyCashierPaymentConfirmed(String orderId) {
+        broadcast(cashierEmitters, new SseNotificationDTO("PAYMENT_CONFIRMED", "Pago confirmado", orderId));
     }
 
     @Override
@@ -98,14 +124,14 @@ public class SseServiceImpl implements SseService {
     }
 
     @Override
-    public void notifyCustomerOrderStatusChanged(Long customerId, String newStatus, Object orderData) {
+    public void notifyCustomerOrderStatusChanged(Long customerId, String status, Object orderData) {
         SseEmitter emitter = customerEmitters.get(customerId);
         if (emitter == null) {
-            log.info("[SSE] Cliente {} no conectado, se omite notificación de estado {}.", customerId, newStatus);
+            log.info("[SSE] Cliente {} no está conectado, se omite notificación de estado {}.", customerId, status);
             return;
         }
         sendToEmitter(emitter,
-            new SseNotificationDTO("ORDER_STATUS_CHANGED", "Tu pedido cambió a " + newStatus, orderData),
+            new SseNotificationDTO("ORDER_STATUS_CHANGED", "Estado de tu pedido actualizado: " + status, orderData),
             () -> customerEmitters.remove(customerId));
     }
 

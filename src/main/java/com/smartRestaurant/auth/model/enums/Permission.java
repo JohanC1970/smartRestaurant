@@ -93,7 +93,17 @@ public enum Permission {
     // ═══════════════════════════════════════════════════════════════════════════
     
     INVENTORY_MOVEMENT_READ("inventory_movement:read", "Ver movimientos de inventario"),
-    INVENTORY_MOVEMENT_WRITE("inventory_movement:write", "Registrar movimientos de inventario");
+    INVENTORY_MOVEMENT_WRITE("inventory_movement:write", "Registrar movimientos de inventario"),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PERMISOS DE ÓRDENES Y PAGOS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    ORDER_READ("order:read", "Ver órdenes"),
+    ORDER_WRITE("order:write", "Crear y actualizar órdenes"),
+
+    PAYMENT_READ("payment:read", "Ver pagos y facturas"),
+    PAYMENT_WRITE("payment:write", "Registrar pagos");
 
     private final String permission;
     private final String description;

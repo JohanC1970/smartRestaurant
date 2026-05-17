@@ -1,5 +1,6 @@
 package com.smartRestaurant.orders.dto.Order;
 
+import com.smartRestaurant.orders.dto.menu.GetMenuInstanceDTO;
 import com.smartRestaurant.orders.dto.orderitem.GetOrderItemDTO;
 import com.smartRestaurant.orders.model.enums.OrderChannel;
 import com.smartRestaurant.orders.model.enums.OrderStatus;
@@ -23,7 +24,7 @@ public record GetOrderDetailDTO(
         List<GetOrderItemDTO> items,
         double totalAmount,
         String paymentStatus,
-        String notes
+        List<GetMenuInstanceDTO> menuInstances
 ) {
     /** Información resumida de la mesa asignada a la orden. Null si la orden es online. */
     public record TableInfo(String id, int number, int capacity, String location, TableStatus status) {}

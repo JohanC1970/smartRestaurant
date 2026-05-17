@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.smartRestaurant.security.service.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/api/images/") ||
                 path.equals("/api/restaurant") ||
                 path.equals("/api/restaurant/is-open") ||
-                path.startsWith("/api/dailyMenus/") ||
                 path.equals("/actuator/health") ||
                 path.equals("/actuator/info");
     }
@@ -71,7 +71,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        userEmail = jwtService.extractUsername(jwt);
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (JwtException e) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);

@@ -1,9 +1,7 @@
 package com.smartRestaurant.inventory.dto.Dish;
 
 import com.smartRestaurant.inventory.dto.recipe.CreateRecipeDTO;
-import com.smartRestaurant.inventory.model.Addition;
-import com.smartRestaurant.inventory.model.Category;
-import com.smartRestaurant.inventory.model.Product;
+import com.smartRestaurant.inventory.model.DishAvailability;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -18,5 +16,6 @@ public record CreateDishDTO(@NotBlank @Length(min = 1, max = 100)
                             @NotEmpty @Size(min = 1, max = 10)
                             List<String> photos,
                             @NotEmpty
-                            List<CreateRecipeDTO> ingredients) {
+                            List<CreateRecipeDTO> ingredients,
+                            DishAvailability availability) {
 }

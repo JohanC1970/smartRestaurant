@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -99,7 +98,7 @@ public enum UserRole {
         Permission.INVENTORY_MOVEMENT_WRITE
     )),
 
-    // Mesero - Solo lectura de menú y alertas
+    // Mesero - Gestión de órdenes en sala
     WAITER("Mesero", 2, Set.of(
         // Solo lectura de platos, bebidas, adiciones y menú del día
         Permission.DISH_READ,
@@ -107,6 +106,17 @@ public enum UserRole {
         Permission.ADDITION_READ,
         Permission.DAILY_MENU_READ,
         Permission.STOCK_ALERT_READ
+    )),
+
+    // Cajero - Gestión de pagos y facturas
+    CASHIER("Cajero", 2, Set.of(
+        Permission.DISH_READ,
+        Permission.DRINK_READ,
+        Permission.ADDITION_READ,
+        Permission.DAILY_MENU_READ,
+        Permission.ORDER_READ,
+        Permission.PAYMENT_READ,
+        Permission.PAYMENT_WRITE
     )),
 
     // Cliente - Sin acceso al dashboard administrativo
@@ -169,20 +179,16 @@ public enum UserRole {
 
     /**
      * Verifica si este rol es personal del restaurante (no cliente)
-     * 
-     * @return true si el rol es ADMIN, KITCHEN o WAITER
      */
     public boolean isStaff() {
-        return this == ADMIN || this == KITCHEN || this == WAITER;
+        return this == ADMIN || this == KITCHEN || this == WAITER || this == CASHIER;
     }
 
     /**
      * Verifica si este rol puede gestionar órdenes
-     * 
-     * @return true si el rol puede gestionar órdenes
      */
     public boolean canManageOrders() {
-        return this == ADMIN || this == KITCHEN || this == WAITER;
+        return this == ADMIN || this == KITCHEN || this == WAITER || this == CASHIER;
     }
 
     /**

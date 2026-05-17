@@ -20,13 +20,14 @@ public interface ProductRepository extends JpaRepository<Product, String> {
                 p.id,
                 p.name,
                 p.minimum_stock,
-                COALESCE(SUM(CASE WHEN im.type = 'ENTRY' THEN im.weight ELSE -im.weight END), 0) AS current_stock
+                p.weight AS current_stock
             FROM product p
-            LEFT JOIN inventory_movement im ON im.product_id = p.id
             WHERE p.state = 'ACTIVE'
-            GROUP BY p.id, p.name, p.minimum_stock
-            HAVING COALESCE(SUM(CASE WHEN im.type = 'ENTRY' THEN im.weight ELSE -im.weight END), 0) < p.minimum_stock
-            ORDER BY current_stock ASC
+              AND p.weight < p.minimum_stock
+            ORDER BY p.weight ASC
             """)
     List<Object[]> findProductsBelowMinimumStock();
+
+    @Query("SELECT COALESCE(SUM(p.weight * p.price), 0.0) FROM Product p WHERE p.state = 'ACTIVE'")
+    Double calculateInventoryCapital();
 }

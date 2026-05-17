@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -57,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
         inventoryMovementService.registerMovementEntry(
                 product,
                 createProductDTO.weight(),
+                createProductDTO.price(),
                 "Ingreso inicial de: " + product.getName() + " — " + createProductDTO.weight() + "g");
 
     }
@@ -66,11 +68,17 @@ public class ProductServiceImpl implements ProductService {
     public void update(String id, UpdateProductDTO updateProductDTO) {
 
         Optional<Product> productOptional = productRepository.findById(id);
-        if (productOptional.isEmpty()) {
+        if (productOptional.isEmpty() || productOptional.get().getState().equals(State.INACTIVE)) {
             throw new RuntimeException("Product not found");
         }
 
+        Optional<Suplier> suplierOptional = suplierRepository.findById(updateProductDTO.suplier_id());
+        if (suplierOptional.isEmpty() || suplierOptional.get().getState().equals(State.INACTIVE)) {
+            throw new ResourceNotFoundException("El proveedor no existe");
+        }
+
         productMapper.update(updateProductDTO, productOptional.get());
+        productOptional.get().setSuplier(suplierOptional.get());
         productRepository.save(productOptional.get());
 
     }
@@ -116,8 +124,19 @@ public class ProductServiceImpl implements ProductService {
             throw new ResourceNotFoundException("producto no encontrado");
         }
 
-        double newWeight = product.get().getWeight() + stockMovementDTO.weight();
+        double oldWeight    = product.get().getWeight();
+        double oldPrice     = product.get().getPrice();
+        double addedWeight  = stockMovementDTO.weight();
+        double unitPrice    = stockMovementDTO.unitPrice() != null ? stockMovementDTO.unitPrice() : 0.0;
+
+        double newWeight = oldWeight + addedWeight;
         product.get().setWeight(newWeight);
+
+        // Costo promedio ponderado: el precio refleja el valor real acumulado del inventario
+        if (unitPrice > 0) {
+            double weightedAvgPrice = (oldWeight * oldPrice + addedWeight * unitPrice) / newWeight;
+            product.get().setPrice(weightedAvgPrice);
+        }
         productRepository.save(product.get());
 
         if(product.get().getWeight() < product.get().getMinimumStock()){
@@ -135,10 +154,10 @@ public class ProductServiceImpl implements ProductService {
         String entryReason = (stockMovementDTO.reason() != null && !stockMovementDTO.reason().isBlank())
                 ? stockMovementDTO.reason()
                 : "Entrada manual de: " + product.get().getName() + " — " + stockMovementDTO.weight() + "g";
-        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight(), entryReason);
+        inventoryMovementService.registerMovementEntry(product.get(), stockMovementDTO.weight(), unitPrice, entryReason);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void discountStock(String id, StockMovementDTO stockMovementDTO) {
 

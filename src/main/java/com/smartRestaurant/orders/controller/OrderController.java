@@ -1,6 +1,7 @@
 package com.smartRestaurant.orders.controller;
 
 import com.smartRestaurant.orders.dto.Order.CreateOrderDto;
+import com.smartRestaurant.orders.dto.Order.EditOrderItemsDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrderDetailDTO;
 import com.smartRestaurant.orders.dto.Order.GetOrdersDTO;
 import com.smartRestaurant.orders.dto.Order.UpdateOrderDTO;
@@ -51,7 +52,7 @@ public class OrderController {
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{page}/page")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CASHIER')")
     public ResponseEntity<ResponseDTO<List<GetOrdersDTO>>> getAllOrders(
             @PathVariable int page,
             @RequestParam(required = false) OrderStatus status,
@@ -68,7 +69,7 @@ public class OrderController {
      * Roles permitidos: WAITER, KITCHEN, ADMIN
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_KITCHEN', 'ROLE_CASHIER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetOrderDetailDTO>> getOrderById(@PathVariable String id) {
 
         GetOrderDetailDTO order = orderService.getById(id);
@@ -119,6 +120,22 @@ public class OrderController {
     }
 
     /**
+     * PATCH /api/orders/{id}/items
+     * Reemplaza los items de una orden PENDIENTE
+     * Roles permitidos: WAITER, ADMIN
+     */
+    @PatchMapping("/{id}/items")
+    @PreAuthorize("hasAnyAuthority('order:write', 'ROLE_ADMIN', 'ROLE_WAITER')")
+    public ResponseEntity<ResponseDTO<String>> editOrderItems(
+            @PathVariable String id,
+            @RequestBody @Valid EditOrderItemsDTO editOrderItemsDTO) {
+
+        orderService.editItems(id, editOrderItemsDTO);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Items actualizados", false));
+    }
+
+    /**
      * DELETE /api/orders/{id}/abandon
      * Elimina una orden online pendiente de pago cuando el cliente abandona la pasarela.
      * Roles permitidos: CUSTOMER (solo sus propias órdenes)
@@ -152,7 +169,7 @@ public class OrderController {
      * Roles permitidos: WAITER, ADMIN, CUSTOMER
      */
     @GetMapping("/{id}/invoice")
-    @PreAuthorize("hasAnyAuthority('order:read', 'ROLE_ADMIN', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
+    @PreAuthorize("hasAnyAuthority('order:read', 'payment:read', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_WAITER', 'ROLE_CUSTOMER')")
     public ResponseEntity<ResponseDTO<GetInvoiceDTO>> getInvoiceByOrder(@PathVariable String id) {
 
         GetInvoiceDTO invoice = invoiceService.getInvoiceByOrderId(id);

@@ -5,6 +5,7 @@ import com.smartRestaurant.inventory.Service.InventoryMovementService;
 import com.smartRestaurant.inventory.dto.InventoryMovement.GetInventoryMovementDTO;
 import com.smartRestaurant.inventory.mapper.InventoryMovementMapper;
 import com.smartRestaurant.inventory.model.InventoryMovement;
+import com.smartRestaurant.inventory.model.ItemCategory;
 import com.smartRestaurant.inventory.model.Product;
 import com.smartRestaurant.inventory.model.Type;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
 
     @Transactional
     @Override
-    public void registerMovementEntry(Product product, double weight, String reason) {
+    public void registerMovementEntry(Product product, double weight, double unitPrice, String reason) {
         InventoryMovement movement = InventoryMovement.builder()
                 .id(java.util.UUID.randomUUID().toString())
                 .product(product)
@@ -33,6 +34,8 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
                 .type(Type.ENTRY)
                 .timeAt(LocalDateTime.now())
                 .weight(weight)
+                .unitPrice(unitPrice)
+                .totalCost(weight * unitPrice)
                 .reason(reason)
                 .build();
 
@@ -49,7 +52,51 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
                 .type(Type.EXIT)
                 .timeAt(LocalDateTime.now())
                 .weight(weight)
+                .unitPrice(0.0)
+                .totalCost(0.0)
                 .reason(reason)
+                .build();
+
+        inventoryMovementRepository.save(movement);
+    }
+
+    @Transactional
+    @Override
+    public void registerDrinkEntry(String drinkId, String drinkName, int units, double purchasePrice) {
+        InventoryMovement movement = InventoryMovement.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .product(null)
+                .itemCategory(ItemCategory.DRINK)
+                .itemId(drinkId)
+                .itemName(drinkName)
+                .user(currentUserProvider.getCurrentUser())
+                .type(Type.ENTRY)
+                .timeAt(LocalDateTime.now())
+                .weight(units)
+                .unitPrice(purchasePrice)
+                .totalCost((double) units * purchasePrice)
+                .reason("Reabastecimiento de bebida")
+                .build();
+
+        inventoryMovementRepository.save(movement);
+    }
+
+    @Transactional
+    @Override
+    public void registerAdditionEntry(String additionId, String additionName, int units, double purchasePrice) {
+        InventoryMovement movement = InventoryMovement.builder()
+                .id(java.util.UUID.randomUUID().toString())
+                .product(null)
+                .itemCategory(ItemCategory.ADDITION)
+                .itemId(additionId)
+                .itemName(additionName)
+                .user(currentUserProvider.getCurrentUser())
+                .type(Type.ENTRY)
+                .timeAt(LocalDateTime.now())
+                .weight(units)
+                .unitPrice(purchasePrice)
+                .totalCost((double) units * purchasePrice)
+                .reason("Reabastecimiento de adición")
                 .build();
 
         inventoryMovementRepository.save(movement);
@@ -58,6 +105,7 @@ public class InventoryMovementServiceImpl implements InventoryMovementService {
     @Override
     public List<GetInventoryMovementDTO> getAllMovements() {
         return inventoryMovementRepository.findAll().stream()
+                .sorted((a, b) -> b.getTimeAt().compareTo(a.getTimeAt()))
                 .map(inventoryMovementMapper::toDTO)
                 .toList();
     }

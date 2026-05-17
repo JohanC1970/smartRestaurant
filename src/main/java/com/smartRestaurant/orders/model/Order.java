@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,7 +29,7 @@ public class Order {
     private String id;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status; // pending, in_progress, completed, delivered, cancelled
+    private OrderStatus status; // PENDING → SENT → IN_PROGRESS → COMPLETED → DELIVERED | CANCELLED
 
     @Enumerated(EnumType.STRING)
     private OrderChannel channel; // online, presencial
@@ -50,6 +51,10 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<MenuOrderInstance> menuInstances = new ArrayList<>();
 
     @OneToOne(mappedBy = "order")
     private Payment payment; // null if was presential
