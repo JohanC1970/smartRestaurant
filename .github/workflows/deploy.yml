@@ -34,7 +34,7 @@ jobs:
       - name: SonarQube Scan
         run: | 
           mvn install sonar:sonar \
-            -Dsonar.projectKey=smartRestaurant \
+            -Dsonar.projectKey=samuelasta_smartRestaurant \
             -Dsonar.organization=samuelasta \
             -Dsonar.sources=src/main \
             -Dsonar.tests=src/test \
