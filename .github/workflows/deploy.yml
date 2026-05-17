@@ -33,7 +33,7 @@ jobs:
       # 4. Analizar con SonarQube
       - name: SonarQube Scan
         run: | 
-          mvn clean install sonar:sonar \
+          mvn install sonar:sonar \
             -Dsonar.projectKey=smartRestaurant \
             -Dsonar.organization=samuelasta \
             -Dsonar.sources=src/main \
@@ -58,6 +58,7 @@ jobs:
             })
 
   build-and-deploy:
+    needs: sonarqube
     runs-on: ubuntu-latest
     steps:
       - name: Checkout código
