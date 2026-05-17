@@ -30,7 +30,7 @@ jobs:
       - name: Run tests and generate coverage
         run: mvn clean verify -DskipITs
 
-      # 4. Analizar con SonarQube
+      # 4. analizar con SonarQube
       - name: SonarQube Scan
         run: | 
           mvn install sonar:sonar \
