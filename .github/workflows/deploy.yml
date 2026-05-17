@@ -44,7 +44,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # 5. Comentar en el PR (opcional)
+      # 5. Comentar en el PR (opcionals)
       - name: Comment PR with SonarQube Report
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
